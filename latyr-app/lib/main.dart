@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:latyr_app/config/environment_config.dart';
 
 void main() {
+  debugPrint('Starting App in ${EnvironmentConfig.environment.toUpperCase()} environment');
+  debugPrint('API URL: ${EnvironmentConfig.apiUrl}');
   runApp(const MyApp());
 }
 
@@ -11,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Latyr App (${EnvironmentConfig.environment})',
       theme: ThemeData(
         // This is the theme of your application.
         //
