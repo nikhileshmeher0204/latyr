@@ -49,6 +49,15 @@ public interface CaptureMapper {
     @ResultMap("CaptureResult")
     List<Capture> findByUserIdAndCategory(@Param("userId") UUID userId, @Param("category") String category, @Param("limit") int limit, @Param("offset") int offset);
 
+    @Select("SELECT COUNT(*) FROM captures WHERE user_id = #{userId}")
+    long countByUserId(@Param("userId") UUID userId);
+
+    @Select("SELECT COUNT(*) FROM captures WHERE user_id = #{userId} AND status = #{status}")
+    long countByUserIdAndStatus(@Param("userId") UUID userId, @Param("status") CaptureStatus status);
+
+    @Select("SELECT COUNT(*) FROM captures WHERE user_id = #{userId} AND category = #{category}")
+    long countByUserIdAndCategory(@Param("userId") UUID userId, @Param("category") String category);
+
     @Insert("""
         INSERT INTO captures (
             id, user_id, canonical_source_id, content_type, status, intent, category,

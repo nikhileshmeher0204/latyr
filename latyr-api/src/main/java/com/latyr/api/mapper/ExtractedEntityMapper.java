@@ -46,6 +46,21 @@ public interface ExtractedEntityMapper {
     """)
     int insert(ExtractedEntity entity);
 
+    @Update("""
+        UPDATE extracted_entities
+        SET entity_type = #{entityType},
+            title = #{title},
+            description = #{description},
+            external_url = #{externalUrl},
+            action_cta = #{actionCta},
+            metadata = #{metadata, typeHandler=com.latyr.api.config.typehandler.JsonbTypeHandler, jdbcType=OTHER}
+        WHERE id = #{id}
+    """)
+    int update(ExtractedEntity entity);
+
+    @Delete("DELETE FROM extracted_entities WHERE id = #{id}")
+    int deleteById(@Param("id") UUID id);
+
     @Delete("DELETE FROM extracted_entities WHERE capture_id = #{captureId}")
     int deleteByCaptureId(@Param("captureId") UUID captureId);
 }
