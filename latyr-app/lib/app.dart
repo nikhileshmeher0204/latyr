@@ -4,14 +4,28 @@ import 'package:latyr_app/features/collections/presentation/collections_screen.d
 import 'package:latyr_app/features/feed/presentation/capture_feed_screen.dart';
 import 'package:latyr_app/features/subscription/presentation/paywall_modal.dart';
 
-class LatyrApp extends StatefulWidget {
+class LatyrApp extends StatelessWidget {
   const LatyrApp({super.key});
 
   @override
-  State<LatyrApp> createState() => _LatyrAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Latyr',
+      theme: AppTheme.darkTheme,
+      debugShowCheckedModeBanner: false,
+      home: const LatyrHomeScreen(),
+    );
+  }
 }
 
-class _LatyrAppState extends State<LatyrApp> {
+class LatyrHomeScreen extends StatefulWidget {
+  const LatyrHomeScreen({super.key});
+
+  @override
+  State<LatyrHomeScreen> createState() => _LatyrHomeScreenState();
+}
+
+class _LatyrHomeScreenState extends State<LatyrHomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
@@ -21,41 +35,36 @@ class _LatyrAppState extends State<LatyrApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Latyr',
-      theme: AppTheme.darkTheme,
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _screens,
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            if (index == 2) {
-              // Open Pro Paywall Modal
-              PaywallModal.show(context);
-            } else {
-              setState(() => _currentIndex = index);
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dynamic_feed_rounded),
-              label: 'Feed',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.folder_copy_outlined),
-              activeIcon: Icon(Icons.folder_copy_rounded),
-              label: 'Collections',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.star_rounded, color: AppTheme.warning),
-              label: 'Pro',
-            ),
-          ],
-        ),
+    return Scaffold(
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          if (index == 2) {
+            // Open Pro Paywall Modal with valid Navigator context
+            PaywallModal.show(context);
+          } else {
+            setState(() => _currentIndex = index);
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dynamic_feed_rounded),
+            label: 'Feed',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.folder_copy_outlined),
+            activeIcon: Icon(Icons.folder_copy_rounded),
+            label: 'Collections',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.star_rounded, color: AppTheme.warning),
+            label: 'Pro',
+          ),
+        ],
       ),
     );
   }

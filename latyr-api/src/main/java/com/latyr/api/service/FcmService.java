@@ -3,7 +3,6 @@ package com.latyr.api.service;
 import com.google.firebase.messaging.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -15,18 +14,10 @@ public class FcmService {
 
     private static final Logger log = LoggerFactory.getLogger(FcmService.class);
 
-    @Value("${firebase.auth.mock-enabled:false}")
-    private boolean mockEnabled;
-
     public boolean sendSilentSyncNotification(String fcmToken, UUID captureId) {
         if (fcmToken == null || fcmToken.trim().isEmpty()) {
             log.debug("Skipping silent sync push: empty FCM token for capture {}", captureId);
             return false;
-        }
-
-        if (mockEnabled) {
-            log.info("FCM MOCK: Sent silent sync notification for capture {} to token {}", captureId, fcmToken);
-            return true;
         }
 
         try {
@@ -52,11 +43,6 @@ public class FcmService {
         if (fcmToken == null || fcmToken.trim().isEmpty()) {
             log.debug("Skipping resurfacing push: empty FCM token for capture {}", captureId);
             return false;
-        }
-
-        if (mockEnabled) {
-            log.info("FCM MOCK: Sent resurfacing push [{}] '{}' for capture {} to token {}", title, body, captureId, fcmToken);
-            return true;
         }
 
         try {

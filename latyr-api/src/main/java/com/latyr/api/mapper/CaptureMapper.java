@@ -26,8 +26,7 @@ public interface CaptureMapper {
         @Result(property = "audioTranscript", column = "audio_transcript"),
         @Result(property = "notificationCopies", column = "notification_copies", typeHandler = StringArrayTypeHandler.class),
         @Result(property = "resurfaceCount", column = "resurface_count"),
-        @Result(property = "durationMs", column = "duration_ms"),
-        @Result(property = "videoDurationSec", column = "video_duration_sec"),
+        @Result(property = "durationMs", column = "total_processing_duration_ms"),
         @Result(property = "scheduledResurfaceAt", column = "scheduled_resurface_at"),
         @Result(property = "lastResurfacedAt", column = "last_resurfaced_at"),
         @Result(property = "createdAt", column = "created_at"),
@@ -87,7 +86,7 @@ public interface CaptureMapper {
         INSERT INTO captures (
             id, user_id, canonical_source_id, content_type, status, intent, category,
             original_caption, audio_transcript, notification_copies, resurface_count,
-            duration_ms, video_duration_sec, scheduled_resurface_at, last_resurfaced_at,
+            total_processing_duration_ms, scheduled_resurface_at, last_resurfaced_at,
             created_at, updated_at
         )
         VALUES (
@@ -103,7 +102,6 @@ public interface CaptureMapper {
             #{notificationCopies, typeHandler=com.latyr.api.config.typehandler.StringArrayTypeHandler, jdbcType=ARRAY},
             #{resurfaceCount},
             #{durationMs},
-            #{videoDurationSec},
             #{scheduledResurfaceAt},
             #{lastResurfacedAt},
             COALESCE(#{createdAt}, CURRENT_TIMESTAMP),
@@ -121,8 +119,7 @@ public interface CaptureMapper {
             audio_transcript = #{audioTranscript},
             notification_copies = #{notificationCopies, typeHandler=com.latyr.api.config.typehandler.StringArrayTypeHandler, jdbcType=ARRAY},
             resurface_count = #{resurfaceCount},
-            duration_ms = #{durationMs},
-            video_duration_sec = #{videoDurationSec},
+            total_processing_duration_ms = #{durationMs},
             scheduled_resurface_at = #{scheduledResurfaceAt},
             last_resurfaced_at = #{lastResurfacedAt},
             updated_at = CURRENT_TIMESTAMP

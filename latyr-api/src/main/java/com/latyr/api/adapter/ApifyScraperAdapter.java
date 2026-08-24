@@ -22,9 +22,6 @@ public class ApifyScraperAdapter implements ScraperProvider {
     @Value("${apify.api.token:}")
     private String apiToken;
 
-    @Value("${apify.mock.enabled:false}")
-    private boolean mockEnabled;
-
     private final WebClient webClient;
 
     public ApifyScraperAdapter(WebClient.Builder webClientBuilder) {
@@ -34,19 +31,12 @@ public class ApifyScraperAdapter implements ScraperProvider {
     @Override
     @SuppressWarnings("unchecked")
     public ScrapedMedia extractMedia(String url) {
-        if (mockEnabled || apiToken == null || apiToken.trim().isEmpty()) {
-            log.info("ApifyScraperAdapter running in MOCK mode for URL: {}", url);
-            return new ScrapedMedia(
-                    "https://mock-cdn.latyr.internal/reels/video.mp4",
-                    "https://mock-cdn.latyr.internal/reels/audio.mp3",
-                    "5 mind-bending thriller shows you must watch on Netflix! #recommendations #dark",
-                    "Top 5 Thriller Shows",
-                    45,
-                    Map.of("platform", "Instagram", "mock", true)
-            );
+        if (apiToken == null || apiToken.trim().isEmpty()) {
+            log.error("Apify API token is not configured. Set APIFY_API_TOKEN in your environment or .env file.");
+            throw new LatyrException("Apify API token is missing. Please set APIFY_API_TOKEN.", "MISSING_CONFIGURATION", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        log.info("Invoking Apify Instagram Reel Scraper for URL: {}", url);
+        log.info("Executing live Apify Instagram Reel Scraper for URL: {}", url);
         try {
             Map<String, Object> requestBody = Map.of(
                     "directUrls", List.of(url),
@@ -60,7 +50,7 @@ public class ApifyScraperAdapter implements ScraperProvider {
                     .retrieve()
                     .bodyToFlux(new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {})
                     .collectList()
-                    .block(Duration.ofSeconds(60));
+                    .block(Duration.ofSeconds(90));
 
             if (responseList == null || responseList.isEmpty()) {
                 throw new LatyrException("Apify returned empty dataset items for URL: " + url, "SCRAPING_FAILED", HttpStatus.BAD_GATEWAY);
@@ -79,8 +69,10 @@ public class ApifyScraperAdapter implements ScraperProvider {
             }
 
             return new ScrapedMedia(videoUrl, audioUrl, caption, title, duration, item);
+        } catch (LatyrException le) {
+            throw le;
         } catch (Exception e) {
-            log.error("Apify scraping failed for URL {}: {}", url, e.getMessage());
+            log.error("Live Apify scraping failed for URL {}: {}", url, e.getMessage());
             throw new LatyrException("Failed to scrape media from Instagram: " + e.getMessage(), "SCRAPING_FAILED", HttpStatus.BAD_GATEWAY);
         }
     }

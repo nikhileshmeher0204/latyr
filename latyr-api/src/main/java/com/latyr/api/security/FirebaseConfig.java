@@ -20,46 +20,33 @@ public class FirebaseConfig {
     @Value("${firebase.config.path:}")
     private String firebaseConfigPath;
 
-    @Value("${firebase.auth.mock-enabled:false}")
-    private boolean mockEnabled;
-
     @PostConstruct
     public void initialize() {
         if (!FirebaseApp.getApps().isEmpty()) {
             return;
         }
 
-        if (mockEnabled) {
-            log.warn("Firebase Authentication is running in MOCK mode. Live token verification will be simulated.");
-            return;
-        }
-
         try {
-            InputStream serviceAccount;
-            if (firebaseConfigPath != null && !firebaseConfigPath.trim().isEmpty()) {
-                log.info("Loading Firebase credentials from file: {}", firebaseConfigPath);
-                serviceAccount = new FileInputStream(firebaseConfigPath);
-            } else {
-                log.info("Attempting to load Google Application Default Credentials (ADC)...");
-                serviceAccount = GoogleCredentials.getApplicationDefault().getAccessToken() != null
-                        ? null : null; // Fallback to ADC
-            }
-
             FirebaseOptions options;
-            if (serviceAccount != null) {
-                options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        .build();
+            if (firebaseConfigPath != null && !firebaseConfigPath.trim().isEmpty()) {
+                log.info("Initializing Firebase App from credentials file: {}", firebaseConfigPath);
+                try (InputStream serviceAccount = new FileInputStream(firebaseConfigPath)) {
+                    options = FirebaseOptions.builder()
+                            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                            .build();
+                    FirebaseApp.initializeApp(options);
+                }
             } else {
+                log.info("Initializing Firebase App using Google Application Default Credentials (ADC)...");
                 options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.getApplicationDefault())
                         .build();
+                FirebaseApp.initializeApp(options);
             }
 
-            FirebaseApp.initializeApp(options);
             log.info("Firebase App initialized successfully.");
         } catch (Exception e) {
-            log.warn("Firebase Admin SDK failed to initialize with live credentials: {}. Falling back to mock authentication mode.", e.getMessage());
+            log.warn("Firebase Admin SDK not initialized: {}. Ensure FIREBASE_CONFIG_PATH or GOOGLE_APPLICATION_CREDENTIALS is set.", e.getMessage());
         }
     }
 }

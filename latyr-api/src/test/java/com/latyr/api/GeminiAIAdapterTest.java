@@ -1,11 +1,8 @@
 package com.latyr.api;
 
-import com.latyr.api.adapter.AIProvider;
 import com.latyr.api.adapter.GeminiAIAdapter;
-import com.latyr.api.domain.enums.ActionCTA;
-import com.latyr.api.domain.enums.EntityType;
-import com.latyr.api.domain.enums.Intent;
 import com.latyr.api.domain.enums.Language;
+import com.latyr.api.exception.LatyrException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -16,46 +13,28 @@ import static org.junit.jupiter.api.Assertions.*;
 class GeminiAIAdapterTest {
 
     @Test
-    @DisplayName("Mock Mode: Should extract structured analysis with Intent, entities, and notification copies")
-    void testAnalyzeMedia_MockMode() {
+    @DisplayName("Configuration check: Should throw LatyrException if GEMINI_API_KEY is missing for media analysis")
+    void testAnalyzeMedia_MissingKey() {
         GeminiAIAdapter adapter = new GeminiAIAdapter(WebClient.builder());
-        ReflectionTestUtils.setField(adapter, "mockEnabled", true);
+        ReflectionTestUtils.setField(adapter, "geminiApiKey", "");
 
-        AIProvider.AIAnalysisResult result = adapter.analyzeMedia(
-                "mock-bytes".getBytes(),
-                "audio/mp3",
-                "Top thriller shows on Netflix #dark",
-                Language.HINGLISH
+        LatyrException ex = assertThrows(LatyrException.class, () ->
+                adapter.analyzeMedia("bytes".getBytes(), "audio/mp3", "Caption", Language.ENGLISH)
         );
 
-        assertNotNull(result);
-        assertEquals(Intent.WATCH, result.intent());
-        assertEquals("Entertainment", result.category());
-        assertFalse(result.notificationCopies().isEmpty());
-        assertFalse(result.entities().isEmpty());
-
-        AIProvider.AIEntity entity = result.entities().get(0);
-        assertEquals(EntityType.TV_SHOW, entity.entityType());
-        assertEquals("Dark", entity.title());
-        assertEquals(ActionCTA.WATCH, entity.actionCta());
+        assertEquals("MISSING_CONFIGURATION", ex.getErrorCode());
     }
 
     @Test
-    @DisplayName("Mock Mode: Image OCR analysis returns structured tech entity")
-    void testAnalyzeImage_MockMode() {
+    @DisplayName("Configuration check: Should throw LatyrException if GEMINI_API_KEY is missing for image analysis")
+    void testAnalyzeImage_MissingKey() {
         GeminiAIAdapter adapter = new GeminiAIAdapter(WebClient.builder());
-        ReflectionTestUtils.setField(adapter, "mockEnabled", true);
+        ReflectionTestUtils.setField(adapter, "geminiApiKey", "");
 
-        AIProvider.AIAnalysisResult result = adapter.analyzeImage(
-                "image-bytes".getBytes(),
-                "image/png",
-                Language.ENGLISH
+        LatyrException ex = assertThrows(LatyrException.class, () ->
+                adapter.analyzeImage("bytes".getBytes(), "image/png", Language.ENGLISH)
         );
 
-        assertNotNull(result);
-        assertEquals(Intent.EXPLORE, result.intent());
-        assertEquals("Tech", result.category());
-        assertFalse(result.entities().isEmpty());
-        assertEquals(EntityType.GITHUB_REPO, result.entities().get(0).entityType());
+        assertEquals("MISSING_CONFIGURATION", ex.getErrorCode());
     }
 }

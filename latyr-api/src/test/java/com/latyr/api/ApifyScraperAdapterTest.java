@@ -1,7 +1,7 @@
 package com.latyr.api;
 
 import com.latyr.api.adapter.ApifyScraperAdapter;
-import com.latyr.api.adapter.ScraperProvider;
+import com.latyr.api.exception.LatyrException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -12,16 +12,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class ApifyScraperAdapterTest {
 
     @Test
-    @DisplayName("Mock Mode: Should return valid ScrapedMedia with audioUrl and caption")
-    void testExtractMedia_MockMode() {
+    @DisplayName("Configuration check: Should throw LatyrException if APIFY_API_TOKEN is missing")
+    void testExtractMedia_MissingToken() {
         ApifyScraperAdapter adapter = new ApifyScraperAdapter(WebClient.builder());
-        ReflectionTestUtils.setField(adapter, "mockEnabled", true);
+        ReflectionTestUtils.setField(adapter, "apiToken", "");
 
-        ScraperProvider.ScrapedMedia media = adapter.extractMedia("https://www.instagram.com/reel/C8xyz123/");
+        LatyrException ex = assertThrows(LatyrException.class, () ->
+                adapter.extractMedia("https://www.instagram.com/reel/C8xyz123/")
+        );
 
-        assertNotNull(media);
-        assertNotNull(media.audioUrl());
-        assertTrue(media.caption().contains("thriller"));
-        assertEquals(45, media.durationSec());
+        assertEquals("MISSING_CONFIGURATION", ex.getErrorCode());
     }
 }

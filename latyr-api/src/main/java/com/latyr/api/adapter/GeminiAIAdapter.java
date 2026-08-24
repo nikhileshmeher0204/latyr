@@ -27,9 +27,6 @@ public class GeminiAIAdapter implements AIProvider {
     @Value("${gemini.api.key:}")
     private String geminiApiKey;
 
-    @Value("${gemini.mock.enabled:false}")
-    private boolean mockEnabled;
-
     private final WebClient webClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -39,12 +36,12 @@ public class GeminiAIAdapter implements AIProvider {
 
     @Override
     public AIAnalysisResult analyzeMedia(byte[] mediaBytes, String mimeType, String caption, Language language) {
-        if (mockEnabled || geminiApiKey == null || geminiApiKey.trim().isEmpty()) {
-            log.info("GeminiAIAdapter running in MOCK mode for media analysis");
-            return createMockAnalysis(caption, language);
+        if (geminiApiKey == null || geminiApiKey.trim().isEmpty()) {
+            log.error("Gemini API key is not configured. Set GEMINI_API_KEY in your environment or .env file.");
+            throw new LatyrException("Gemini API key is missing. Please set GEMINI_API_KEY.", "MISSING_CONFIGURATION", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        log.info("Calling Gemini 1.5 Flash multimodal API for media analysis");
+        log.info("Executing live Gemini 1.5 Flash multimodal API for media audio/caption analysis");
         try {
             String promptText = buildPrompt(caption, language, false);
             String base64Media = mediaBytes != null && mediaBytes.length > 0 ? Base64.getEncoder().encodeToString(mediaBytes) : null;
@@ -60,20 +57,22 @@ public class GeminiAIAdapter implements AIProvider {
                     .block(Duration.ofSeconds(60));
 
             return parseGeminiResponse(responseJson);
+        } catch (LatyrException le) {
+            throw le;
         } catch (Exception e) {
-            log.error("Gemini AI inference failed: {}", e.getMessage());
+            log.error("Live Gemini AI inference failed: {}", e.getMessage());
             throw new LatyrException("Gemini AI analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
         }
     }
 
     @Override
     public AIAnalysisResult analyzeImage(byte[] imageBytes, String mimeType, Language language) {
-        if (mockEnabled || geminiApiKey == null || geminiApiKey.trim().isEmpty()) {
-            log.info("GeminiAIAdapter running in MOCK mode for image analysis");
-            return createMockImageAnalysis(language);
+        if (geminiApiKey == null || geminiApiKey.trim().isEmpty()) {
+            log.error("Gemini API key is not configured. Set GEMINI_API_KEY in your environment or .env file.");
+            throw new LatyrException("Gemini API key is missing. Please set GEMINI_API_KEY.", "MISSING_CONFIGURATION", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        log.info("Calling Gemini 1.5 Flash Vision API for screenshot OCR & analysis");
+        log.info("Executing live Gemini 1.5 Flash Vision API for screenshot OCR & multimodal entity analysis");
         try {
             String promptText = buildPrompt(null, language, true);
             String base64Image = Base64.getEncoder().encodeToString(imageBytes);
@@ -89,8 +88,10 @@ public class GeminiAIAdapter implements AIProvider {
                     .block(Duration.ofSeconds(60));
 
             return parseGeminiResponse(responseJson);
+        } catch (LatyrException le) {
+            throw le;
         } catch (Exception e) {
-            log.error("Gemini Vision AI inference failed: {}", e.getMessage());
+            log.error("Live Gemini Vision AI inference failed: {}", e.getMessage());
             throw new LatyrException("Gemini Vision analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
         }
     }
@@ -98,18 +99,18 @@ public class GeminiAIAdapter implements AIProvider {
     private String buildPrompt(String caption, Language language, boolean isImage) {
         String langInstruction = language != null ? language.name() : "ENGLISH";
         return """
-            You are Latyr AI, an intelligent content extraction system.
-            Analyze the input %s and extract structured metadata in strict JSON format.
+            You are Latyr AI, an intelligent personal knowledge and content extraction system.
+            Analyze the input %s and extract structured knowledge in strict JSON format.
             User preferred transcription language is %s.
             
             %s
             
             Return a JSON object with this exact schema:
             {
-              "transcript": "Full transcription or OCR summary",
+              "transcript": "Full transcription of spoken audio or complete OCR text summary",
               "intent": "WATCH | EXPLORE | REMEMBER | COOK | VISIT | BUY | LEARN",
               "category": "Entertainment | Tech | Food | Travel | Learning | Shopping",
-              "suggested_collection": "Collection title",
+              "suggested_collection": "Suggested collection name",
               "notification_copies": [
                 "Catchy reminder notification copy 1",
                 "Catchy reminder notification copy 2"
@@ -118,8 +119,8 @@ public class GeminiAIAdapter implements AIProvider {
                 {
                   "entity_type": "TV_SHOW | MOVIE | BOOK | RECIPE | GITHUB_REPO | PLACE | TOOL | IDEA | QUOTE",
                   "title": "Entity Title",
-                  "description": "Short 1-line description",
-                  "external_url": "Direct link if mentioned or known",
+                  "description": "Concise 1-2 sentence description",
+                  "external_url": "Direct official or platform link if mentioned or known",
                   "action_cta": "WATCH | READ | COOK | VISIT | EXPLORE | REMEMBER | OPEN_GITHUB",
                   "metadata": { "key": "value" }
                 }
@@ -127,7 +128,7 @@ public class GeminiAIAdapter implements AIProvider {
             }
             Do not include Markdown formatting or code fences. Return raw JSON only.
             """.formatted(
-                isImage ? "image/screenshot" : "audio and caption",
+                isImage ? "image/screenshot" : "audio track and caption",
                 langInstruction,
                 caption != null ? "Creator Caption: " + caption : ""
         );
@@ -227,48 +228,5 @@ public class GeminiAIAdapter implements AIProvider {
         }
 
         return new AIAnalysisResult(transcript, intent, category, suggestedCollection, notificationCopies, entities);
-    }
-
-    private AIAnalysisResult createMockAnalysis(String caption, Language language) {
-        AIEntity entity = new AIEntity(
-                EntityType.TV_SHOW,
-                "Dark",
-                "A sci-fi mystery series involving time travel in a German town.",
-                "https://www.netflix.com/title/80100172",
-                ActionCTA.WATCH,
-                Map.of("platform", "Netflix", "release_year", 2017, "rating", 8.7)
-        );
-
-        return new AIAnalysisResult(
-                "Agar aapko mind-bending suspense thriller shows pasand hain, toh Dark zaroor dekhein.",
-                Intent.WATCH,
-                "Entertainment",
-                "Thriller Shows",
-                List.of(
-                        "Ready to unwind? You saved 5 mind-bending thrillers this week, including Dark.",
-                        "Looking for something to watch tonight? Check out your saved thriller watchlist."
-                ),
-                List.of(entity)
-        );
-    }
-
-    private AIAnalysisResult createMockImageAnalysis(Language language) {
-        AIEntity entity = new AIEntity(
-                EntityType.GITHUB_REPO,
-                "latyr/latyr-api",
-                "High performance Project Loom virtual-thread powered backend",
-                "https://github.com/nikhileshmeher0204/latyr",
-                ActionCTA.OPEN_GITHUB,
-                Map.of("language", "Java", "stars", 142)
-        );
-
-        return new AIAnalysisResult(
-                "Screenshot of GitHub repository latyr-api",
-                Intent.EXPLORE,
-                "Tech",
-                "Developer Tools",
-                List.of("Check out the open source repository you saved earlier."),
-                List.of(entity)
-        );
     }
 }
