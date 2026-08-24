@@ -1,9 +1,7 @@
 package com.latyr.api.config;
 
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.vertexai.VertexAI;
-import com.google.cloud.vertexai.api.GenerationConfig;
-import com.google.cloud.vertexai.generativeai.GenerativeModel;
+import com.google.genai.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,9 +25,6 @@ public class VertexAIConfig {
 
     @Value("${google.cloud.location:${GCP_LOCATION:us-central1}}")
     private String location;
-
-    @Value("${vertex.ai.model.name:gemini-1.5-flash}")
-    private String modelName;
 
     @Value("${firebase.config.path:${FIREBASE_CONFIG_PATH:}}")
     private String firebaseConfigPath;
@@ -79,22 +74,17 @@ public class VertexAIConfig {
     }
 
     @Bean(destroyMethod = "close")
-    public VertexAI vertexAI(GoogleCredentials credentials) {
-        return new VertexAI.Builder()
-                .setProjectId(projectId)
-                .setLocation(location)
-                .setCredentials(credentials)
-                .build();
-    }
+    public Client genAiClient(GoogleCredentials credentials) {
+        log.info("Initializing Google GenAI SDK Client with Vertex AI mode (project: {}, location: {})", projectId, location);
+        Client.Builder builder = Client.builder()
+                .vertexAI(true)
+                .project(projectId)
+                .location(location);
 
-    @Bean
-    public GenerativeModel generativeModel(VertexAI vertexAI) {
-        GenerationConfig config = GenerationConfig.newBuilder()
-                .setResponseMimeType("application/json")
-                .setTemperature(0.2f)
-                .build();
+        if (credentials != null && credentials.getAuthenticationType() != null) {
+            builder.credentials(credentials);
+        }
 
-        return new GenerativeModel(modelName, vertexAI)
-                .withGenerationConfig(config);
+        return builder.build();
     }
 }

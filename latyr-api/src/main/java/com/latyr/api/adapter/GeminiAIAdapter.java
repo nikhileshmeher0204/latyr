@@ -2,12 +2,11 @@ package com.latyr.api.adapter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.cloud.vertexai.api.Content;
-import com.google.cloud.vertexai.api.GenerateContentResponse;
-import com.google.cloud.vertexai.generativeai.ContentMaker;
-import com.google.cloud.vertexai.generativeai.GenerativeModel;
-import com.google.cloud.vertexai.generativeai.PartMaker;
-import com.google.cloud.vertexai.generativeai.ResponseHandler;
+import com.google.genai.Client;
+import com.google.genai.types.Content;
+import com.google.genai.types.GenerateContentConfig;
+import com.google.genai.types.GenerateContentResponse;
+import com.google.genai.types.Part;
 import com.latyr.api.domain.enums.ActionCTA;
 import com.latyr.api.domain.enums.EntityType;
 import com.latyr.api.domain.enums.Intent;
@@ -15,6 +14,7 @@ import com.latyr.api.domain.enums.Language;
 import com.latyr.api.exception.LatyrException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -25,61 +25,75 @@ public class GeminiAIAdapter implements AIProvider {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiAIAdapter.class);
 
-    private final GenerativeModel generativeModel;
+    private final Client genAiClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public GeminiAIAdapter(GenerativeModel generativeModel) {
-        this.generativeModel = generativeModel;
+    @Value("${vertex.ai.model.name:gemini-1.5-flash}")
+    private String modelName = "gemini-1.5-flash";
+
+    public GeminiAIAdapter(Client genAiClient) {
+        this.genAiClient = genAiClient;
     }
 
     @Override
     public AIAnalysisResult analyzeMedia(byte[] mediaBytes, String mimeType, String caption, Language language) {
-        log.info("Executing Google Cloud Vertex AI Gemini multimodal inference for media analysis");
+        log.info("Executing Google GenAI (Vertex AI) multimodal inference for media analysis using model {}", modelName);
         try {
             String promptText = buildPrompt(caption, language, false);
 
-            Content content;
+            List<Part> parts = new ArrayList<>();
+            parts.add(Part.fromText(promptText));
+
             if (mediaBytes != null && mediaBytes.length > 0) {
-                content = ContentMaker.fromMultiModalData(
-                        promptText,
-                        PartMaker.fromMimeTypeAndData(mimeType != null ? mimeType : "audio/mp3", mediaBytes)
-                );
-            } else {
-                content = ContentMaker.fromString(promptText);
+                parts.add(Part.fromBytes(mediaBytes, mimeType != null ? mimeType : "audio/mp3"));
             }
 
-            GenerateContentResponse response = generativeModel.generateContent(content);
-            String jsonText = ResponseHandler.getText(response);
+            Content content = Content.builder().parts(parts).build();
+
+            GenerateContentConfig config = GenerateContentConfig.builder()
+                    .responseMimeType("application/json")
+                    .temperature(0.2f)
+                    .build();
+
+            GenerateContentResponse response = genAiClient.models.generateContent(modelName, content, config);
+            String jsonText = response.text();
 
             return parseStructuredResponse(jsonText);
         } catch (LatyrException le) {
             throw le;
         } catch (Exception e) {
-            log.error("Vertex AI Gemini inference failed: {}", e.getMessage());
-            throw new LatyrException("Vertex AI Gemini analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
+            log.error("Google GenAI inference failed: {}", e.getMessage());
+            throw new LatyrException("Google GenAI analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
         }
     }
 
     @Override
     public AIAnalysisResult analyzeImage(byte[] imageBytes, String mimeType, Language language) {
-        log.info("Executing Google Cloud Vertex AI Gemini Vision inference for image analysis");
+        log.info("Executing Google GenAI (Vertex AI) Vision inference for image analysis using model {}", modelName);
         try {
             String promptText = buildPrompt(null, language, true);
 
-            Content content = ContentMaker.fromMultiModalData(
-                    promptText,
-                    PartMaker.fromMimeTypeAndData(mimeType != null ? mimeType : "image/png", imageBytes)
+            List<Part> parts = List.of(
+                    Part.fromText(promptText),
+                    Part.fromBytes(imageBytes, mimeType != null ? mimeType : "image/png")
             );
 
-            GenerateContentResponse response = generativeModel.generateContent(content);
-            String jsonText = ResponseHandler.getText(response);
+            Content content = Content.builder().parts(parts).build();
+
+            GenerateContentConfig config = GenerateContentConfig.builder()
+                    .responseMimeType("application/json")
+                    .temperature(0.2f)
+                    .build();
+
+            GenerateContentResponse response = genAiClient.models.generateContent(modelName, content, config);
+            String jsonText = response.text();
 
             return parseStructuredResponse(jsonText);
         } catch (LatyrException le) {
             throw le;
         } catch (Exception e) {
-            log.error("Vertex AI Gemini Vision inference failed: {}", e.getMessage());
-            throw new LatyrException("Vertex AI Gemini Vision analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
+            log.error("Google GenAI Vision inference failed: {}", e.getMessage());
+            throw new LatyrException("Google GenAI Vision analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
         }
     }
 
@@ -124,7 +138,7 @@ public class GeminiAIAdapter implements AIProvider {
     @SuppressWarnings("unchecked")
     private AIAnalysisResult parseStructuredResponse(String jsonText) throws Exception {
         if (jsonText == null || jsonText.trim().isEmpty()) {
-            throw new IllegalStateException("Vertex AI returned empty response text");
+            throw new IllegalStateException("Google GenAI returned empty response text");
         }
 
         // Clean possible markdown code fence wrappers if present

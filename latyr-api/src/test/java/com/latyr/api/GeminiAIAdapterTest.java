@@ -1,10 +1,10 @@
 package com.latyr.api;
 
-import com.google.cloud.vertexai.api.Candidate;
-import com.google.cloud.vertexai.api.Content;
-import com.google.cloud.vertexai.api.GenerateContentResponse;
-import com.google.cloud.vertexai.api.Part;
-import com.google.cloud.vertexai.generativeai.GenerativeModel;
+import com.google.genai.Client;
+import com.google.genai.Models;
+import com.google.genai.types.Content;
+import com.google.genai.types.GenerateContentConfig;
+import com.google.genai.types.GenerateContentResponse;
 import com.latyr.api.adapter.AIProvider;
 import com.latyr.api.adapter.GeminiAIAdapter;
 import com.latyr.api.domain.enums.ActionCTA;
@@ -14,19 +14,22 @@ import com.latyr.api.domain.enums.Language;
 import com.latyr.api.exception.LatyrException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class GeminiAIAdapterTest {
 
     @Test
-    @DisplayName("Vertex AI Inference: Should parse valid JSON response from GenerativeModel")
-    void testAnalyzeMedia_Success() throws IOException {
-        GenerativeModel mockModel = mock(GenerativeModel.class);
+    @DisplayName("Google GenAI SDK: Should parse valid JSON response from Client models")
+    void testAnalyzeMedia_Success() {
+        Client mockClient = mock(Client.class);
+        Models mockModels = mock(Models.class);
+        ReflectionTestUtils.setField(mockClient, "models", mockModels);
+
         String validJson = """
             {
               "transcript": "5 mind bending thriller shows on Netflix including Dark",
@@ -47,17 +50,11 @@ class GeminiAIAdapterTest {
             }
             """;
 
-        GenerateContentResponse mockResponse = GenerateContentResponse.newBuilder()
-                .addCandidates(Candidate.newBuilder()
-                        .setContent(Content.newBuilder()
-                                .addParts(Part.newBuilder().setText(validJson).build())
-                                .build())
-                        .build())
-                .build();
+        GenerateContentResponse mockResponse = mock(GenerateContentResponse.class);
+        when(mockResponse.text()).thenReturn(validJson);
+        when(mockModels.generateContent(anyString(), any(Content.class), any(GenerateContentConfig.class))).thenReturn(mockResponse);
 
-        when(mockModel.generateContent(any(Content.class))).thenReturn(mockResponse);
-
-        GeminiAIAdapter adapter = new GeminiAIAdapter(mockModel);
+        GeminiAIAdapter adapter = new GeminiAIAdapter(mockClient);
         AIProvider.AIAnalysisResult result = adapter.analyzeMedia("bytes".getBytes(), "audio/mp3", "Caption", Language.ENGLISH);
 
         assertNotNull(result);
@@ -70,12 +67,16 @@ class GeminiAIAdapterTest {
     }
 
     @Test
-    @DisplayName("Vertex AI Error: Throws LatyrException when GenerativeModel fails")
-    void testAnalyzeMedia_Failure() throws IOException {
-        GenerativeModel mockModel = mock(GenerativeModel.class);
-        when(mockModel.generateContent(any(Content.class))).thenThrow(new RuntimeException("Quota exceeded on Vertex AI"));
+    @DisplayName("Google GenAI SDK Error: Throws LatyrException when Client fails")
+    void testAnalyzeMedia_Failure() {
+        Client mockClient = mock(Client.class);
+        Models mockModels = mock(Models.class);
+        ReflectionTestUtils.setField(mockClient, "models", mockModels);
 
-        GeminiAIAdapter adapter = new GeminiAIAdapter(mockModel);
+        when(mockModels.generateContent(anyString(), any(Content.class), any(GenerateContentConfig.class)))
+                .thenThrow(new RuntimeException("API error"));
+
+        GeminiAIAdapter adapter = new GeminiAIAdapter(mockClient);
 
         LatyrException ex = assertThrows(LatyrException.class, () ->
                 adapter.analyzeMedia("bytes".getBytes(), "audio/mp3", "Caption", Language.ENGLISH)
