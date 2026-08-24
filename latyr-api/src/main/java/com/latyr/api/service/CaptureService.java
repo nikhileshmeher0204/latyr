@@ -10,8 +10,10 @@ import com.latyr.api.exception.ResourceNotFoundException;
 import com.latyr.api.mapper.CaptureMapper;
 import com.latyr.api.mapper.ExtractedEntityMapper;
 import com.latyr.api.mapper.IngestionJobMapper;
+import com.latyr.api.worker.IngestionQueueWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,7 @@ public class CaptureService {
     private final SubscriptionQuotaService quotaService;
     private final UrlNormalizationService urlNormalizationService;
     private final CanonicalDeduplicationService deduplicationService;
+    private final IngestionQueueWorker queueWorker;
 
     public CaptureService(
             CaptureMapper captureMapper,
@@ -36,13 +39,15 @@ public class CaptureService {
             IngestionJobMapper ingestionJobMapper,
             SubscriptionQuotaService quotaService,
             UrlNormalizationService urlNormalizationService,
-            CanonicalDeduplicationService deduplicationService) {
+            CanonicalDeduplicationService deduplicationService,
+            @Lazy IngestionQueueWorker queueWorker) {
         this.captureMapper = captureMapper;
         this.extractedEntityMapper = extractedEntityMapper;
         this.ingestionJobMapper = ingestionJobMapper;
         this.quotaService = quotaService;
         this.urlNormalizationService = urlNormalizationService;
         this.deduplicationService = deduplicationService;
+        this.queueWorker = queueWorker;
     }
 
     @Transactional
@@ -95,6 +100,11 @@ public class CaptureService {
         job.setUpdatedAt(Instant.now());
         ingestionJobMapper.insert(job);
 
+        // Trigger immediate async processing on Loom virtual thread
+        if (queueWorker != null) {
+            queueWorker.triggerAsync(job);
+        }
+
         log.info("Enqueued ingestion job {} for capture {} (user {})", job.getId(), capture.getId(), userId);
         return CaptureResponse.fromModel(capture, "Capture queued for asynchronous AI analysis.");
     }
@@ -146,6 +156,11 @@ public class CaptureService {
         job.setCreatedAt(Instant.now());
         job.setUpdatedAt(Instant.now());
         ingestionJobMapper.insert(job);
+
+        // Trigger immediate async processing on Loom virtual thread
+        if (queueWorker != null) {
+            queueWorker.triggerAsync(job);
+        }
 
         log.info("Enqueued screenshot ingestion job {} for capture {} (user {})", job.getId(), capture.getId(), userId);
         return CaptureResponse.fromModel(capture, "Screenshot queued for asynchronous AI OCR and analysis.");

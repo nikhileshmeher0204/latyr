@@ -87,6 +87,17 @@ public interface IngestionJobMapper {
     """)
     int update(IngestionJob job);
 
+    @Update("""
+        UPDATE ingestion_jobs
+        SET status = 'PENDING',
+            locked_at = NULL,
+            locked_by = NULL,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE status = 'PROCESSING'
+          AND locked_at < (CURRENT_TIMESTAMP - (INTERVAL '1 minute' * #{thresholdMinutes}))
+    """)
+    int resetStaleLocks(@Param("thresholdMinutes") int thresholdMinutes);
+
     @Delete("DELETE FROM ingestion_jobs WHERE id = #{id}")
     int deleteById(@Param("id") UUID id);
 }

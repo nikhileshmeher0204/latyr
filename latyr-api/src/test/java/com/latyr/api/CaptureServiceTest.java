@@ -40,6 +40,7 @@ class CaptureServiceTest {
     private SubscriptionQuotaService quotaService;
     private UrlNormalizationService urlNormalizationService;
     private CanonicalDeduplicationService deduplicationService;
+    private com.latyr.api.worker.IngestionQueueWorker queueWorker;
 
     private CaptureService captureService;
 
@@ -51,6 +52,7 @@ class CaptureServiceTest {
         quotaService = Mockito.mock(SubscriptionQuotaService.class);
         urlNormalizationService = new UrlNormalizationService();
         deduplicationService = Mockito.mock(CanonicalDeduplicationService.class);
+        queueWorker = Mockito.mock(com.latyr.api.worker.IngestionQueueWorker.class);
 
         captureService = new CaptureService(
                 captureMapper,
@@ -58,7 +60,8 @@ class CaptureServiceTest {
                 ingestionJobMapper,
                 quotaService,
                 urlNormalizationService,
-                deduplicationService
+                deduplicationService,
+                queueWorker
         );
     }
 
