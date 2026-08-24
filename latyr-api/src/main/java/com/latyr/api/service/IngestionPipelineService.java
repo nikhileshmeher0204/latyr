@@ -29,6 +29,7 @@ public class IngestionPipelineService {
     private final EphemeralMediaStreamer mediaStreamer;
     private final AIProvider aiProvider;
     private final EntityEnrichmentProvider entityEnricher;
+    private final SseNotificationService sseNotificationService;
 
     public IngestionPipelineService(
             IngestionJobMapper ingestionJobMapper,
@@ -39,7 +40,8 @@ public class IngestionPipelineService {
             ScraperProvider scraperProvider,
             EphemeralMediaStreamer mediaStreamer,
             AIProvider aiProvider,
-            EntityEnrichmentProvider entityEnricher) {
+            EntityEnrichmentProvider entityEnricher,
+            SseNotificationService sseNotificationService) {
         this.ingestionJobMapper = ingestionJobMapper;
         this.captureMapper = captureMapper;
         this.canonicalSourceMapper = canonicalSourceMapper;
@@ -49,6 +51,7 @@ public class IngestionPipelineService {
         this.mediaStreamer = mediaStreamer;
         this.aiProvider = aiProvider;
         this.entityEnricher = entityEnricher;
+        this.sseNotificationService = sseNotificationService;
     }
 
     @Transactional
@@ -163,6 +166,19 @@ public class IngestionPipelineService {
 
             log.info("Successfully completed ingestion pipeline for job {} in {}ms", jobId, capture.getDurationMs());
 
+            // 6.5 Real-Time SSE Notification Broadcast to Foreground Mobile Device
+            if (sseNotificationService != null) {
+                sseNotificationService.emitCaptureEvent(userId, "CAPTURE_COMPLETED", Map.of(
+                        "capture_id", captureId,
+                        "status", "COMPLETED",
+                        "intent", analysis.intent().name(),
+                        "category", analysis.category(),
+                        "original_caption", caption != null ? caption : "",
+                        "audio_transcript", analysis.transcript(),
+                        "entities", enrichedEntities
+                ));
+            }
+
         } catch (Exception e) {
             handleJobFailure(job, e);
         }
@@ -192,6 +208,15 @@ public class IngestionPipelineService {
                 captureMapper.update(capture);
             });
             log.error("Ingestion job {} exhausted max attempts and marked FAILED", job.getId());
+
+            // Broadcast Failure Event over SSE
+            if (sseNotificationService != null) {
+                sseNotificationService.emitCaptureEvent(job.getUserId(), "CAPTURE_FAILED", Map.of(
+                        "capture_id", job.getCaptureId(),
+                        "status", "FAILED",
+                        "error", e.getMessage() != null ? e.getMessage() : "Processing failed"
+                ));
+            }
         }
     }
 }

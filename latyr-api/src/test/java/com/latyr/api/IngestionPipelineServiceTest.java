@@ -31,6 +31,7 @@ class IngestionPipelineServiceTest {
     private EphemeralMediaStreamer mediaStreamer;
     private AIProvider aiProvider;
     private EntityEnrichmentProvider entityEnricher;
+    private com.latyr.api.service.SseNotificationService sseNotificationService;
 
     private IngestionPipelineService pipelineService;
 
@@ -45,6 +46,7 @@ class IngestionPipelineServiceTest {
         mediaStreamer = mock(EphemeralMediaStreamer.class);
         aiProvider = mock(AIProvider.class);
         entityEnricher = mock(EntityEnrichmentProvider.class);
+        sseNotificationService = mock(com.latyr.api.service.SseNotificationService.class);
 
         pipelineService = new IngestionPipelineService(
                 ingestionJobMapper,
@@ -55,7 +57,8 @@ class IngestionPipelineServiceTest {
                 scraperProvider,
                 mediaStreamer,
                 aiProvider,
-                entityEnricher
+                entityEnricher,
+                sseNotificationService
         );
     }
 
