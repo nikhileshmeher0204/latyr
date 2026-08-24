@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import jakarta.annotation.PostConstruct;
 import java.io.FileInputStream;
@@ -27,26 +29,47 @@ public class FirebaseConfig {
         }
 
         try {
-            FirebaseOptions options;
+            FirebaseOptions options = null;
+
+            // Option 1: Try explicit file path from FIREBASE_CONFIG_PATH
             if (firebaseConfigPath != null && !firebaseConfigPath.trim().isEmpty()) {
-                log.info("Initializing Firebase App from credentials file: {}", firebaseConfigPath);
-                try (InputStream serviceAccount = new FileInputStream(firebaseConfigPath)) {
+                log.info("Initializing Firebase App from credentials path: {}", firebaseConfigPath);
+                try (InputStream is = new FileInputStream(firebaseConfigPath.trim())) {
                     options = FirebaseOptions.builder()
-                            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                            .setCredentials(GoogleCredentials.fromStream(is))
                             .build();
-                    FirebaseApp.initializeApp(options);
+                } catch (Exception e) {
+                    log.warn("Could not load credentials from FIREBASE_CONFIG_PATH: {}", e.getMessage());
                 }
-            } else {
+            }
+
+            // Option 2: Try classpath resource firebase-service-account.json
+            if (options == null) {
+                Resource resource = new ClassPathResource("firebase-service-account.json");
+                if (resource.exists()) {
+                    log.info("Initializing Firebase App from classpath: firebase-service-account.json");
+                    try (InputStream is = resource.getInputStream()) {
+                        options = FirebaseOptions.builder()
+                                .setCredentials(GoogleCredentials.fromStream(is))
+                                .build();
+                    } catch (Exception e) {
+                        log.warn("Could not load credentials from classpath resource: {}", e.getMessage());
+                    }
+                }
+            }
+
+            // Option 3: Fall back to Google Application Default Credentials (ADC)
+            if (options == null) {
                 log.info("Initializing Firebase App using Google Application Default Credentials (ADC)...");
                 options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.getApplicationDefault())
                         .build();
-                FirebaseApp.initializeApp(options);
             }
 
+            FirebaseApp.initializeApp(options);
             log.info("Firebase App initialized successfully.");
         } catch (Exception e) {
-            log.warn("Firebase Admin SDK not initialized: {}. Ensure FIREBASE_CONFIG_PATH or GOOGLE_APPLICATION_CREDENTIALS is set.", e.getMessage());
+            log.warn("Firebase Admin SDK not initialized: {}. Ensure FIREBASE_CONFIG_PATH or firebase-service-account.json is provided.", e.getMessage());
         }
     }
 }

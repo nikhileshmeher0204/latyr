@@ -1,6 +1,7 @@
 package com.latyr.api.config;
 
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.genai.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ public class VertexAIConfig {
 
     private static final Logger log = LoggerFactory.getLogger(VertexAIConfig.class);
 
-    @Value("${google.cloud.project-id:${GCP_PROJECT_ID:latyr-prod}}")
+    @Value("${google.cloud.project-id:${GCP_PROJECT_ID:}}")
     private String projectId;
 
     @Value("${google.cloud.location:${GCP_LOCATION:us-central1}}")
@@ -75,10 +76,20 @@ public class VertexAIConfig {
 
     @Bean(destroyMethod = "close")
     public Client genAiClient(GoogleCredentials credentials) {
-        log.info("Initializing Google GenAI SDK Client with Vertex AI mode (project: {}, location: {})", projectId, location);
+        String effectiveProjectId = projectId;
+        if ((effectiveProjectId == null || effectiveProjectId.trim().isEmpty()) && credentials instanceof ServiceAccountCredentials sa) {
+            if (sa.getProjectId() != null && !sa.getProjectId().isEmpty()) {
+                effectiveProjectId = sa.getProjectId();
+            }
+        }
+        if (effectiveProjectId == null || effectiveProjectId.trim().isEmpty()) {
+            effectiveProjectId = "latyr-prod";
+        }
+
+        log.info("Initializing Google GenAI SDK Client with Vertex AI mode (project: {}, location: {})", effectiveProjectId, location);
         Client.Builder builder = Client.builder()
                 .vertexAI(true)
-                .project(projectId)
+                .project(effectiveProjectId)
                 .location(location);
 
         if (credentials != null && credentials.getAuthenticationType() != null) {

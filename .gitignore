@@ -24,6 +24,9 @@
 google-services.json
 GoogleService-Info.plist
 firebase-adminsdk*.json
+firebase-service-account*.json
+*serviceAccount*.json
+*service-account*.json
 client_secret*.json
 service-account*.json
 credentials.json
