@@ -1,52 +1,28 @@
-package com.latyr.api.domain.entity;
+package com.latyr.api.domain.model;
 
-import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
-@Entity
-@Table(name = "collections")
 public class Collection {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
-    @Column(name = "code", nullable = false, unique = true, length = 64)
     private String code;
-
-    @Column(name = "name", nullable = false, length = 128)
     private String name;
-
-    @Column(name = "category", nullable = false, length = 64)
     private String category;
-
-    @Column(name = "default_icon", length = 64)
     private String defaultIcon;
-
-    @Column(name = "feature_triggers", nullable = false, columnDefinition = "jsonb")
-    private String featureTriggers = "{}";
-
-    @Column(name = "created_at", nullable = false, updatable = false)
+    private String featureTriggers;
     private Instant createdAt = Instant.now();
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt = Instant.now();
-
-    @PreUpdate
-    public void onPreUpdate() {
-        this.updatedAt = Instant.now();
-    }
 
     public Collection() {}
 
-    public Collection(String code, String name, String category) {
+    public Collection(String code, String name, String category, String defaultIcon, String featureTriggers) {
         this.code = code;
         this.name = name;
         this.category = category;
+        this.defaultIcon = defaultIcon;
+        this.featureTriggers = featureTriggers;
     }
 
-    // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -67,7 +43,4 @@ public class Collection {
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
-
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

@@ -1,50 +1,21 @@
-package com.latyr.api.domain.entity;
+package com.latyr.api.domain.model;
 
 import com.latyr.api.domain.enums.Language;
-import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
-@Entity
-@Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
-    @Column(name = "firebase_uid", nullable = false, unique = true, length = 128)
     private String firebaseUid;
-
-    @Column(name = "email", nullable = false, length = 255)
     private String email;
-
-    @Column(name = "display_name", length = 255)
     private String displayName;
-
-    @Column(name = "photo_url", columnDefinition = "TEXT")
     private String photoUrl;
-
-    @Column(name = "fcm_token", columnDefinition = "TEXT")
     private String fcmToken;
-
-    @Column(name = "timezone", nullable = false, length = 64)
     private String timezone = "UTC";
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "language", nullable = false, length = 32)
     private Language language = Language.ENGLISH;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
-
-    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt = Instant.now();
-
-    @PreUpdate
-    public void onPreUpdate() {
-        this.updatedAt = Instant.now();
-    }
 
     public User() {}
 
@@ -54,7 +25,6 @@ public class User {
         this.displayName = displayName;
     }
 
-    // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
