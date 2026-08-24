@@ -99,6 +99,6 @@ public class FirebaseAuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.equals("/api/health") || path.equals("/actuator/health") || path.startsWith("/error");
+        return path.equals("/api/health") || path.equals("/actuator/health") || path.startsWith("/error") || path.startsWith("/api/v1/webhooks/");
     }
 }

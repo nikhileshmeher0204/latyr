@@ -22,12 +22,16 @@ import static org.mockito.Mockito.*;
 class SubscriptionQuotaServiceTest {
 
     private UserSubscriptionMapper subscriptionMapper;
+    private com.latyr.api.mapper.UserSubscriptionHistoryMapper historyMapper;
+    private com.latyr.api.mapper.UserMapper userMapper;
     private SubscriptionQuotaService quotaService;
 
     @BeforeEach
     void setUp() {
         subscriptionMapper = Mockito.mock(UserSubscriptionMapper.class);
-        quotaService = new SubscriptionQuotaService(subscriptionMapper);
+        historyMapper = Mockito.mock(com.latyr.api.mapper.UserSubscriptionHistoryMapper.class);
+        userMapper = Mockito.mock(com.latyr.api.mapper.UserMapper.class);
+        quotaService = new SubscriptionQuotaService(subscriptionMapper, historyMapper, userMapper);
     }
 
     @Test

@@ -2,9 +2,9 @@ package com.latyr.api.mapper;
 
 import com.latyr.api.config.typehandler.StringArrayTypeHandler;
 import com.latyr.api.domain.enums.CaptureStatus;
+import com.latyr.api.domain.enums.Intent;
 import com.latyr.api.domain.model.Capture;
 import org.apache.ibatis.annotations.*;
-import org.apache.ibatis.type.JdbcType;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +28,8 @@ public interface CaptureMapper {
         @Result(property = "resurfaceCount", column = "resurface_count"),
         @Result(property = "durationMs", column = "duration_ms"),
         @Result(property = "videoDurationSec", column = "video_duration_sec"),
+        @Result(property = "scheduledResurfaceAt", column = "scheduled_resurface_at"),
+        @Result(property = "lastResurfacedAt", column = "last_resurfaced_at"),
         @Result(property = "createdAt", column = "created_at"),
         @Result(property = "updatedAt", column = "updated_at")
     })
@@ -49,6 +51,29 @@ public interface CaptureMapper {
     @ResultMap("CaptureResult")
     List<Capture> findByUserIdAndCategory(@Param("userId") UUID userId, @Param("category") String category, @Param("limit") int limit, @Param("offset") int offset);
 
+    @Select("""
+        SELECT * FROM captures
+        WHERE user_id = #{userId}
+          AND status = 'COMPLETED'
+          AND intent = #{intent}
+          AND (last_resurfaced_at IS NULL OR last_resurfaced_at < (CURRENT_TIMESTAMP - INTERVAL '3 days'))
+        ORDER BY resurface_count ASC, created_at DESC
+        LIMIT #{limit}
+    """)
+    @ResultMap("CaptureResult")
+    List<Capture> findResurfacingCandidatesByIntent(@Param("userId") UUID userId, @Param("intent") Intent intent, @Param("limit") int limit);
+
+    @Select("""
+        SELECT * FROM captures
+        WHERE user_id = #{userId}
+          AND status = 'COMPLETED'
+          AND (last_resurfaced_at IS NULL OR last_resurfaced_at < (CURRENT_TIMESTAMP - INTERVAL '3 days'))
+        ORDER BY resurface_count ASC, created_at DESC
+        LIMIT #{limit}
+    """)
+    @ResultMap("CaptureResult")
+    List<Capture> findGeneralResurfacingCandidates(@Param("userId") UUID userId, @Param("limit") int limit);
+
     @Select("SELECT COUNT(*) FROM captures WHERE user_id = #{userId}")
     long countByUserId(@Param("userId") UUID userId);
 
@@ -62,7 +87,8 @@ public interface CaptureMapper {
         INSERT INTO captures (
             id, user_id, canonical_source_id, content_type, status, intent, category,
             original_caption, audio_transcript, notification_copies, resurface_count,
-            duration_ms, video_duration_sec, created_at, updated_at
+            duration_ms, video_duration_sec, scheduled_resurface_at, last_resurfaced_at,
+            created_at, updated_at
         )
         VALUES (
             COALESCE(#{id}, gen_random_uuid()),
@@ -78,6 +104,8 @@ public interface CaptureMapper {
             #{resurfaceCount},
             #{durationMs},
             #{videoDurationSec},
+            #{scheduledResurfaceAt},
+            #{lastResurfacedAt},
             COALESCE(#{createdAt}, CURRENT_TIMESTAMP),
             CURRENT_TIMESTAMP
         )
@@ -95,6 +123,8 @@ public interface CaptureMapper {
             resurface_count = #{resurfaceCount},
             duration_ms = #{durationMs},
             video_duration_sec = #{videoDurationSec},
+            scheduled_resurface_at = #{scheduledResurfaceAt},
+            last_resurfaced_at = #{lastResurfacedAt},
             updated_at = CURRENT_TIMESTAMP
         WHERE id = #{id}
     """)

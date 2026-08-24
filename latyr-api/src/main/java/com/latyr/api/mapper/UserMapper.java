@@ -3,6 +3,7 @@ package com.latyr.api.mapper;
 import com.latyr.api.domain.model.User;
 import org.apache.ibatis.annotations.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +18,9 @@ public interface UserMapper {
 
     @Select("SELECT * FROM users WHERE email = #{email}")
     Optional<User> findByEmail(@Param("email") String email);
+
+    @Select("SELECT * FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ''")
+    List<User> findAllUsersWithFcmToken();
 
     @Select("SELECT EXISTS(SELECT 1 FROM users WHERE firebase_uid = #{firebaseUid})")
     boolean existsByFirebaseUid(@Param("firebaseUid") String firebaseUid);

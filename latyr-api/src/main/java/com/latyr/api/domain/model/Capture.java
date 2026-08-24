@@ -24,6 +24,8 @@ public class Capture {
     private int resurfaceCount = 0;
     private Long durationMs;
     private Integer videoDurationSec;
+    private Instant scheduledResurfaceAt;
+    private Instant lastResurfacedAt;
     private Instant createdAt = Instant.now();
     private Instant updatedAt = Instant.now();
 
@@ -73,6 +75,12 @@ public class Capture {
 
     public Integer getVideoDurationSec() { return videoDurationSec; }
     public void setVideoDurationSec(Integer videoDurationSec) { this.videoDurationSec = videoDurationSec; }
+
+    public Instant getScheduledResurfaceAt() { return scheduledResurfaceAt; }
+    public void setScheduledResurfaceAt(Instant scheduledResurfaceAt) { this.scheduledResurfaceAt = scheduledResurfaceAt; }
+
+    public Instant getLastResurfacedAt() { return lastResurfacedAt; }
+    public void setLastResurfacedAt(Instant lastResurfacedAt) { this.lastResurfacedAt = lastResurfacedAt; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

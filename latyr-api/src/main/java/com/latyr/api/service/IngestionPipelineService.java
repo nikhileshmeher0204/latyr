@@ -30,6 +30,7 @@ public class IngestionPipelineService {
     private final AIProvider aiProvider;
     private final EntityEnrichmentProvider entityEnricher;
     private final SseNotificationService sseNotificationService;
+    private final FcmService fcmService;
 
     public IngestionPipelineService(
             IngestionJobMapper ingestionJobMapper,
@@ -41,7 +42,8 @@ public class IngestionPipelineService {
             EphemeralMediaStreamer mediaStreamer,
             AIProvider aiProvider,
             EntityEnrichmentProvider entityEnricher,
-            SseNotificationService sseNotificationService) {
+            SseNotificationService sseNotificationService,
+            FcmService fcmService) {
         this.ingestionJobMapper = ingestionJobMapper;
         this.captureMapper = captureMapper;
         this.canonicalSourceMapper = canonicalSourceMapper;
@@ -52,6 +54,7 @@ public class IngestionPipelineService {
         this.aiProvider = aiProvider;
         this.entityEnricher = entityEnricher;
         this.sseNotificationService = sseNotificationService;
+        this.fcmService = fcmService;
     }
 
     @Transactional
@@ -64,9 +67,8 @@ public class IngestionPipelineService {
         log.info("Starting ingestion processing for job {} (capture: {}, user: {})", jobId, captureId, userId);
 
         try {
-            Language userLanguage = userMapper.findById(userId)
-                    .map(User::getLanguage)
-                    .orElse(Language.ENGLISH);
+            User user = userMapper.findById(userId).orElse(null);
+            Language userLanguage = user != null && user.getLanguage() != null ? user.getLanguage() : Language.ENGLISH;
 
             Capture capture = captureMapper.findById(captureId)
                     .orElseThrow(() -> new IllegalStateException("Capture not found: " + captureId));
@@ -177,6 +179,11 @@ public class IngestionPipelineService {
                         "audio_transcript", analysis.transcript(),
                         "entities", enrichedEntities
                 ));
+            }
+
+            // 6.6 Silent FCM Push Notification for Background Sync
+            if (user != null && user.getFcmToken() != null && fcmService != null) {
+                fcmService.sendSilentSyncNotification(user.getFcmToken(), captureId);
             }
 
         } catch (Exception e) {
