@@ -2,6 +2,12 @@ package com.latyr.api.adapter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.cloud.vertexai.api.Content;
+import com.google.cloud.vertexai.api.GenerateContentResponse;
+import com.google.cloud.vertexai.generativeai.ContentMaker;
+import com.google.cloud.vertexai.generativeai.GenerativeModel;
+import com.google.cloud.vertexai.generativeai.PartMaker;
+import com.google.cloud.vertexai.generativeai.ResponseHandler;
 import com.latyr.api.domain.enums.ActionCTA;
 import com.latyr.api.domain.enums.EntityType;
 import com.latyr.api.domain.enums.Intent;
@@ -9,90 +15,71 @@ import com.latyr.api.domain.enums.Language;
 import com.latyr.api.exception.LatyrException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.Duration;
 import java.util.*;
 
 @Component
 public class GeminiAIAdapter implements AIProvider {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiAIAdapter.class);
-    private static final String GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
-    @Value("${gemini.api.key:}")
-    private String geminiApiKey;
-
-    private final WebClient webClient;
+    private final GenerativeModel generativeModel;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public GeminiAIAdapter(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.build();
+    public GeminiAIAdapter(GenerativeModel generativeModel) {
+        this.generativeModel = generativeModel;
     }
 
     @Override
     public AIAnalysisResult analyzeMedia(byte[] mediaBytes, String mimeType, String caption, Language language) {
-        if (geminiApiKey == null || geminiApiKey.trim().isEmpty()) {
-            log.error("Gemini API key is not configured. Set GEMINI_API_KEY in your environment or .env file.");
-            throw new LatyrException("Gemini API key is missing. Please set GEMINI_API_KEY.", "MISSING_CONFIGURATION", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        log.info("Executing live Gemini 1.5 Flash multimodal API for media audio/caption analysis");
+        log.info("Executing Google Cloud Vertex AI Gemini multimodal inference for media analysis");
         try {
             String promptText = buildPrompt(caption, language, false);
-            String base64Media = mediaBytes != null && mediaBytes.length > 0 ? Base64.getEncoder().encodeToString(mediaBytes) : null;
 
-            Map<String, Object> requestBody = buildGeminiRequestBody(promptText, base64Media, mimeType != null ? mimeType : "audio/mp3");
+            Content content;
+            if (mediaBytes != null && mediaBytes.length > 0) {
+                content = ContentMaker.fromMultiModalData(
+                        promptText,
+                        PartMaker.fromMimeTypeAndData(mimeType != null ? mimeType : "audio/mp3", mediaBytes)
+                );
+            } else {
+                content = ContentMaker.fromString(promptText);
+            }
 
-            String responseJson = webClient.post()
-                    .uri(GEMINI_API_BASE + "?key=" + geminiApiKey.trim())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block(Duration.ofSeconds(60));
+            GenerateContentResponse response = generativeModel.generateContent(content);
+            String jsonText = ResponseHandler.getText(response);
 
-            return parseGeminiResponse(responseJson);
+            return parseStructuredResponse(jsonText);
         } catch (LatyrException le) {
             throw le;
         } catch (Exception e) {
-            log.error("Live Gemini AI inference failed: {}", e.getMessage());
-            throw new LatyrException("Gemini AI analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
+            log.error("Vertex AI Gemini inference failed: {}", e.getMessage());
+            throw new LatyrException("Vertex AI Gemini analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
         }
     }
 
     @Override
     public AIAnalysisResult analyzeImage(byte[] imageBytes, String mimeType, Language language) {
-        if (geminiApiKey == null || geminiApiKey.trim().isEmpty()) {
-            log.error("Gemini API key is not configured. Set GEMINI_API_KEY in your environment or .env file.");
-            throw new LatyrException("Gemini API key is missing. Please set GEMINI_API_KEY.", "MISSING_CONFIGURATION", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        log.info("Executing live Gemini 1.5 Flash Vision API for screenshot OCR & multimodal entity analysis");
+        log.info("Executing Google Cloud Vertex AI Gemini Vision inference for image analysis");
         try {
             String promptText = buildPrompt(null, language, true);
-            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
 
-            Map<String, Object> requestBody = buildGeminiRequestBody(promptText, base64Image, mimeType != null ? mimeType : "image/png");
+            Content content = ContentMaker.fromMultiModalData(
+                    promptText,
+                    PartMaker.fromMimeTypeAndData(mimeType != null ? mimeType : "image/png", imageBytes)
+            );
 
-            String responseJson = webClient.post()
-                    .uri(GEMINI_API_BASE + "?key=" + geminiApiKey.trim())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block(Duration.ofSeconds(60));
+            GenerateContentResponse response = generativeModel.generateContent(content);
+            String jsonText = ResponseHandler.getText(response);
 
-            return parseGeminiResponse(responseJson);
+            return parseStructuredResponse(jsonText);
         } catch (LatyrException le) {
             throw le;
         } catch (Exception e) {
-            log.error("Live Gemini Vision AI inference failed: {}", e.getMessage());
-            throw new LatyrException("Gemini Vision analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
+            log.error("Vertex AI Gemini Vision inference failed: {}", e.getMessage());
+            throw new LatyrException("Vertex AI Gemini Vision analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
         }
     }
 
@@ -134,42 +121,25 @@ public class GeminiAIAdapter implements AIProvider {
         );
     }
 
-    private Map<String, Object> buildGeminiRequestBody(String promptText, String base64Data, String mimeType) {
-        List<Map<String, Object>> parts = new ArrayList<>();
-        parts.add(Map.of("text", promptText));
-
-        if (base64Data != null && !base64Data.isEmpty()) {
-            parts.add(Map.of(
-                    "inlineData", Map.of(
-                            "mimeType", mimeType,
-                            "data", base64Data
-                    )
-            ));
-        }
-
-        return Map.of(
-                "contents", List.of(Map.of("parts", parts)),
-                "generationConfig", Map.of(
-                        "responseMimeType", "application/json",
-                        "temperature", 0.2
-                )
-        );
-    }
-
     @SuppressWarnings("unchecked")
-    private AIAnalysisResult parseGeminiResponse(String rawResponse) throws Exception {
-        Map<String, Object> root = objectMapper.readValue(rawResponse, new TypeReference<>() {});
-        List<Map<String, Object>> candidates = (List<Map<String, Object>>) root.get("candidates");
-        if (candidates == null || candidates.isEmpty()) {
-            throw new IllegalStateException("No candidates returned by Gemini");
+    private AIAnalysisResult parseStructuredResponse(String jsonText) throws Exception {
+        if (jsonText == null || jsonText.trim().isEmpty()) {
+            throw new IllegalStateException("Vertex AI returned empty response text");
         }
 
-        Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
-        List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
-        String text = (String) parts.get(0).get("text");
+        // Clean possible markdown code fence wrappers if present
+        String cleanJson = jsonText.trim();
+        if (cleanJson.startsWith("```json")) {
+            cleanJson = cleanJson.substring(7);
+        } else if (cleanJson.startsWith("```")) {
+            cleanJson = cleanJson.substring(3);
+        }
+        if (cleanJson.endsWith("```")) {
+            cleanJson = cleanJson.substring(0, cleanJson.length() - 3);
+        }
+        cleanJson = cleanJson.trim();
 
-        // Parse structured JSON from model text
-        Map<String, Object> structured = objectMapper.readValue(text, new TypeReference<>() {});
+        Map<String, Object> structured = objectMapper.readValue(cleanJson, new TypeReference<>() {});
 
         String transcript = (String) structured.getOrDefault("transcript", "");
         String intentStr = (String) structured.getOrDefault("intent", "EXPLORE");
