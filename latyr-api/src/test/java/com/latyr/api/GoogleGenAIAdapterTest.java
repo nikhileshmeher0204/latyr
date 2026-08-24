@@ -6,7 +6,7 @@ import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import com.latyr.api.adapter.AIProvider;
-import com.latyr.api.adapter.GeminiAIAdapter;
+import com.latyr.api.adapter.GoogleGenAIAdapter;
 import com.latyr.api.domain.enums.ActionCTA;
 import com.latyr.api.domain.enums.EntityType;
 import com.latyr.api.domain.enums.Intent;
@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-class GeminiAIAdapterTest {
+class GoogleGenAIAdapterTest {
 
     @Test
     @DisplayName("Google GenAI SDK: Should parse valid JSON response from Client models")
@@ -54,7 +54,7 @@ class GeminiAIAdapterTest {
         when(mockResponse.text()).thenReturn(validJson);
         when(mockModels.generateContent(anyString(), any(Content.class), any(GenerateContentConfig.class))).thenReturn(mockResponse);
 
-        GeminiAIAdapter adapter = new GeminiAIAdapter(mockClient);
+        GoogleGenAIAdapter adapter = new GoogleGenAIAdapter(mockClient);
         AIProvider.AIAnalysisResult result = adapter.analyzeMedia("bytes".getBytes(), "audio/mp3", "Caption", Language.ENGLISH);
 
         assertNotNull(result);
@@ -76,7 +76,7 @@ class GeminiAIAdapterTest {
         when(mockModels.generateContent(anyString(), any(Content.class), any(GenerateContentConfig.class)))
                 .thenThrow(new RuntimeException("API error"));
 
-        GeminiAIAdapter adapter = new GeminiAIAdapter(mockClient);
+        GoogleGenAIAdapter adapter = new GoogleGenAIAdapter(mockClient);
 
         LatyrException ex = assertThrows(LatyrException.class, () ->
                 adapter.analyzeMedia("bytes".getBytes(), "audio/mp3", "Caption", Language.ENGLISH)

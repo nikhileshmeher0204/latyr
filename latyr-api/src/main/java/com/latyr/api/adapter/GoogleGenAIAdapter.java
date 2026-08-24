@@ -21,23 +21,23 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
-public class GeminiAIAdapter implements AIProvider {
+public class GoogleGenAIAdapter implements AIProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(GeminiAIAdapter.class);
+    private static final Logger log = LoggerFactory.getLogger(GoogleGenAIAdapter.class);
 
     private final Client genAiClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${vertex.ai.model.name:gemini-1.5-flash}")
+    @Value("${google.genai.model.name:gemini-1.5-flash}")
     private String modelName = "gemini-1.5-flash";
 
-    public GeminiAIAdapter(Client genAiClient) {
+    public GoogleGenAIAdapter(Client genAiClient) {
         this.genAiClient = genAiClient;
     }
 
     @Override
     public AIAnalysisResult analyzeMedia(byte[] mediaBytes, String mimeType, String caption, Language language) {
-        log.info("Executing Google GenAI (Vertex AI) multimodal inference for media analysis using model {}", modelName);
+        log.info("Executing Google GenAI multimodal inference for media analysis using model {}", modelName);
         try {
             String promptText = buildPrompt(caption, language, false);
 
@@ -69,7 +69,7 @@ public class GeminiAIAdapter implements AIProvider {
 
     @Override
     public AIAnalysisResult analyzeImage(byte[] imageBytes, String mimeType, Language language) {
-        log.info("Executing Google GenAI (Vertex AI) Vision inference for image analysis using model {}", modelName);
+        log.info("Executing Google GenAI Vision inference for image analysis using model {}", modelName);
         try {
             String promptText = buildPrompt(null, language, true);
 

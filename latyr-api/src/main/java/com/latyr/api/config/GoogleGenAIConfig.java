@@ -17,14 +17,14 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Configuration
-public class VertexAIConfig {
+public class GoogleGenAIConfig {
 
-    private static final Logger log = LoggerFactory.getLogger(VertexAIConfig.class);
+    private static final Logger log = LoggerFactory.getLogger(GoogleGenAIConfig.class);
 
-    @Value("${google.cloud.project-id:${GCP_PROJECT_ID:}}")
+    @Value("${google.genai.project-id:${GCP_PROJECT_ID:}}")
     private String projectId;
 
-    @Value("${google.cloud.location:${GCP_LOCATION:us-central1}}")
+    @Value("${google.genai.location:${GCP_LOCATION:us-central1}}")
     private String location;
 
     @Value("${firebase.config.path:${FIREBASE_CONFIG_PATH:}}")
@@ -75,7 +75,7 @@ public class VertexAIConfig {
     }
 
     @Bean(destroyMethod = "close")
-    public Client genAiClient(GoogleCredentials credentials) {
+    public Client googleGenAiClient(GoogleCredentials credentials) {
         String effectiveProjectId = projectId;
         if ((effectiveProjectId == null || effectiveProjectId.trim().isEmpty()) && credentials instanceof ServiceAccountCredentials sa) {
             if (sa.getProjectId() != null && !sa.getProjectId().isEmpty()) {
@@ -86,7 +86,7 @@ public class VertexAIConfig {
             effectiveProjectId = "latyr-prod";
         }
 
-        log.info("Initializing Google GenAI SDK Client with Vertex AI mode (project: {}, location: {})", effectiveProjectId, location);
+        log.info("Initializing Google GenAI SDK Client (project: {}, location: {})", effectiveProjectId, location);
         Client.Builder builder = Client.builder()
                 .vertexAI(true)
                 .project(effectiveProjectId)
