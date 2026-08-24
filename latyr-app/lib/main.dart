@@ -1,13 +1,21 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latyr_app/app.dart';
 import 'package:latyr_app/config/environment_config.dart';
 import 'package:latyr_app/features/capture/presentation/capture_providers.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   debugPrint('Starting Latyr in ${EnvironmentConfig.environment.toUpperCase()} environment');
   debugPrint('API URL: ${EnvironmentConfig.apiUrl}');
+
+  try {
+    await Firebase.initializeApp();
+    debugPrint('Firebase initialized successfully on mobile.');
+  } catch (e) {
+    debugPrint('Firebase initialization: $e');
+  }
 
   runApp(
     const ProviderScope(

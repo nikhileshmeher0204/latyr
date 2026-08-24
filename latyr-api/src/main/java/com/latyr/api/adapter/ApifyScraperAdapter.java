@@ -17,7 +17,7 @@ import java.util.Map;
 public class ApifyScraperAdapter implements ScraperProvider {
 
     private static final Logger log = LoggerFactory.getLogger(ApifyScraperAdapter.class);
-    private static final String APIFY_ACTOR_URL = "https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items";
+    private static final String APIFY_ACTOR_URL = "https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items";
 
     @Value("${apify.api.token:}")
     private String apiToken;
@@ -36,11 +36,12 @@ public class ApifyScraperAdapter implements ScraperProvider {
             throw new LatyrException("Apify API token is missing. Please set APIFY_API_TOKEN.", "MISSING_CONFIGURATION", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        log.info("Executing live Apify Instagram Reel Scraper for URL: {}", url);
+        log.info("Executing live Apify Instagram Scraper for URL: {}", url);
         try {
             Map<String, Object> requestBody = Map.of(
                     "directUrls", List.of(url),
-                    "includeTranscript", false
+                    "resultsType", "posts",
+                    "resultsLimit", 1
             );
 
             List<Map<String, Object>> responseList = webClient.post()

@@ -48,9 +48,9 @@ public class IngestionQueueWorker {
 
     /**
      * Transactional polling sweeper executing SELECT ... FOR UPDATE SKIP LOCKED.
-     * Polls every 500ms to claim unhandled or retried jobs across distributed workers.
+     * Polls to claim unhandled or retried jobs across distributed workers.
      */
-    @Scheduled(fixedDelay = 500)
+    @Scheduled(fixedDelayString = "${latyr.queue.poll-interval-ms:2000}")
     public void pollAndProcessJobs() {
         try {
             Optional<IngestionJob> jobOpt = ingestionJobMapper.lockNextPendingJob(workerInstanceId);

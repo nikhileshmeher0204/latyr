@@ -82,7 +82,8 @@ public class IngestionPipelineService {
 
             if (job.getSourceType() == SourceType.IMAGE) {
                 // Image / Screenshot Ingestion
-                byte[] imageBytes = "mock-image-bytes".getBytes();
+                String base64 = job.getPayload() != null ? (String) job.getPayload().get("image_base64") : null;
+                byte[] imageBytes = base64 != null ? Base64.getDecoder().decode(base64) : new byte[0];
                 analysis = aiProvider.analyzeImage(imageBytes, "image/png", userLanguage);
                 caption = "Screenshot capture";
             } else {

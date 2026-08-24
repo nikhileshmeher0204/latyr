@@ -149,8 +149,14 @@ public class CaptureService {
         job.setCaptureId(capture.getId());
         job.setUserId(userId);
         job.setSourceType(SourceType.IMAGE);
-        job.setPayload(Map.of("filename", originalFilename != null ? originalFilename : "screenshot.png", "image_hash", imageHash));
         job.setStatus(JobStatus.PENDING);
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("filename", originalFilename != null ? originalFilename : "screenshot.png");
+        payload.put("image_hash", imageHash);
+        if (imageBytes != null && imageBytes.length > 0) {
+            payload.put("image_base64", Base64.getEncoder().encodeToString(imageBytes));
+        }
+        job.setPayload(payload);
         job.setAttemptCount(0);
         job.setMaxAttempts(3);
         job.setCreatedAt(Instant.now());

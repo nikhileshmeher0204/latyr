@@ -21,6 +21,9 @@ public class GoogleGenAIConfig {
 
     private static final Logger log = LoggerFactory.getLogger(GoogleGenAIConfig.class);
 
+    @Value("${google.genai.api-key:${GEMINI_API_KEY:}}")
+    private String apiKey;
+
     @Value("${google.genai.project-id:${GCP_PROJECT_ID:}}")
     private String projectId;
 
@@ -60,7 +63,7 @@ public class GoogleGenAIConfig {
         if (credentialsJson != null && !credentialsJson.trim().isEmpty()) {
             log.info("Loading Google Credentials from GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable");
             return GoogleCredentials.fromStream(new ByteArrayInputStream(credentialsJson.getBytes()))
-                    .createScoped("https://www.googleapis.com/auth/cloud-platform");
+                .createScoped("https://www.googleapis.com/auth/cloud-platform");
         }
 
         // Option 4: Fall back to Google Application Default Credentials (ADC)
@@ -76,17 +79,28 @@ public class GoogleGenAIConfig {
 
     @Bean(destroyMethod = "close")
     public Client googleGenAiClient(GoogleCredentials credentials) {
-        String effectiveProjectId = projectId;
-        if ((effectiveProjectId == null || effectiveProjectId.trim().isEmpty()) && credentials instanceof ServiceAccountCredentials sa) {
-            if (sa.getProjectId() != null && !sa.getProjectId().isEmpty()) {
-                effectiveProjectId = sa.getProjectId();
-            }
+        if (apiKey != null && !apiKey.trim().isEmpty()) {
+            log.info("Initializing Google GenAI SDK Client in Gemini Developer mode using API Key");
+            return Client.builder().apiKey(apiKey.trim()).build();
         }
+
+        String effectiveProjectId = null;
+
+        // Auto-extract real Project ID from Service Account credentials
+        if (credentials instanceof ServiceAccountCredentials sa && sa.getProjectId() != null && !sa.getProjectId().isEmpty()) {
+            effectiveProjectId = sa.getProjectId();
+            log.info("Extracted GCP Project ID from service account credentials: {}", effectiveProjectId);
+        }
+
+        if (effectiveProjectId == null || effectiveProjectId.trim().isEmpty()) {
+            effectiveProjectId = projectId;
+        }
+
         if (effectiveProjectId == null || effectiveProjectId.trim().isEmpty()) {
             effectiveProjectId = "latyr-prod";
         }
 
-        log.info("Initializing Google GenAI SDK Client (project: {}, location: {})", effectiveProjectId, location);
+        log.info("Initializing Google GenAI SDK Client in Vertex AI mode (project: {}, location: {})", effectiveProjectId, location);
         Client.Builder builder = Client.builder()
                 .vertexAI(true)
                 .project(effectiveProjectId)

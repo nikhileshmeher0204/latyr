@@ -28,8 +28,8 @@ public class GoogleGenAIAdapter implements AIProvider {
     private final Client genAiClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${google.genai.model.name:gemini-1.5-flash}")
-    private String modelName = "gemini-1.5-flash";
+    @Value("${google.genai.model.name:gemini-2.5-flash}")
+    private String modelName = "gemini-2.5-flash";
 
     public GoogleGenAIAdapter(Client genAiClient) {
         this.genAiClient = genAiClient;
@@ -48,7 +48,7 @@ public class GoogleGenAIAdapter implements AIProvider {
                 parts.add(Part.fromBytes(mediaBytes, mimeType != null ? mimeType : "audio/mp3"));
             }
 
-            Content content = Content.builder().parts(parts).build();
+            Content content = Content.builder().role("user").parts(parts).build();
 
             GenerateContentConfig config = GenerateContentConfig.builder()
                     .responseMimeType("application/json")
@@ -78,7 +78,7 @@ public class GoogleGenAIAdapter implements AIProvider {
                     Part.fromBytes(imageBytes, mimeType != null ? mimeType : "image/png")
             );
 
-            Content content = Content.builder().parts(parts).build();
+            Content content = Content.builder().role("user").parts(parts).build();
 
             GenerateContentConfig config = GenerateContentConfig.builder()
                     .responseMimeType("application/json")
@@ -153,23 +153,29 @@ public class GoogleGenAIAdapter implements AIProvider {
         }
         cleanJson = cleanJson.trim();
 
-        Map<String, Object> structured = objectMapper.readValue(cleanJson, new TypeReference<>() {});
+        Map<String, Object> structured = objectMapper.readValue(cleanJson, new TypeReference<Map<String, Object>>() {});
 
-        String transcript = (String) structured.getOrDefault("transcript", "");
-        String intentStr = (String) structured.getOrDefault("intent", "EXPLORE");
+        String transcript = structured.get("transcript") != null ? structured.get("transcript").toString() : "";
+        String intentStr = structured.get("intent") != null ? structured.get("intent").toString() : "EXPLORE";
         Intent intent = Intent.EXPLORE;
         try {
-            intent = Intent.valueOf(intentStr.toUpperCase(Locale.ROOT));
-        } catch (Exception ignored) {}
+            if (intentStr != null) {
+                intent = Intent.valueOf(intentStr.toUpperCase(Locale.ROOT));
+            }
+        } catch (Exception e) {
+            log.warn("Unknown intent '{}', defaulting to EXPLORE", intentStr);
+        }
 
-        String category = (String) structured.getOrDefault("category", "General");
-        String suggestedCollection = (String) structured.getOrDefault("suggested_collection", category);
+        String category = structured.get("category") != null ? structured.get("category").toString() : "General";
+        String suggestedCollection = structured.get("suggested_collection") != null ? structured.get("suggested_collection").toString() : "General Knowledge";
 
         List<String> notificationCopies = new ArrayList<>();
-        Object copiesObj = structured.get("notification_copies");
-        if (copiesObj instanceof List<?> list) {
-            for (Object o : list) {
-                if (o != null) notificationCopies.add(o.toString());
+        Object notifObj = structured.get("notification_copies");
+        if (notifObj instanceof List<?> list) {
+            for (Object item : list) {
+                if (item != null && !item.toString().trim().isEmpty()) {
+                    notificationCopies.add(item.toString().trim());
+                }
             }
         }
 
@@ -177,40 +183,57 @@ public class GoogleGenAIAdapter implements AIProvider {
         Object entitiesObj = structured.get("entities");
         if (entitiesObj instanceof List<?> list) {
             for (Object item : list) {
-                if (item instanceof Map<?, ?> rawMap) {
-                    Object titleObj = rawMap.get("title");
-                    String title = titleObj != null ? titleObj.toString() : "Untitled Entity";
-                    Object descObj = rawMap.get("description");
-                    String desc = descObj != null ? descObj.toString() : null;
-                    Object urlObj = rawMap.get("external_url");
-                    String url = urlObj != null ? urlObj.toString() : null;
+                if (item instanceof Map<?, ?> map) {
+                    try {
+                        String entityTypeStr = map.get("entity_type") != null ? map.get("entity_type").toString() : "IDEA";
+                        EntityType entityType = EntityType.IDEA;
+                        try {
+                            if (entityTypeStr != null) {
+                                entityType = EntityType.valueOf(entityTypeStr.toUpperCase(Locale.ROOT));
+                            }
+                        } catch (Exception ex) {
+                            entityType = EntityType.IDEA;
+                        }
 
-                    EntityType type = EntityType.TOOL;
-                    Object typeObj = rawMap.get("entity_type");
-                    if (typeObj != null) {
-                        try { type = EntityType.valueOf(typeObj.toString().toUpperCase(Locale.ROOT)); } catch (Exception ignored) {}
-                    }
+                        String title = map.get("title") != null ? map.get("title").toString() : "Saved Item";
+                        String description = map.get("description") != null ? map.get("description").toString() : "";
+                        String externalUrl = map.get("external_url") != null ? map.get("external_url").toString() : null;
 
-                    ActionCTA cta = ActionCTA.EXPLORE;
-                    Object ctaObj = rawMap.get("action_cta");
-                    if (ctaObj != null) {
-                        try { cta = ActionCTA.valueOf(ctaObj.toString().toUpperCase(Locale.ROOT)); } catch (Exception ignored) {}
-                    }
+                        String ctaStr = map.get("action_cta") != null ? map.get("action_cta").toString() : "EXPLORE";
+                        ActionCTA actionCta = ActionCTA.EXPLORE;
+                        try {
+                            if (ctaStr != null) {
+                                actionCta = ActionCTA.valueOf(ctaStr.toUpperCase(Locale.ROOT));
+                            }
+                        } catch (Exception ex) {
+                            actionCta = ActionCTA.EXPLORE;
+                        }
 
-                    Map<String, Object> meta = new HashMap<>();
-                    Object metaObj = rawMap.get("metadata");
-                    if (metaObj instanceof Map<?, ?> rawMeta) {
-                        for (Map.Entry<?, ?> entry : rawMeta.entrySet()) {
-                            if (entry.getKey() != null) {
-                                meta.put(entry.getKey().toString(), entry.getValue());
+                        Map<String, Object> metadata = new HashMap<>();
+                        Object metaObj = map.get("metadata");
+                        if (metaObj instanceof Map<?, ?> m) {
+                            for (Map.Entry<?, ?> entry : m.entrySet()) {
+                                if (entry.getKey() != null) {
+                                    metadata.put(entry.getKey().toString(), entry.getValue());
+                                }
                             }
                         }
+
+                        entities.add(new AIEntity(entityType, title, description, externalUrl, actionCta, metadata));
+                    } catch (Exception e) {
+                        log.warn("Failed to parse extracted entity: {}", e.getMessage());
                     }
-                    entities.add(new AIEntity(type, title, desc, url, cta, meta));
                 }
             }
         }
 
-        return new AIAnalysisResult(transcript, intent, category, suggestedCollection, notificationCopies, entities);
+        return new AIAnalysisResult(
+                transcript,
+                intent,
+                category,
+                suggestedCollection,
+                notificationCopies,
+                entities
+        );
     }
 }

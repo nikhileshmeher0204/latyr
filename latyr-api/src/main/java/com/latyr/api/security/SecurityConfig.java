@@ -20,10 +20,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final FirebaseAuthFilter firebaseAuthFilter;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
-    public SecurityConfig(FirebaseAuthFilter firebaseAuthFilter) {
+    public SecurityConfig(FirebaseAuthFilter firebaseAuthFilter, ObjectMapper objectMapper) {
         this.firebaseAuthFilter = firebaseAuthFilter;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -33,7 +34,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(unauthorizedEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/health", "/actuator/health", "/error", "/api/v1/webhooks/**").permitAll()
+                        .requestMatchers("/api/health", "/actuator/health", "/error", "/api/v1/webhooks/**", "/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().authenticated()
                 )

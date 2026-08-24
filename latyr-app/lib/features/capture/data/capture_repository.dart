@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/core/network/api_client.dart';
 import 'package:latyr_app/core/network/sse_client.dart';
@@ -65,11 +66,14 @@ class CaptureRepository {
 
     // 1. Optimistic Local SQLite Write (< 10ms)
     await db.insertCapture(entry);
+    debugPrint('Optimistically saved capture to SQLite: $localId');
 
     // 2. Immediate API Dispatch Attempt
     try {
+      debugPrint('Dispatching POST /api/v1/captures with url: $url');
       final response = await apiClient.createCapture(url);
       final data = response.data;
+      debugPrint('Server response status: ${response.statusCode}, body: $data');
 
       if (response.statusCode == 200 && data != null) {
         // Cache Hit: Completed instantly ($0 AI cost)
@@ -99,7 +103,9 @@ class CaptureRepository {
           ),
         );
       }
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('API Dispatch Error for capture $localId: $e');
+      debugPrint('$st');
       // Offline / Network Failure: Stays PENDING_SYNC for background drain
     }
 
@@ -113,6 +119,7 @@ class CaptureRepository {
     for (final item in pendingList) {
       if (item.originalUrl != null && item.contentType == 'URL') {
         try {
+          debugPrint('Syncing pending capture: ${item.id}');
           final response = await apiClient.createCapture(item.originalUrl!);
           final data = response.data;
           final serverId = data?['id']?.toString();
@@ -129,7 +136,8 @@ class CaptureRepository {
               syncedAt: Value(DateTime.now()),
             ),
           );
-        } catch (_) {
+        } catch (e) {
+          debugPrint('Sync pending failed for ${item.id}: $e');
           // Will retry on next sync tick
         }
       }
