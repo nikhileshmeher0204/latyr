@@ -65,6 +65,7 @@ out/
 
 # Visual Studio Code
 .vscode/
+*.code-workspace
 
 # Eclipse / STS
 .apt_generated
