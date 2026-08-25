@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +42,9 @@ public class ApifyScraperAdapter implements ScraperProvider {
             Map<String, Object> requestBody = Map.of(
                     "directUrls", List.of(url),
                     "resultsType", "posts",
-                    "resultsLimit", 1
+                    "resultsLimit", 1,
+                    "commentsLimit", 0,
+                    "commentsMode", "none"
             );
 
             List<Map<String, Object>> responseList = webClient.post()
@@ -69,7 +72,16 @@ public class ApifyScraperAdapter implements ScraperProvider {
                 duration = num.intValue();
             }
 
-            return new ScrapedMedia(videoUrl, audioUrl, caption, title, duration, item);
+            // Explicitly exclude any comment data from raw metadata
+            Map<String, Object> sanitizedMetadata = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> entry : item.entrySet()) {
+                String key = entry.getKey();
+                if (!key.toLowerCase().contains("comment")) {
+                    sanitizedMetadata.put(key, entry.getValue());
+                }
+            }
+
+            return new ScrapedMedia(videoUrl, audioUrl, caption, title, duration, sanitizedMetadata);
         } catch (LatyrException le) {
             throw le;
         } catch (Exception e) {

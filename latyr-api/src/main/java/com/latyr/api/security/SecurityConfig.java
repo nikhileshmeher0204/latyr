@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(unauthorizedEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/health", "/actuator/health", "/error", "/api/v1/webhooks/**", "/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/health", "/actuator/health", "/error", "/api/v1/webhooks/**", "/api/v1/auth/**", "/api/v1/ai/**").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().authenticated()
                 )
