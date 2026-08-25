@@ -18,6 +18,7 @@ public interface AIProvider {
             String transcript,
             Intent intent,
             String category,
+            String subCategory,
             String suggestedCollection,
             List<String> notificationCopies,
             List<AIEntity> entities

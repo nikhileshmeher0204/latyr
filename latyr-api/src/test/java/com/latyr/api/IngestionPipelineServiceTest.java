@@ -126,6 +126,7 @@ class IngestionPipelineServiceTest {
                 Intent.WATCH,
                 "Entertainment",
                 "Thriller Shows",
+                "Weekend Watchlist",
                 List.of("Weekend movie recommendation"),
                 List.of(aiEntity)
         );
@@ -139,6 +140,7 @@ class IngestionPipelineServiceTest {
         assertEquals(CaptureStatus.COMPLETED, capture.getStatus());
         assertEquals(Intent.WATCH, capture.getIntent());
         assertEquals("Entertainment", capture.getCategory());
+        assertEquals("Thriller Shows", capture.getSubCategory());
         assertEquals("5 suspense movies you must watch", capture.getOriginalCaption());
         verify(captureMapper, times(1)).update(capture);
 

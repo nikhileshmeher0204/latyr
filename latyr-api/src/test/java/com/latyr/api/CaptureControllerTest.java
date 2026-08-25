@@ -1,26 +1,31 @@
 package com.latyr.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.latyr.api.controller.CaptureController;
 import com.latyr.api.domain.enums.CaptureStatus;
 import com.latyr.api.domain.enums.ContentType;
-import com.latyr.api.domain.enums.PlanTier;
 import com.latyr.api.dto.CaptureResponse;
 import com.latyr.api.dto.CreateCaptureRequest;
 import com.latyr.api.dto.PagedResponse;
 import com.latyr.api.security.AuthenticatedUser;
-import com.latyr.api.security.CurrentUserArgumentResolver;
 import com.latyr.api.service.CaptureService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.time.Instant;
 import java.util.List;
@@ -34,38 +39,36 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ExtendWith(MockitoExtension.class)
 class CaptureControllerTest {
 
     private MockMvc mockMvc;
-    private CaptureService captureService;
-    private ObjectMapper mapper;
 
+    @Mock
+    private CaptureService captureService;
+
+    private final ObjectMapper mapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .setPropertyNamingStrategy(com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE);
     private final UUID testUserId = UUID.randomUUID();
-    private final AuthenticatedUser mockUser = new AuthenticatedUser(
-            testUserId,
-            "firebase_uid_123",
-            "test@latyr.com",
-            "Test User",
-            "https://avatar.url",
-            PlanTier.FREE
-    );
 
     @BeforeEach
     void setUp() {
-        mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-
-        captureService = Mockito.mock(CaptureService.class);
         CaptureController controller = new CaptureController(captureService);
 
-        CurrentUserArgumentResolver resolver = new CurrentUserArgumentResolver() {
+        HandlerMethodArgumentResolver resolver = new HandlerMethodArgumentResolver() {
             @Override
-            public Object resolveArgument(org.springframework.core.MethodParameter parameter,
-                                          org.springframework.web.method.support.ModelAndViewContainer mavContainer,
-                                          org.springframework.web.context.request.NativeWebRequest webRequest,
-                                          org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
-                return mockUser;
+            public boolean supportsParameter(MethodParameter parameter) {
+                return parameter.hasParameterAnnotation(com.latyr.api.security.CurrentUser.class) 
+                        || parameter.getParameterType().equals(AuthenticatedUser.class);
+            }
+
+            @Override
+            public Object resolveArgument(MethodParameter parameter,
+                                          ModelAndViewContainer mavContainer,
+                                          NativeWebRequest webRequest,
+                                          WebDataBinderFactory binderFactory) {
+                return new AuthenticatedUser(testUserId, "test-uid", "test@latyr.com");
             }
         };
 
@@ -87,6 +90,7 @@ class CaptureControllerTest {
                 UUID.randomUUID(),
                 ContentType.URL,
                 CaptureStatus.PENDING,
+                null,
                 null,
                 null,
                 null,
@@ -119,6 +123,7 @@ class CaptureControllerTest {
                 CaptureStatus.COMPLETED,
                 com.latyr.api.domain.enums.Intent.WATCH,
                 "Entertainment",
+                "Sci-Fi TV Shows",
                 "5 movies to watch",
                 0,
                 Instant.now(),
@@ -135,7 +140,8 @@ class CaptureControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("COMPLETED"))
                 .andExpect(jsonPath("$.intent").value("WATCH"))
-                .andExpect(jsonPath("$.category").value("Entertainment"));
+                .andExpect(jsonPath("$.category").value("Entertainment"))
+                .andExpect(jsonPath("$.sub_category").value("Sci-Fi TV Shows"));
     }
 
     @Test
@@ -149,6 +155,7 @@ class CaptureControllerTest {
                 CaptureStatus.COMPLETED,
                 com.latyr.api.domain.enums.Intent.WATCH,
                 "Entertainment",
+                "Sci-Fi TV Shows",
                 "5 movies",
                 0,
                 Instant.now(),
@@ -160,12 +167,13 @@ class CaptureControllerTest {
         when(captureService.getUserCaptures(eq(testUserId), any(), any(), eq(0), eq(20)))
                 .thenReturn(pagedResponse);
 
-        mockMvc.perform(get("/api/v1/captures?page=0&size=20")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/v1/captures")
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items").isArray())
                 .andExpect(jsonPath("$.items[0].status").value("COMPLETED"))
-                .andExpect(jsonPath("$.pageable.total_elements").value(1))
-                .andExpect(jsonPath("$.pageable.total_pages").value(1));
+                .andExpect(jsonPath("$.items[0].category").value("Entertainment"))
+                .andExpect(jsonPath("$.items[0].sub_category").value("Sci-Fi TV Shows"))
+                .andExpect(jsonPath("$.pageable.total_elements").value(1));
     }
 }

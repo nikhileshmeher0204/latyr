@@ -35,6 +35,7 @@ class GoogleGenAIAdapterTest {
               "transcript": "5 mind bending thriller shows on Netflix including Dark",
               "intent": "WATCH",
               "category": "Entertainment",
+              "sub_category": "Sci-Fi TV Shows",
               "suggested_collection": "Weekend Watchlist",
               "notification_copies": ["Ready to watch Dark tonight?"],
               "entities": [
@@ -60,6 +61,7 @@ class GoogleGenAIAdapterTest {
         assertNotNull(result);
         assertEquals(Intent.WATCH, result.intent());
         assertEquals("Entertainment", result.category());
+        assertEquals("Sci-Fi TV Shows", result.subCategory());
         assertEquals(1, result.entities().size());
         assertEquals(EntityType.TV_SHOW, result.entities().get(0).entityType());
         assertEquals("Dark", result.entities().get(0).title());

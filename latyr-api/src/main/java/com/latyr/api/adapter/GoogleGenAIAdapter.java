@@ -110,7 +110,8 @@ public class GoogleGenAIAdapter implements AIProvider {
             {
               "transcript": "Full transcription of spoken audio or complete OCR text summary",
               "intent": "WATCH | EXPLORE | REMEMBER | COOK | VISIT | BUY | LEARN",
-              "category": "Entertainment | Tech | Food | Travel | Learning | Shopping",
+              "category": "Entertainment | Tech | Food | Travel | Learning | Shopping | Lifestyle | Fitness | Finance",
+              "sub_category": "Specific granular sub-category (e.g. TV Shows, Movies, Sci-Fi, Web Development, Pasta Recipes, Japan Travel, Personal Finance, Productivity, etc.)",
               "suggested_collection": "Suggested collection name",
               "notification_copies": [
                 "Catchy reminder notification copy 1",
@@ -167,6 +168,17 @@ public class GoogleGenAIAdapter implements AIProvider {
         }
 
         String category = structured.get("category") != null ? structured.get("category").toString() : "General";
+        
+        // Extract sub_category (supporting sub_category and subcategory fallback)
+        String subCategory = null;
+        if (structured.get("sub_category") != null) {
+            subCategory = structured.get("sub_category").toString();
+        } else if (structured.get("subcategory") != null) {
+            subCategory = structured.get("subcategory").toString();
+        } else {
+            subCategory = category;
+        }
+
         String suggestedCollection = structured.get("suggested_collection") != null ? structured.get("suggested_collection").toString() : "General Knowledge";
 
         List<String> notificationCopies = new ArrayList<>();
@@ -231,6 +243,7 @@ public class GoogleGenAIAdapter implements AIProvider {
                 transcript,
                 intent,
                 category,
+                subCategory,
                 suggestedCollection,
                 notificationCopies,
                 entities

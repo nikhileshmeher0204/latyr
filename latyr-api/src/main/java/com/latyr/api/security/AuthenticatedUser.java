@@ -13,6 +13,10 @@ public class AuthenticatedUser implements Principal {
     private final String photoUrl;
     private final PlanTier planTier;
 
+    public AuthenticatedUser(UUID userId, String firebaseUid, String email) {
+        this(userId, firebaseUid, email, null, null, PlanTier.FREE);
+    }
+
     public AuthenticatedUser(UUID userId, String firebaseUid, String email, String displayName, String photoUrl, PlanTier planTier) {
         this.userId = userId;
         this.firebaseUid = firebaseUid;

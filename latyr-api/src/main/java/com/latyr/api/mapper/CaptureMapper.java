@@ -22,6 +22,7 @@ public interface CaptureMapper {
         @Result(property = "status", column = "status"),
         @Result(property = "intent", column = "intent"),
         @Result(property = "category", column = "category"),
+        @Result(property = "subCategory", column = "sub_category"),
         @Result(property = "originalCaption", column = "original_caption"),
         @Result(property = "audioTranscript", column = "audio_transcript"),
         @Result(property = "notificationCopies", column = "notification_copies", typeHandler = StringArrayTypeHandler.class),
@@ -84,7 +85,7 @@ public interface CaptureMapper {
 
     @Insert("""
         INSERT INTO captures (
-            id, user_id, canonical_source_id, content_type, status, intent, category,
+            id, user_id, canonical_source_id, content_type, status, intent, category, sub_category,
             original_caption, audio_transcript, notification_copies, resurface_count,
             total_processing_duration_ms, scheduled_resurface_at, last_resurfaced_at,
             created_at, updated_at
@@ -97,6 +98,7 @@ public interface CaptureMapper {
             #{status},
             #{intent},
             #{category},
+            #{subCategory},
             #{originalCaption},
             #{audioTranscript},
             #{notificationCopies, typeHandler=com.latyr.api.config.typehandler.StringArrayTypeHandler, jdbcType=ARRAY},
@@ -115,6 +117,7 @@ public interface CaptureMapper {
         SET status = #{status},
             intent = #{intent},
             category = #{category},
+            sub_category = #{subCategory},
             original_caption = #{originalCaption},
             audio_transcript = #{audioTranscript},
             notification_copies = #{notificationCopies, typeHandler=com.latyr.api.config.typehandler.StringArrayTypeHandler, jdbcType=ARRAY},

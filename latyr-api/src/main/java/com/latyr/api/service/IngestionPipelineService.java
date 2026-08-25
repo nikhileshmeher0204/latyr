@@ -117,6 +117,7 @@ public class IngestionPipelineService {
             cacheMap.put("transcript", analysis.transcript());
             cacheMap.put("intent", analysis.intent().name());
             cacheMap.put("category", analysis.category());
+            cacheMap.put("sub_category", analysis.subCategory());
             cacheMap.put("suggested_collection", analysis.suggestedCollection());
             cacheMap.put("notification_copies", analysis.notificationCopies());
             cacheMap.put("original_caption", caption);
@@ -139,6 +140,7 @@ public class IngestionPipelineService {
             capture.setStatus(CaptureStatus.COMPLETED);
             capture.setIntent(analysis.intent());
             capture.setCategory(analysis.category());
+            capture.setSubCategory(analysis.subCategory());
             capture.setOriginalCaption(caption);
             capture.setAudioTranscript(analysis.transcript());
             capture.setNotificationCopies(analysis.notificationCopies());
@@ -176,6 +178,7 @@ public class IngestionPipelineService {
                         "status", "COMPLETED",
                         "intent", analysis.intent().name(),
                         "category", analysis.category(),
+                        "sub_category", analysis.subCategory() != null ? analysis.subCategory() : "",
                         "original_caption", caption != null ? caption : "",
                         "audio_transcript", analysis.transcript(),
                         "entities", enrichedEntities

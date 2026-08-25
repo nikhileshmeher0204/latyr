@@ -18,6 +18,7 @@ public class Capture {
     private CaptureStatus status = CaptureStatus.PENDING;
     private Intent intent;
     private String category;
+    private String subCategory;
     private String originalCaption;
     private String audioTranscript;
     private List<String> notificationCopies = new ArrayList<>();
@@ -57,6 +58,9 @@ public class Capture {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public String getSubCategory() { return subCategory; }
+    public void setSubCategory(String subCategory) { this.subCategory = subCategory; }
 
     public String getOriginalCaption() { return originalCaption; }
     public void setOriginalCaption(String originalCaption) { this.originalCaption = originalCaption; }
