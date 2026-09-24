@@ -9,7 +9,9 @@ public record CreateCaptureRequest(
         @URL(message = "A valid URL format is required")
         String url,
 
-        ContentType contentType
+        ContentType contentType,
+
+        String caption
 ) {
     public CreateCaptureRequest {
         if (contentType == null) {

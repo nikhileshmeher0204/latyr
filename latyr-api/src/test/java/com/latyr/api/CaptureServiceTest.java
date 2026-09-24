@@ -69,7 +69,7 @@ class CaptureServiceTest {
     @DisplayName("Cache Miss: Should enqueue IngestionJob and return status PENDING")
     void testCreateUrlCapture_CacheMiss() {
         UUID userId = UUID.randomUUID();
-        CreateCaptureRequest request = new CreateCaptureRequest("https://www.instagram.com/reel/C8xyz123/?igsh=abc", ContentType.URL);
+        CreateCaptureRequest request = new CreateCaptureRequest("https://www.instagram.com/reel/C8xyz123/?igsh=abc", ContentType.URL, null);
         String canonicalHash = urlNormalizationService.getCanonicalUrlHash(request.url());
 
         when(deduplicationService.findCachedSource(canonicalHash)).thenReturn(Optional.empty());
@@ -93,7 +93,7 @@ class CaptureServiceTest {
     @DisplayName("Cache Hit: Should immediately complete capture, copy entities, and skip IngestionJob")
     void testCreateUrlCapture_CacheHit() {
         UUID userId = UUID.randomUUID();
-        CreateCaptureRequest request = new CreateCaptureRequest("https://www.instagram.com/reel/C8xyz123/", ContentType.URL);
+        CreateCaptureRequest request = new CreateCaptureRequest("https://www.instagram.com/reel/C8xyz123/", ContentType.URL, null);
         String canonicalHash = urlNormalizationService.getCanonicalUrlHash(request.url());
 
         CanonicalSource cachedSource = new CanonicalSource();

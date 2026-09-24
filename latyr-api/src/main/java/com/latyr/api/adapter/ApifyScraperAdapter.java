@@ -24,21 +24,31 @@ public class ApifyScraperAdapter implements ScraperProvider {
     private String apiToken;
 
     private final WebClient webClient;
+    private final java.util.concurrent.Semaphore concurrencyLimiter;
 
-    public ApifyScraperAdapter(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.build();
+    public ApifyScraperAdapter(
+            WebClient.Builder webClientBuilder,
+            @Value("${apify.api.max-concurrency:1}") int maxConcurrency) {
+        this.webClient = webClientBuilder
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))
+                .build();
+        this.concurrencyLimiter = new java.util.concurrent.Semaphore(maxConcurrency);
+        log.info("Initialized ApifyScraperAdapter with max-concurrency: {}", maxConcurrency);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public ScrapedMedia extractMedia(String url) {
         if (apiToken == null || apiToken.trim().isEmpty()) {
-            log.error("Apify API token is not configured. Set APIFY_API_TOKEN in your environment or .env file.");
-            throw new LatyrException("Apify API token is missing. Please set APIFY_API_TOKEN.", "MISSING_CONFIGURATION", HttpStatus.INTERNAL_SERVER_ERROR);
+            log.info("Apify API token is not configured. Extracting public OpenGraph metadata for URL: {}", url);
+            String ogCaption = fetchInstagramOgDescription(url);
+            String caption = (ogCaption != null && !ogCaption.isBlank()) ? ogCaption : ("Instagram Reel: " + url);
+            return new ScrapedMedia(url, null, caption, "Instagram Reel", 30, Map.of("fallback", true, "url", url, "scraped_og", ogCaption != null));
         }
 
         log.info("Executing live Apify Instagram Scraper for URL: {}", url);
         try {
+            concurrencyLimiter.acquire();
             Map<String, Object> requestBody = Map.of(
                     "directUrls", List.of(url),
                     "resultsType", "posts",
@@ -87,6 +97,32 @@ public class ApifyScraperAdapter implements ScraperProvider {
         } catch (Exception e) {
             log.error("Live Apify scraping failed for URL {}: {}", url, e.getMessage());
             throw new LatyrException("Failed to scrape media from Instagram: " + e.getMessage(), "SCRAPING_FAILED", HttpStatus.BAD_GATEWAY);
+        } finally {
+            concurrencyLimiter.release();
         }
+    }
+
+    private String fetchInstagramOgDescription(String url) {
+        try {
+            String html = webClient.get()
+                    .uri(url)
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block(Duration.ofSeconds(10));
+
+            if (html != null) {
+                // Find og:description or og:title
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("<meta\\s+(?:property|name)=[\"'](?:og:description|description)[\"']\\s+content=[\"'](.*?)[\"']", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL);
+                java.util.regex.Matcher matcher = pattern.matcher(html);
+                if (matcher.find()) {
+                    String desc = matcher.group(1);
+                    return org.springframework.web.util.HtmlUtils.htmlUnescape(desc).trim();
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not extract public OG tags from Instagram URL {}: {}", url, e.getMessage());
+        }
+        return null;
     }
 }

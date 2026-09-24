@@ -150,7 +150,15 @@ replay_pid*
 # 6. Logs & Temporary Files
 # ------------------------------------------------------------------------------
 *.log
+*.err
 *.tmp
 *.bak
 *.swp
 *.swo
+*.sqlite
+*.sqlite*
+*_dump.xml
+screen*.png
+boot_*.txt
+*out.txt
+

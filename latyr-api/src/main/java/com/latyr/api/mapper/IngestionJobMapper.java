@@ -38,6 +38,13 @@ public interface IngestionJobMapper {
     @ResultMap("IngestionJobResult")
     List<IngestionJob> findByStatus(@Param("status") JobStatus status, @Param("limit") int limit);
 
+    @Select("SELECT COUNT(1) > 0 FROM ingestion_jobs WHERE user_id = #{userId} AND status IN ('PENDING', 'PROCESSING') AND payload->>'url' = #{url}")
+    boolean hasActiveJobForUrl(@Param("userId") UUID userId, @Param("url") String url);
+
+    @Select("SELECT * FROM ingestion_jobs WHERE user_id = #{userId} AND status IN ('PENDING', 'PROCESSING') AND payload->>'url' = #{url} ORDER BY created_at DESC LIMIT 1")
+    @ResultMap("IngestionJobResult")
+    Optional<IngestionJob> findActiveJobForUrl(@Param("userId") UUID userId, @Param("url") String url);
+
     @Select("""
         UPDATE ingestion_jobs
         SET status = 'PROCESSING',

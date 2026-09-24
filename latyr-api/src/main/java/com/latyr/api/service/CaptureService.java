@@ -59,12 +59,29 @@ public class CaptureService {
         String canonicalHash = urlNormalizationService.getCanonicalUrlHash(request.url());
         SourceType sourceType = determineSourceType(request.url());
 
+        // 2.5 Prevent duplicate spam from network retries or simultaneous shares
+        Optional<IngestionJob> activeJob = ingestionJobMapper.findActiveJobForUrl(userId, request.url());
+        if (activeJob.isPresent()) {
+            log.info("User {} already has an active processing job for URL: {}. Returning existing capture.", userId, request.url());
+            Optional<Capture> existingCapture = captureMapper.findById(activeJob.get().getCaptureId());
+            if (existingCapture.isPresent()) {
+                return CaptureResponse.fromModel(existingCapture.get(), "Capture is currently processing.");
+            }
+        }
+
         // 3. Check 30-day deduplication cache
         Optional<CanonicalSource> cachedSourceOpt = deduplicationService.findCachedSource(canonicalHash);
 
         if (cachedSourceOpt.isPresent()) {
-            // CACHE HIT: Instant completion with $0 AI cost
             CanonicalSource cachedSource = cachedSourceOpt.get();
+            // Check if user already captured this URL/source
+            Optional<Capture> existingUserCapture = captureMapper.findByUserIdAndCanonicalSourceId(userId, cachedSource.getId());
+            if (existingUserCapture.isPresent()) {
+                log.info("User {} already has capture {} for canonical source {}. Returning existing.", userId, existingUserCapture.get().getId(), cachedSource.getId());
+                return CaptureResponse.fromModel(existingUserCapture.get(), "Capture already exists.");
+            }
+
+            // CACHE HIT: Instant completion with $0 AI cost
             Capture completedCapture = buildCompletedCaptureFromCache(userId, cachedSource, ContentType.URL);
             captureMapper.insert(completedCapture);
 
@@ -92,7 +109,13 @@ public class CaptureService {
         job.setCaptureId(capture.getId());
         job.setUserId(userId);
         job.setSourceType(sourceType);
-        job.setPayload(Map.of("url", request.url(), "canonical_hash", canonicalHash));
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("url", request.url());
+        payload.put("canonical_hash", canonicalHash);
+        if (request.caption() != null && !request.caption().isBlank()) {
+            payload.put("caption", request.caption());
+        }
+        job.setPayload(payload);
         job.setStatus(JobStatus.PENDING);
         job.setAttemptCount(0);
         job.setMaxAttempts(3);

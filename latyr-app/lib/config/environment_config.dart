@@ -10,7 +10,7 @@ class EnvironmentConfig {
 
   static const String _rawApiUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'http://localhost:8080/api',
+    defaultValue: 'http://localhost:8080',
   );
 
   /// Resolves the API URL based on platform (e.g. converting `localhost` to `10.0.2.2` for Android Emulator).

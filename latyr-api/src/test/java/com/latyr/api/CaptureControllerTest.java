@@ -83,7 +83,7 @@ class CaptureControllerTest {
     @Test
     @DisplayName("POST /api/v1/captures on Cache Miss should return 202 Accepted")
     void testCreateUrlCapture_CacheMiss_Returns202() throws Exception {
-        CreateCaptureRequest request = new CreateCaptureRequest("https://www.instagram.com/reel/C8xyz123/", ContentType.URL);
+        CreateCaptureRequest request = new CreateCaptureRequest("https://www.instagram.com/reel/C8xyz123/", ContentType.URL, null);
         CaptureResponse response = new CaptureResponse(
                 UUID.randomUUID(),
                 testUserId,
@@ -114,7 +114,7 @@ class CaptureControllerTest {
     @Test
     @DisplayName("POST /api/v1/captures on Cache Hit should return 200 OK")
     void testCreateUrlCapture_CacheHit_Returns200() throws Exception {
-        CreateCaptureRequest request = new CreateCaptureRequest("https://www.instagram.com/reel/C8xyz123/", ContentType.URL);
+        CreateCaptureRequest request = new CreateCaptureRequest("https://www.instagram.com/reel/C8xyz123/", ContentType.URL, null);
         CaptureResponse response = new CaptureResponse(
                 UUID.randomUUID(),
                 testUserId,

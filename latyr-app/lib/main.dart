@@ -31,6 +31,10 @@ class LatyrAppInitializer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Eagerly initialize sync service to listen to network connectivity
     ref.watch(syncServiceProvider);
+    // Eagerly initialize Android share sheet receiver
+    ref.watch(shareIntentServiceProvider);
+    // Eagerly initialize real-time SSE stream
+    ref.watch(sseClientProvider);
 
     return const LatyrApp();
   }

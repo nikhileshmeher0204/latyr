@@ -73,6 +73,22 @@ public class IngestionPipelineService {
             Capture capture = captureMapper.findById(captureId)
                     .orElseThrow(() -> new IllegalStateException("Capture not found: " + captureId));
 
+            // Mark capture and job as PROCESSING and notify mobile client via SSE
+            capture.setStatus(CaptureStatus.PROCESSING);
+            capture.setUpdatedAt(Instant.now());
+            captureMapper.update(capture);
+
+            job.setStatus(JobStatus.PROCESSING);
+            job.setUpdatedAt(Instant.now());
+            ingestionJobMapper.update(job);
+
+            if (sseNotificationService != null) {
+                sseNotificationService.emitCaptureEvent(userId, "CAPTURE_PROCESSING", Map.of(
+                        "capture_id", captureId,
+                        "status", "PROCESSING"
+                ));
+            }
+
             CanonicalSource canonicalSource = canonicalSourceMapper.findById(capture.getCanonicalSourceId())
                     .orElseThrow(() -> new IllegalStateException("CanonicalSource not found: " + capture.getCanonicalSourceId()));
 
@@ -95,7 +111,12 @@ public class IngestionPipelineService {
 
                 // Step 1: Scrape media metadata
                 ScraperProvider.ScrapedMedia scraped = scraperProvider.extractMedia(rawUrl);
-                caption = scraped.caption();
+                String jobCaption = job.getPayload() != null ? (String) job.getPayload().get("caption") : null;
+                if (jobCaption != null && !jobCaption.isBlank()) {
+                    caption = jobCaption;
+                } else {
+                    caption = scraped.caption();
+                }
                 videoDurationSec = scraped.durationSec();
 
                 // Step 2: Ephemeral in-memory audio download (capped at 15MB)

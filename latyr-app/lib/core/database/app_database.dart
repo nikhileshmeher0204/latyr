@@ -67,12 +67,46 @@ class AppDatabase extends _$AppDatabase {
     return (select(localCaptures)..where((t) => t.serverCaptureId.equals(serverCaptureId))).getSingleOrNull();
   }
 
+  Future<LocalCapture?> getCaptureByUrl(String url) {
+    return (select(localCaptures)
+          ..where((t) => t.originalUrl.equals(url))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  Future<void> deduplicateCaptures() async {
+    final all = await getAllCaptures();
+    final seenServerIds = <String>{};
+    final seenUrls = <String>{};
+    for (final item in all) {
+      bool isDuplicate = false;
+      if (item.serverCaptureId != null && item.serverCaptureId!.isNotEmpty) {
+        if (seenServerIds.contains(item.serverCaptureId)) {
+          isDuplicate = true;
+        } else {
+          seenServerIds.add(item.serverCaptureId!);
+        }
+      }
+      if (item.originalUrl != null && item.originalUrl!.isNotEmpty) {
+        final base = item.originalUrl!.split('?').first.replaceAll(RegExp(r'/+$'), '');
+        if (seenUrls.contains(base)) {
+          isDuplicate = true;
+        } else {
+          seenUrls.add(base);
+        }
+      }
+      if (isDuplicate) {
+        await deleteCapture(item.id);
+      }
+    }
+  }
+
   Future<int> insertCapture(LocalCapturesCompanion entry) {
     return into(localCaptures).insert(entry, mode: InsertMode.insertOrReplace);
   }
 
-  Future<bool> updateCapture(LocalCapturesCompanion entry) {
-    return update(localCaptures).replace(entry);
+  Future<int> updateCapture(LocalCapturesCompanion entry) {
+    return (update(localCaptures)..where((t) => t.id.equals(entry.id.value))).write(entry);
   }
 
   Future<int> deleteCapture(String id) {
@@ -84,6 +118,12 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'latyr_local.sqlite'));
-    return NativeDatabase.createInBackground(file);
+    return NativeDatabase.createInBackground(
+      file,
+      setup: (rawDb) {
+        rawDb.execute('PRAGMA journal_mode = WAL;');
+        rawDb.execute('PRAGMA busy_timeout = 10000;');
+      },
+    );
   });
 }

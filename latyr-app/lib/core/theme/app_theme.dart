@@ -1,82 +1,106 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:latyr_app/core/design/latyr_colors.dart';
+import 'package:latyr_app/core/design/latyr_typography.dart';
 
+/// AppTheme — bridges CupertinoThemeData and MaterialThemeData.
+///
+/// The app uses [CupertinoApp] as root. The Material bridge lets any legacy
+/// Material widget (RefreshIndicator, Slider, etc.) pick up consistent colors.
 class AppTheme {
-  // Brand Colors
-  static const Color background = Color(0xFF0B0F19);
-  static const Color surface = Color(0xFF151D2F);
-  static const Color surfaceElevated = Color(0xFF1E293B);
-  static const Color border = Color(0xFF334155);
+  AppTheme._();
 
-  static const Color primary = Color(0xFF6366F1); // Indigo
-  static const Color primaryLight = Color(0xFF818CF8);
-  static const Color accent = Color(0xFF10B981); // Emerald
-  static const Color warning = Color(0xFFF59E0B); // Amber
-  static const Color error = Color(0xFFEF4444); // Rose
-  static const Color info = Color(0xFF06B6D4); // Cyan
+  // ─── Legacy static accessors (backward compat) ─────────────────────────────
 
-  // Text Colors
-  static const Color textPrimary = Color(0xFFF8FAFC);
-  static const Color textSecondary = Color(0xFF94A3B8);
-  static const Color textMuted = Color(0xFF64748B);
+  static const Color background = Color(0xFF0E0E10);
+  static const Color surface = Color(0xFF17171A);
+  static const Color surfaceElevated = Color(0xFF1F1F23);
+  static const Color border = Color(0xFF38383A);
 
-  static ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: background,
-      primaryColor: primary,
-      colorScheme: const ColorScheme.dark(
-        primary: primary,
-        secondary: accent,
-        surface: surface,
-        error: error,
-        onPrimary: Colors.white,
-        onSurface: textPrimary,
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: background,
-        elevation: 0,
-        centerTitle: false,
-        titleTextStyle: TextStyle(
-          color: textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.5,
+  static const Color primary = LColors.brandAmber;
+  static const Color primaryLight = LColors.brandAmberLight;
+  static const Color accent = LColors.sageEmerald;
+  static const Color warning = LColors.warning;
+  static const Color error = LColors.error;
+  static const Color info = LColors.info;
+
+  static const CupertinoDynamicColor textPrimary = LColors.label;
+  static const CupertinoDynamicColor textSecondary = LColors.secondaryLabel;
+  static const CupertinoDynamicColor textMuted = LColors.tertiaryLabel;
+
+  // ─── Cupertino Theme ───────────────────────────────────────────────────────
+
+  static CupertinoThemeData cupertinoTheme({Brightness brightness = Brightness.light}) {
+    return CupertinoThemeData(
+      brightness: brightness,
+      primaryColor: LColors.brandAmber,
+      primaryContrastingColor: LColors.staticWhite,
+      scaffoldBackgroundColor: brightness == Brightness.light
+          ? const Color(0xFFFAF9F6)
+          : const Color(0xFF0E0E10),
+      barBackgroundColor: brightness == Brightness.light
+          ? const Color(0xB3FAF9F6) // 70% alabaster frosted
+          : const Color(0xB30E0E10), // 70% obsidian frosted
+      textTheme: CupertinoTextThemeData(
+        primaryColor: LColors.brandAmber,
+        textStyle: LTypography.body.copyWith(
+          color: brightness == Brightness.light
+              ? const Color(0xFF121316)
+              : const Color(0xFFF5F5F7),
         ),
-      ),
-      cardTheme: CardThemeData(
-        color: surface,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: border, width: 1),
+        navTitleTextStyle: LTypography.headline.copyWith(
+          color: brightness == Brightness.light
+              ? const Color(0xFF121316)
+              : const Color(0xFFF5F5F7),
         ),
-      ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: surface,
-        selectedItemColor: primaryLight,
-        unselectedItemColor: textMuted,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: surface,
-        hintStyle: const TextStyle(color: textMuted, fontSize: 14),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: border),
+        navLargeTitleTextStyle: LTypography.largeTitle.copyWith(
+          color: brightness == Brightness.light
+              ? const Color(0xFF121316)
+              : const Color(0xFFF5F5F7),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primary, width: 1.5),
-        ),
+        actionTextStyle: LTypography.body.copyWith(color: LColors.brandAmber),
+        tabLabelTextStyle: LTypography.caption2Bold,
       ),
     );
   }
+
+  // ─── Material bridge (for RefreshIndicator, Slider, Snackbar, etc.) ───────
+
+  static ThemeData materialBridge({Brightness brightness = Brightness.light}) {
+    final isLight = brightness == Brightness.light;
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      scaffoldBackgroundColor: isLight ? const Color(0xFFFAF9F6) : const Color(0xFF0E0E10),
+      primaryColor: LColors.brandAmber,
+      colorScheme: ColorScheme(
+        brightness: brightness,
+        primary: LColors.brandAmber,
+        onPrimary: LColors.staticWhite,
+        secondary: LColors.sageEmerald,
+        onSecondary: LColors.staticWhite,
+        error: LColors.error,
+        onError: LColors.staticWhite,
+        surface: isLight ? const Color(0xFFF2F1EE) : const Color(0xFF17171A),
+        onSurface: isLight ? const Color(0xFF121316) : const Color(0xFFF5F5F7),
+      ),
+      fontFamily: 'Inter',
+      textTheme: TextTheme(
+        headlineLarge: LTypography.largeTitle,
+        headlineMedium: LTypography.title1,
+        titleLarge: LTypography.title3,
+        titleMedium: LTypography.headline,
+        bodyLarge: LTypography.body,
+        bodyMedium: LTypography.callout,
+        bodySmall: LTypography.footnote,
+        labelLarge: LTypography.pillLabel,
+        labelSmall: LTypography.caption2Bold,
+      ),
+    );
+  }
+
+  // ─── Convenience getters (legacy API) ─────────────────────────────────────
+
+  static ThemeData get lightTheme => materialBridge(brightness: Brightness.light);
+  static ThemeData get darkTheme => materialBridge(brightness: Brightness.dark);
 }

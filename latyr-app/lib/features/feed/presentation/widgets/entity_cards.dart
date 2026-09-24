@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:latyr_app/core/theme/app_theme.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:latyr_app/core/design/latyr_colors.dart';
+import 'package:latyr_app/core/design/latyr_spacing.dart';
+import 'package:latyr_app/core/design/latyr_typography.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -13,56 +15,71 @@ class EntityCardRouter extends StatelessWidget {
     switch (entity.entityType.toUpperCase()) {
       case 'MOVIE':
       case 'TV_SHOW':
-        return MovieShowEntityCard(entity: entity);
+        return _MovieShowCard(entity: entity);
       case 'GITHUB_REPO':
-        return GitHubRepoEntityCard(entity: entity);
+        return _GitHubRepoCard(entity: entity);
       case 'QUOTE':
-        return QuoteEntityCard(entity: entity);
+        return _QuoteCard(entity: entity);
       default:
-        return GenericEntityCard(entity: entity);
+        return _GenericCard(entity: entity);
     }
   }
 }
 
-class MovieShowEntityCard extends StatelessWidget {
-  final ExtractedEntityModel entity;
+// ─── Movie / Show ────────────────────────────────────────────────────────────
 
-  const MovieShowEntityCard({super.key, required this.entity});
+class _MovieShowCard extends StatelessWidget {
+  final ExtractedEntityModel entity;
+  const _MovieShowCard({required this.entity});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
     final posterUrl = entity.metadata['poster_url']?.toString();
     final rating = entity.metadata['rating']?.toString();
     final releaseYear = entity.metadata['release_year']?.toString();
+    final bg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEFEEEC);
+    final labelColor = isDark ? const Color(0xFFF5F5F7) : const Color(0xFF121316);
+    final secondaryColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6D7A);
 
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(top: LSpacing.sm),
+      padding: const EdgeInsets.all(LSpacing.md - 2),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceElevated,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        color: bg,
+        borderRadius: LSpacing.brMD,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (posterUrl != null)
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: LSpacing.brSM,
               child: Image.network(
                 posterUrl,
-                width: 60,
-                height: 85,
+                width: 56,
+                height: 80,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 60,
-                  height: 85,
-                  color: AppTheme.surface,
-                  child: const Icon(Icons.movie, color: AppTheme.textMuted),
+                errorBuilder: (context, error, stack) => Container(
+                  width: 56,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF1C1C1E)
+                        : const Color(0xFFD1D1D6),
+                    borderRadius: LSpacing.brSM,
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      CupertinoIcons.film,
+                      color: Color(0xFF8E8E93),
+                      size: 22,
+                    ),
+                  ),
                 ),
               ),
             ),
-          const SizedBox(width: 12),
+          SizedBox(width: posterUrl != null ? LSpacing.md : 0),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,62 +89,70 @@ class MovieShowEntityCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         entity.title,
-                        style: const TextStyle(
-                          fontSize: 15,
+                        style: LTypography.footnoteSemibold.copyWith(
+                          color: labelColor,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (rating != null)
+                    if (rating != null) ...[
+                      const SizedBox(width: LSpacing.xs),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: LSpacing.xs + 2,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppTheme.warning.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(6),
+                          color: LColors.warning.withValues(alpha: 0.16),
+                          borderRadius: LSpacing.brXS,
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star_rounded, size: 14, color: AppTheme.warning),
+                            const Icon(
+                              CupertinoIcons.star_fill,
+                              size: 11,
+                              color: LColors.warning,
+                            ),
                             const SizedBox(width: 2),
                             Text(
                               rating,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.warning,
+                              style: LTypography.caption2Bold.copyWith(
+                                color: LColors.warning,
                               ),
                             ),
                           ],
                         ),
                       ),
+                    ],
                   ],
                 ),
-                if (releaseYear != null)
+                if (releaseYear != null) ...[
+                  const SizedBox(height: 2),
                   Text(
                     releaseYear,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                    style: LTypography.caption2.copyWith(color: secondaryColor),
                   ),
-                if (entity.description != null && entity.description!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      entity.description!,
-                      style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                ],
+                if (entity.description != null &&
+                    entity.description!.isNotEmpty) ...[
+                  const SizedBox(height: LSpacing.xs),
+                  Text(
+                    entity.description!,
+                    style: LTypography.caption1.copyWith(color: secondaryColor),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                const SizedBox(height: 8),
+                ],
+                const SizedBox(height: LSpacing.sm),
                 Align(
                   alignment: Alignment.centerRight,
                   child: _CtaButton(
                     ctaText: 'WATCH',
                     url: entity.externalUrl,
-                    icon: Icons.play_arrow_rounded,
+                    icon: CupertinoIcons.play_fill,
                   ),
                 ),
               ],
@@ -139,89 +164,88 @@ class MovieShowEntityCard extends StatelessWidget {
   }
 }
 
-class GitHubRepoEntityCard extends StatelessWidget {
-  final ExtractedEntityModel entity;
+// ─── GitHub Repo ──────────────────────────────────────────────────────────────
 
-  const GitHubRepoEntityCard({super.key, required this.entity});
+class _GitHubRepoCard extends StatelessWidget {
+  final ExtractedEntityModel entity;
+  const _GitHubRepoCard({required this.entity});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
     final stars = entity.metadata['stars']?.toString();
     final language = entity.metadata['language']?.toString();
+    final bg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEFEEEC);
+    final labelColor = isDark ? const Color(0xFFF5F5F7) : const Color(0xFF121316);
+    final secondaryColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6D7A);
 
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceElevated,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
-      ),
+      margin: const EdgeInsets.only(top: LSpacing.sm),
+      padding: const EdgeInsets.all(LSpacing.md - 2),
+      decoration: BoxDecoration(color: bg, borderRadius: LSpacing.brMD),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.code_rounded, size: 18, color: AppTheme.primaryLight),
-              const SizedBox(width: 8),
+              const Icon(CupertinoIcons.command, size: 16, color: LColors.royalIndigo),
+              const SizedBox(width: LSpacing.sm),
               Expanded(
                 child: Text(
                   entity.title,
-                  style: const TextStyle(
-                    fontSize: 15,
+                  style: LTypography.footnoteSemibold.copyWith(
+                    color: labelColor,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (stars != null)
-                Row(
-                  children: [
-                    const Icon(Icons.star_outline_rounded, size: 14, color: AppTheme.textMuted),
-                    const SizedBox(width: 2),
-                    Text(
-                      stars,
-                      style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
-                    ),
-                  ],
+              if (stars != null) ...[
+                const Icon(
+                  CupertinoIcons.star,
+                  size: 12,
+                  color: Color(0xFF8E8E93),
                 ),
+                const SizedBox(width: 2),
+                Text(stars, style: LTypography.caption2.copyWith(color: secondaryColor)),
+              ],
             ],
           ),
-          if (entity.description != null && entity.description!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                entity.description!,
-                style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+          if (entity.description != null && entity.description!.isNotEmpty) ...[
+            const SizedBox(height: LSpacing.xs),
+            Text(
+              entity.description!,
+              style: LTypography.caption1.copyWith(color: secondaryColor),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-          const SizedBox(height: 8),
+          ],
+          const SizedBox(height: LSpacing.sm),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (language != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: LSpacing.sm,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppTheme.border),
+                    color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFD1D1D6),
+                    borderRadius: LSpacing.brXS,
                   ),
                   child: Text(
                     language,
-                    style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                    style: LTypography.caption2.copyWith(color: secondaryColor),
                   ),
                 )
               else
                 const SizedBox.shrink(),
               _CtaButton(
-                ctaText: 'OPEN GITHUB',
+                ctaText: 'GITHUB',
                 url: entity.externalUrl,
-                icon: Icons.open_in_new_rounded,
+                icon: CupertinoIcons.arrow_up_right,
               ),
             ],
           ),
@@ -231,84 +255,100 @@ class GitHubRepoEntityCard extends StatelessWidget {
   }
 }
 
-class QuoteEntityCard extends StatelessWidget {
-  final ExtractedEntityModel entity;
+// ─── Quote ────────────────────────────────────────────────────────────────────
 
-  const QuoteEntityCard({super.key, required this.entity});
+class _QuoteCard extends StatelessWidget {
+  final ExtractedEntityModel entity;
+  const _QuoteCard({required this.entity});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    final labelColor = isDark ? const Color(0xFFF5F5F7) : const Color(0xFF121316);
+    final secondaryColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6D7A);
+
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(top: LSpacing.sm),
+      padding: const EdgeInsets.all(LSpacing.md - 2),
       decoration: BoxDecoration(
-        color: AppTheme.primary.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+        color: LColors.brandAmber.withValues(alpha: isDark ? 0.1 : 0.07),
+        borderRadius: LSpacing.brMD,
+        border: Border.all(
+          color: LColors.brandAmber.withValues(alpha: 0.22),
+          width: 0.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.format_quote_rounded, color: AppTheme.primaryLight, size: 20),
-              const SizedBox(width: 6),
+              const Icon(CupertinoIcons.text_quote, color: LColors.brandAmberLight, size: 18),
+              const SizedBox(width: LSpacing.sm),
               Expanded(
                 child: Text(
                   '"${entity.title}"',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: LTypography.footnote.copyWith(
+                    color: labelColor,
                     fontStyle: FontStyle.italic,
-                    color: AppTheme.textPrimary,
                     fontWeight: FontWeight.w600,
+                    height: 1.4,
                   ),
                 ),
               ),
             ],
           ),
-          if (entity.description != null && entity.description!.isNotEmpty)
+          if (entity.description != null && entity.description!.isNotEmpty) ...[
+            const SizedBox(height: LSpacing.xs),
             Padding(
-              padding: const EdgeInsets.only(top: 4, left: 26),
+              padding: const EdgeInsets.only(left: 26),
               child: Text(
                 '— ${entity.description!}',
-                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                style: LTypography.caption2.copyWith(color: secondaryColor),
               ),
             ),
+          ],
         ],
       ),
     );
   }
 }
 
-class GenericEntityCard extends StatelessWidget {
-  final ExtractedEntityModel entity;
+// ─── Generic ─────────────────────────────────────────────────────────────────
 
-  const GenericEntityCard({super.key, required this.entity});
+class _GenericCard extends StatelessWidget {
+  final ExtractedEntityModel entity;
+  const _GenericCard({required this.entity});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    final bg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEFEEEC);
+    final labelColor = isDark ? const Color(0xFFF5F5F7) : const Color(0xFF121316);
+    final secondaryColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6D7A);
+
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceElevated,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
-      ),
+      margin: const EdgeInsets.only(top: LSpacing.sm),
+      padding: const EdgeInsets.all(LSpacing.md - 2),
+      decoration: BoxDecoration(color: bg, borderRadius: LSpacing.brMD),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(_getIconForType(entity.entityType), size: 16, color: AppTheme.accent),
-              const SizedBox(width: 8),
+              Icon(
+                _iconForType(entity.entityType),
+                size: 15,
+                color: LColors.sageEmerald,
+              ),
+              const SizedBox(width: LSpacing.sm),
               Expanded(
                 child: Text(
                   entity.title,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: LTypography.footnoteSemibold.copyWith(
+                    color: labelColor,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -318,35 +358,41 @@ class GenericEntityCard extends StatelessWidget {
                 _CtaButton(
                   ctaText: entity.actionCta,
                   url: entity.externalUrl,
-                  icon: Icons.launch_rounded,
+                  icon: CupertinoIcons.arrow_up_right,
                 ),
             ],
           ),
-          if (entity.description != null && entity.description!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                entity.description!,
-                style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+          if (entity.description != null && entity.description!.isNotEmpty) ...[
+            const SizedBox(height: LSpacing.xs),
+            Text(
+              entity.description!,
+              style: LTypography.caption1.copyWith(color: secondaryColor),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
+          ],
         ],
       ),
     );
   }
 
-  IconData _getIconForType(String type) {
+  IconData _iconForType(String type) {
     switch (type.toUpperCase()) {
-      case 'BOOK': return Icons.menu_book_rounded;
-      case 'RECIPE': return Icons.restaurant_rounded;
-      case 'PLACE': return Icons.place_rounded;
-      case 'TOOL': return Icons.build_rounded;
-      default: return Icons.lightbulb_outline_rounded;
+      case 'BOOK':
+        return CupertinoIcons.book;
+      case 'RECIPE':
+        return CupertinoIcons.flame;
+      case 'PLACE':
+        return CupertinoIcons.map_pin;
+      case 'TOOL':
+        return CupertinoIcons.wrench;
+      default:
+        return CupertinoIcons.lightbulb;
     }
   }
 }
+
+// ─── CTA Button (no ElevatedButton) ──────────────────────────────────────────
 
 class _CtaButton extends StatelessWidget {
   final String ctaText;
@@ -361,8 +407,9 @@ class _CtaButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: () async {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () async {
         if (url != null && url!.isNotEmpty) {
           final uri = Uri.tryParse(url!);
           if (uri != null && await canLaunchUrl(uri)) {
@@ -370,18 +417,29 @@ class _CtaButton extends StatelessWidget {
           }
         }
       },
-      icon: Icon(icon, size: 14),
-      label: Text(
-        ctaText,
-        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: LSpacing.sm + 2,
+          vertical: LSpacing.xs + 2,
+        ),
+        decoration: BoxDecoration(
+          color: LColors.brandAmber,
+          borderRadius: LSpacing.brXS,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12, color: LColors.staticWhite),
+            const SizedBox(width: LSpacing.xs),
+            Text(
+              ctaText,
+              style: LTypography.caption2Bold.copyWith(
+                color: LColors.staticWhite,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

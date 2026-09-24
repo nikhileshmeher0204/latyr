@@ -1,126 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latyr_app/core/database/app_database.dart';
-import 'package:latyr_app/core/theme/app_theme.dart';
+import 'package:latyr_app/core/design/latyr_colors.dart';
+import 'package:latyr_app/core/design/latyr_spacing.dart';
+import 'package:latyr_app/core/design/latyr_typography.dart';
 import 'package:latyr_app/features/capture/presentation/capture_providers.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/capture_card_widget.dart';
-
-class CollectionsScreen extends ConsumerWidget {
-  const CollectionsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final capturesAsync = ref.watch(captureListStreamProvider);
-
-    final collections = [
-      _CollectionItem(
-        code: 'WATCHLIST',
-        name: 'Weekend Watchlist',
-        description: 'Movies and TV series saved from Reels',
-        icon: Icons.movie_outlined,
-        color: AppTheme.primary,
-        matches: (c) => c.intent?.toUpperCase() == 'WATCH' || c.category?.toLowerCase() == 'entertainment',
-      ),
-      _CollectionItem(
-        code: 'RECIPES',
-        name: 'Recipe Box',
-        description: 'Dishes, ingredients, and cooking steps',
-        icon: Icons.restaurant_outlined,
-        color: AppTheme.warning,
-        matches: (c) => c.intent?.toUpperCase() == 'COOK' || c.category?.toLowerCase() == 'food',
-      ),
-      _CollectionItem(
-        code: 'DEV_TOOLS',
-        name: 'Dev Tools & Repos',
-        description: 'GitHub repositories, CLI tools, and libraries',
-        icon: Icons.code_rounded,
-        color: AppTheme.accent,
-        matches: (c) => c.category?.toLowerCase() == 'technology' || c.category?.toLowerCase() == 'tools',
-      ),
-      _CollectionItem(
-        code: 'PLACES',
-        name: 'Places to Visit',
-        description: 'Cafes, travel spots, and destinations',
-        icon: Icons.place_outlined,
-        color: AppTheme.info,
-        matches: (c) => c.intent?.toUpperCase() == 'VISIT' || c.category?.toLowerCase() == 'places',
-      ),
-      _CollectionItem(
-        code: 'QUOTES',
-        name: 'Wisdom & Quotes',
-        description: 'Notable insights and quotes from creators',
-        icon: Icons.format_quote_rounded,
-        color: const Color(0xFFA855F7),
-        matches: (c) => c.category?.toLowerCase() == 'quotes' || (c.entitiesJson?.contains('QUOTE') ?? false),
-      ),
-    ];
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Smart Collections'),
-      ),
-      body: capturesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primary)),
-        error: (err, _) => Center(child: Text('Error: $err')),
-        data: (allCaptures) {
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            itemCount: collections.length,
-            itemBuilder: (context, index) {
-              final col = collections[index];
-              final matchingCaptures = allCaptures.where(col.matches).toList();
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  leading: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: col.color.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(col.icon, color: col.color, size: 24),
-                  ),
-                  title: Text(
-                    col.name,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
-                  ),
-                  subtitle: Text(
-                    col.description,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
-                  ),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceElevated,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${matchingCaptures.length}',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => _CollectionDetailScreen(
-                          collection: col,
-                          captures: matchingCaptures,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
 
 class _CollectionItem {
   final String code;
@@ -140,32 +25,232 @@ class _CollectionItem {
   });
 }
 
-class _CollectionDetailScreen extends StatelessWidget {
+class CollectionsScreen extends ConsumerWidget {
+  const CollectionsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final capturesAsync = ref.watch(captureListStreamProvider);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryColor = CupertinoColors.secondaryLabel.resolveFrom(context);
+
+    final collections = [
+      _CollectionItem(
+        code: 'WATCHLIST',
+        name: 'Weekend Watchlist',
+        description: 'Movies and TV series saved from Reels',
+        icon: CupertinoIcons.film_fill,
+        color: LColors.terracotta,
+        matches: (c) =>
+            c.intent?.toUpperCase() == 'WATCH' ||
+            c.category?.toLowerCase() == 'entertainment' ||
+            (c.entitiesJson?.contains('MOVIE') ?? false),
+      ),
+      _CollectionItem(
+        code: 'PLACES',
+        name: 'Places to Visit',
+        description: 'Cafes, travel spots, and destinations',
+        icon: CupertinoIcons.map_pin,
+        color: LColors.info,
+        matches: (c) =>
+            c.intent?.toUpperCase() == 'VISIT' ||
+            c.category?.toLowerCase() == 'places' ||
+            (c.entitiesJson?.contains('PLACE') ?? false),
+      ),
+      _CollectionItem(
+        code: 'DEV_TOOLS',
+        name: 'Dev Tools & Repos',
+        description: 'GitHub repositories, CLI tools, and libraries',
+        icon: CupertinoIcons.command,
+        color: LColors.sageEmerald,
+        matches: (c) =>
+            c.category?.toLowerCase() == 'technology' ||
+            c.category?.toLowerCase() == 'tools' ||
+            (c.entitiesJson?.contains('REPO') ?? false),
+      ),
+      _CollectionItem(
+        code: 'RECIPES',
+        name: 'Recipe Box',
+        description: 'Dishes, ingredients, and cooking steps',
+        icon: CupertinoIcons.flame_fill,
+        color: LColors.warning,
+        matches: (c) =>
+            c.intent?.toUpperCase() == 'COOK' ||
+            c.category?.toLowerCase() == 'food' ||
+            (c.entitiesJson?.contains('RECIPE') ?? false),
+      ),
+      _CollectionItem(
+        code: 'QUOTES',
+        name: 'Wisdom & Quotes',
+        description: 'Notable insights and quotes from creators',
+        icon: CupertinoIcons.text_quote,
+        color: LColors.royalViolet,
+        matches: (c) =>
+            c.category?.toLowerCase() == 'quotes' ||
+            (c.entitiesJson?.contains('QUOTE') ?? false),
+      ),
+    ];
+
+    return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(context),
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(
+          decelerationRate: ScrollDecelerationRate.fast,
+        ),
+        slivers: [
+          const CupertinoSliverNavigationBar(
+            largeTitle: Text('Collections'),
+            border: null,
+          ),
+          capturesAsync.when(
+            loading: () => const SliverFillRemaining(
+              child: Center(child: CupertinoActivityIndicator(radius: 14)),
+            ),
+            error: (err, _) => SliverFillRemaining(
+              child: Center(
+                child: Text('Error: $err', style: LTypography.footnote.copyWith(color: LColors.error)),
+              ),
+            ),
+            data: (allCaptures) {
+              return SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: LSpacing.sm, bottom: LSpacing.xl3),
+                  child: CupertinoListSection.insetGrouped(
+                    header: Text(
+                      'SMART COLLECTIONS',
+                      style: LTypography.caption1.copyWith(color: secondaryColor),
+                    ),
+                    children: collections.map((col) {
+                      final count = allCaptures.where(col.matches).length;
+                      return CupertinoListTile.notched(
+                        leading: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: col.color,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              col.icon,
+                              color: CupertinoColors.white,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          col.name,
+                          style: LTypography.body.copyWith(
+                            color: labelColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          col.description,
+                          style: LTypography.caption1.copyWith(color: secondaryColor),
+                        ),
+                        additionalInfo: Text(
+                          '$count',
+                          style: LTypography.subhead.copyWith(
+                            color: secondaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        trailing: const CupertinoListTileChevron(),
+                        onTap: () {
+                          final matching = allCaptures.where(col.matches).toList();
+                          Navigator.of(context).push(
+                            CupertinoPageRoute(
+                              builder: (_) => _CollectionDetailPage(
+                                collection: col,
+                                captures: matching,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CollectionDetailPage extends StatelessWidget {
   final _CollectionItem collection;
   final List<LocalCapture> captures;
 
-  const _CollectionDetailScreen({required this.collection, required this.captures});
+  const _CollectionDetailPage({
+    required this.collection,
+    required this.captures,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(collection.name),
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryColor = CupertinoColors.secondaryLabel.resolveFrom(context);
+
+    return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(context),
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(collection.name, style: LTypography.headline.copyWith(color: labelColor)),
+        previousPageTitle: 'Collections',
       ),
-      body: captures.isEmpty
-          ? Center(
-              child: Text(
-                'No captures in ${collection.name} yet.',
-                style: const TextStyle(color: AppTheme.textSecondary),
+      child: SafeArea(
+        child: captures.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(LSpacing.xl2),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(LSpacing.lg),
+                        decoration: BoxDecoration(
+                          color: collection.color.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(collection.icon, size: 40, color: collection.color),
+                      ),
+                      const SizedBox(height: LSpacing.base),
+                      Text(
+                        'Empty Collection',
+                        style: LTypography.title2.copyWith(
+                          color: labelColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: LSpacing.xs),
+                      Text(
+                        'Items matching "${collection.name}" will automatically be organized here.',
+                        textAlign: TextAlign.center,
+                        style: LTypography.footnote.copyWith(color: secondaryColor, height: 1.4),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : ListView.separated(
+                physics: const BouncingScrollPhysics(
+                  decelerationRate: ScrollDecelerationRate.fast,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: LSpacing.screenH,
+                  vertical: LSpacing.md,
+                ),
+                itemCount: captures.length,
+                separatorBuilder: (context, i) => const SizedBox(height: LSpacing.md),
+                itemBuilder: (context, index) => CaptureCardWidget(
+                  key: ValueKey(captures[index].id),
+                  capture: captures[index],
+                ),
               ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              itemCount: captures.length,
-              itemBuilder: (context, index) {
-                return CaptureCardWidget(capture: captures[index]);
-              },
-            ),
+      ),
     );
   }
 }

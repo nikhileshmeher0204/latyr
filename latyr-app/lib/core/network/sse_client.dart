@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:latyr_app/config/environment_config.dart';
 import 'package:latyr_app/core/network/auth_interceptor.dart';
 
@@ -18,32 +18,40 @@ class SseCaptureEvent {
 
 class SseClient {
   final Dio _dio;
-  final TokenProvider? _tokenProvider;
+  final TokenProvider? tokenProvider;
   final _eventController = StreamController<SseCaptureEvent>.broadcast();
   CancelToken? _cancelToken;
   bool _isConnected = false;
+  bool _isConnecting = false;
+  bool _isDisposed = false;
+  Timer? _reconnectTimer;
+  Duration _reconnectDelay = const Duration(seconds: 2);
 
-  SseClient({Dio? dio, TokenProvider? tokenProvider})
-      : _dio = dio ?? Dio(),
-        _tokenProvider = tokenProvider;
+  SseClient({Dio? dio, this.tokenProvider})
+      : _dio = dio ?? Dio();
 
   Stream<SseCaptureEvent> get events => _eventController.stream;
   bool get isConnected => _isConnected;
 
   Future<void> connect() async {
-    if (_isConnected) return;
+    if (_isDisposed || _isConnected || _isConnecting) return;
+    _isConnecting = true;
+    _reconnectTimer?.cancel();
 
     _cancelToken = CancelToken();
     try {
-      final token = _tokenProvider != null ? await _tokenProvider() : null;
+      final token = tokenProvider != null ? await tokenProvider!() : null;
       final headers = <String, dynamic>{
         'Accept': 'text/event-stream',
         'Cache-Control': 'no-cache',
         if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
       };
 
+      final streamUrl = '${EnvironmentConfig.apiUrl}/api/v1/captures/stream';
+      debugPrint('[SSE] Connecting to real-time event stream: $streamUrl');
+
       final response = await _dio.get<ResponseBody>(
-        '${EnvironmentConfig.apiUrl}/api/v1/captures/stream',
+        streamUrl,
         options: Options(
           headers: headers,
           responseType: ResponseType.stream,
@@ -52,11 +60,17 @@ class SseClient {
       );
 
       _isConnected = true;
+      _isConnecting = false;
+      _reconnectDelay = const Duration(seconds: 2); // Reset backoff on success
+      debugPrint('[SSE] Successfully connected to SSE stream');
+
       String buffer = '';
 
-      response.data?.stream.listen(
-        (Uint8List chunk) {
-          final text = utf8.decode(chunk);
+      response.data?.stream
+          .cast<List<int>>()
+          .transform(utf8.decoder)
+          .listen(
+        (String text) {
           buffer += text;
 
           while (buffer.contains('\n\n')) {
@@ -68,21 +82,45 @@ class SseClient {
           }
         },
         onDone: () {
+          debugPrint('[SSE] Stream closed by server');
           _isConnected = false;
+          _isConnecting = false;
+          _scheduleReconnect();
         },
         onError: (err) {
+          debugPrint('[SSE] Stream error: $err');
           _isConnected = false;
+          _isConnecting = false;
+          _scheduleReconnect();
         },
         cancelOnError: true,
       );
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[SSE] Connection failed: $e');
       _isConnected = false;
+      _isConnecting = false;
+      _scheduleReconnect();
     }
+  }
+
+  void _scheduleReconnect() {
+    if (_isDisposed || _isConnected || _isConnecting) return;
+    _reconnectTimer?.cancel();
+    debugPrint('[SSE] Scheduling reconnect in ${_reconnectDelay.inSeconds}s...');
+    _reconnectTimer = Timer(_reconnectDelay, () {
+      if (!_isDisposed && !_isConnected) {
+        connect();
+      }
+    });
+
+    // Exponential backoff capped at 16 seconds
+    final nextSec = (_reconnectDelay.inSeconds * 2).clamp(2, 16);
+    _reconnectDelay = Duration(seconds: nextSec);
   }
 
   void _parseAndEmitSseMessage(String message) {
     if (message.trim().isEmpty || message.startsWith(':')) {
-      return; // Comment or ping
+      return; // Comment or heartbeat ping
     }
 
     String eventType = 'MESSAGE';
@@ -101,18 +139,24 @@ class SseClient {
       try {
         final parsed = jsonDecode(dataJson);
         if (parsed is Map<String, dynamic>) {
+          debugPrint('[SSE] Received event $eventType: $dataJson');
           _eventController.add(SseCaptureEvent(eventType: eventType, data: parsed));
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[SSE] Failed to decode event JSON: $e');
+      }
     }
   }
 
   void disconnect() {
+    _reconnectTimer?.cancel();
     _cancelToken?.cancel('Disconnected by client');
     _isConnected = false;
+    _isConnecting = false;
   }
 
   void dispose() {
+    _isDisposed = true;
     disconnect();
     _eventController.close();
   }

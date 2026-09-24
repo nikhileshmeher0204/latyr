@@ -39,6 +39,10 @@ public interface CaptureMapper {
     @ResultMap("CaptureResult")
     Optional<Capture> findByIdAndUserId(@Param("id") UUID id, @Param("userId") UUID userId);
 
+    @Select("SELECT * FROM captures WHERE user_id = #{userId} AND canonical_source_id = #{canonicalSourceId} ORDER BY created_at DESC LIMIT 1")
+    @ResultMap("CaptureResult")
+    Optional<Capture> findByUserIdAndCanonicalSourceId(@Param("userId") UUID userId, @Param("canonicalSourceId") UUID canonicalSourceId);
+
     @Select("SELECT * FROM captures WHERE user_id = #{userId} ORDER BY created_at DESC LIMIT #{limit} OFFSET #{offset}")
     @ResultMap("CaptureResult")
     List<Capture> findByUserId(@Param("userId") UUID userId, @Param("limit") int limit, @Param("offset") int offset);

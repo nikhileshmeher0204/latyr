@@ -11,7 +11,7 @@ class ApiClient {
       : dio = customDio ??
             Dio(
               BaseOptions(
-                baseUrl: EnvironmentConfig.apiUrl,
+                baseUrl: '${EnvironmentConfig.apiUrl}/api/v1',
                 connectTimeout: const Duration(seconds: 15),
                 receiveTimeout: const Duration(seconds: 30),
                 headers: {
@@ -25,10 +25,17 @@ class ApiClient {
     }
   }
 
-  Future<Response<Map<String, dynamic>>> createCapture(String url) async {
+  Future<Response<Map<String, dynamic>>> createCapture(String url, {String? caption}) async {
+    final payload = <String, dynamic>{
+      'url': url,
+      'content_type': 'URL',
+    };
+    if (caption != null && caption.trim().isNotEmpty) {
+      payload['caption'] = caption.trim();
+    }
     return dio.post<Map<String, dynamic>>(
-      '/api/v1/captures',
-      data: {'url': url, 'content_type': 'URL'},
+      '/captures',
+      data: payload,
     );
   }
 
@@ -39,7 +46,7 @@ class ApiClient {
     });
 
     return dio.post<Map<String, dynamic>>(
-      '/api/v1/captures/upload',
+      '/captures/upload',
       data: formData,
     );
   }
@@ -52,19 +59,18 @@ class ApiClient {
   }) async {
     final queryParams = <String, dynamic>{
       'page': page,
-      'size': size,
-      if (status != null) 'status': status,
-      if (category != null) 'category': category,
+      ...?status != null ? {'status': status} : null,
+      ...?category != null ? {'category': category} : null,
     };
 
     return dio.get<Map<String, dynamic>>(
-      '/api/v1/captures',
+      '/captures',
       queryParameters: queryParams,
     );
   }
 
   Future<Response<Map<String, dynamic>>> getCaptureDetail(String id) async {
-    return dio.get<Map<String, dynamic>>('/api/v1/captures/$id');
+    return dio.get<Map<String, dynamic>>('/captures/$id');
   }
 
   Future<Response<Map<String, dynamic>>> updateEntity(
@@ -72,7 +78,7 @@ class ApiClient {
     Map<String, dynamic> updatePayload,
   ) async {
     return dio.patch<Map<String, dynamic>>(
-      '/api/v1/entities/$entityId',
+      '/entities/$entityId',
       data: updatePayload,
     );
   }

@@ -136,13 +136,13 @@ class IngestionPipelineServiceTest {
         // Execute pipeline
         pipelineService.processJob(job);
 
-        // Verify Capture updated to COMPLETED
+        // Verify Capture updated to COMPLETED (updated twice: PROCESSING then COMPLETED)
         assertEquals(CaptureStatus.COMPLETED, capture.getStatus());
         assertEquals(Intent.WATCH, capture.getIntent());
         assertEquals("Entertainment", capture.getCategory());
         assertEquals("Thriller Shows", capture.getSubCategory());
         assertEquals("5 suspense movies you must watch", capture.getOriginalCaption());
-        verify(captureMapper, times(1)).update(capture);
+        verify(captureMapper, times(2)).update(capture);
 
         // Verify CanonicalSource cache updated
         assertNotNull(canonicalSource.getAiAnalysisCache());
@@ -151,9 +151,13 @@ class IngestionPipelineServiceTest {
         // Verify ExtractedEntity inserted
         verify(extractedEntityMapper, times(1)).insert(any(ExtractedEntity.class));
 
-        // Verify IngestionJob marked COMPLETED
+        // Verify IngestionJob marked COMPLETED (updated twice: PROCESSING then COMPLETED)
         assertEquals(JobStatus.COMPLETED, job.getStatus());
-        verify(ingestionJobMapper, times(1)).update(job);
+        verify(ingestionJobMapper, times(2)).update(job);
+
+        // Verify SSE real-time events emitted
+        verify(sseNotificationService, times(1)).emitCaptureEvent(eq(userId), eq("CAPTURE_PROCESSING"), any());
+        verify(sseNotificationService, times(1)).emitCaptureEvent(eq(userId), eq("CAPTURE_COMPLETED"), any());
     }
 
     @Test

@@ -14,7 +14,7 @@ class ApifyScraperAdapterTest {
     @Test
     @DisplayName("Configuration check: Should throw LatyrException if APIFY_API_TOKEN is missing")
     void testExtractMedia_MissingToken() {
-        ApifyScraperAdapter adapter = new ApifyScraperAdapter(WebClient.builder());
+        ApifyScraperAdapter adapter = new ApifyScraperAdapter(WebClient.builder(), 1);
         ReflectionTestUtils.setField(adapter, "apiToken", "");
 
         LatyrException ex = assertThrows(LatyrException.class, () ->
