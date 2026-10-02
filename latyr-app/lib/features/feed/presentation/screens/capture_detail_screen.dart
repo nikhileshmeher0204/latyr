@@ -372,33 +372,36 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                     const SizedBox(width: 8),
 
                     // Centered Sub Category Bubble Pill (WITHOUT icon)
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10.5),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                            width: 1.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                              blurRadius: 14,
-                              offset: const Offset(0, 3),
+                    Expanded(
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                              width: 1.5,
                             ),
-                          ],
-                        ),
-                        child: Text(
-                          navTitle.toUpperCase(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: LTypography.footnoteSemibold.copyWith(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.0,
-                            color: textColor,
+                            boxShadow: [
+                              BoxShadow(
+                                color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                                blurRadius: 14,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            navTitle.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: LTypography.footnoteSemibold.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.8,
+                              color: textColor,
+                            ),
                           ),
                         ),
                       ),

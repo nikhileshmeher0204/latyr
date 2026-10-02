@@ -79,6 +79,18 @@ void main() {
       expect(tokens[5].actionPayload, 'Browser+API');
     });
 
+    test('parses smart action links with whitespace tolerance [Text] (scheme:payload)', () {
+      const input = 'The most effective [Founder] (tip:An+entrepreneur) maintains focus.';
+      final tokens = SummaryLexer.tokenize(input);
+      expect(tokens.length, 3);
+      expect(tokens[0], const SummaryToken.plain('The most effective '));
+      expect(tokens[1].type, SummaryTokenType.smartLink);
+      expect(tokens[1].text, 'Founder');
+      expect(tokens[1].actionScheme, 'tip');
+      expect(tokens[1].actionPayload, 'An+entrepreneur');
+      expect(tokens[2], const SummaryToken.plain(' maintains focus.'));
+    });
+
     test('strips all markup for database & search indexing', () {
       const input = 'Swarm LLM enables ==running 27B models== [icon:rocket] by ~splitting the model~ [icon:lightning] for *fast decoding* at [Tartine SF](maps:Tartine+SF).';
       final stripped = SummaryLexer.stripMarkup(input);

@@ -16,7 +16,7 @@ class SummaryLexer {
     r'|(~(?<wavy>[^~\n]+)~)'
     r'|(\*(?<italic>[^*\n]+)\*)'
     r'|(\[icon:(?<icon>[a-zA-Z0-9_\-]+)\])'
-    r'|(\[(?<linkText>[^\]\n]+)\]\((?<linkTarget>[^)\n]+)\))',
+    r'|(\[(?<linkText>[^\]\n]+)\]\s*\((?<linkTarget>[^)\n]+)\))',
   );
 
   /// Tokenizes [rawText] into an ordered list of [SummaryToken] objects.
@@ -113,7 +113,7 @@ class SummaryLexer {
         .replaceAllMapped(RegExp(r'~([^~\n]+)~'), (m) => m[1] ?? '')
         .replaceAllMapped(RegExp(r'\*([^*\n]+)\*'), (m) => m[1] ?? '')
         .replaceAll(RegExp(r'\[icon:[a-zA-Z0-9_\-]+\]'), '')
-        .replaceAllMapped(RegExp(r'\[([^\]\n]+)\]\([^)\n]+\)'), (m) => m[1] ?? '')
+        .replaceAllMapped(RegExp(r'\[([^\]\n]+)\]\s*\([^)\n]+\)'), (m) => m[1] ?? '')
         .replaceAll(RegExp(r'\s{2,}'), ' ')
         .trim();
   }
