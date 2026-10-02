@@ -147,7 +147,7 @@ public class GoogleGenAIAdapter implements AIProvider {
             Return a JSON object with this exact schema:
             {
               "title": "A concise, descriptive, and engaging 4-8 word title summarizing the core topic or hook of this content (e.g. 'Run AWS Services Locally with FLOCI', 'Top 5 AI Extensions for VS Code', 'Crispy Garlic Butter Smashed Potatoes'). Never use generic filler like 'Instagram Reel' or creator hashtags.",
-              "summary": "An editorial 2-3 sentence summary of the key content, transcription, or main takeaway, styled using Latyr Restrained Semantic Markup: Use '==text==' for exactly ONE high-value word or punchy concept to highlight in pastel yellow (e.g. '==10x faster=='). Use '~text~' for at most ONE caveat, friction point, or alert to underline with red wavy styling (e.g. '~requires Docker~'). Use '*text*' sparingly for key titles or italic phrases. Use '[icon:name]' for at most 1-2 inline 3D icons from this whitelist: runner, lightning, rocket, lightbulb, fire, brain, sparkles, target, code, warning, bookmark, pin, calendar, globe. Use '[Label](github:query)' for repos, '[Label](maps:query)' for places, '[Label](reminder:text)' for deadlines, '[Label](tip:Brief+definition)' for technical terms. RESTRICTION: Maximum 1 highlight, 1 wavy underline, 1-2 icons. Keep it elegant, readable, and magazine-quality. Never hallucinate unmentioned external URLs.",
+              "summary": "MANDATORY: Provide an editorial 2-3 sentence summary enriched with Latyr Semantic Markup tags: (1) Highlight: Wrap exactly ONE primary standout keyword or concept in '==text==' (e.g. '==symmetric encryption=='). (2) Warning/Caveat: Wrap at most ONE critical caveat or friction point in '~text~' (e.g. '~key exchange complexity~'). (3) 3D Icons: Include 1-2 inline icons [icon:name] from: runner, lightning, rocket, lightbulb, fire, brain, sparkles, target, code, warning, bookmark, pin, calendar, globe (e.g. 'high speed [icon:runner]'). (4) Explainer Tip: Wrap key technical terms or acronyms in '[Term](tip:Brief+definition)' for interactive popover explainers (e.g. '[HTTPS](tip:Secure+hypertext+transfer+protocol)'). (5) Links: If repos, places, or dates are mentioned, use [Name](github:query), [Place](maps:query), or [Event](reminder:text). Example: 'This breakdown reveals how ==symmetric encryption== provides [icon:lightning] blazing speed while ~asymmetric key exchange~ ensures security. Learn how [HTTPS](tip:Secure+web+protocol) unifies both.' Keep it restrained, elegant, and magazine-quality. Never hallucinate unmentioned external URLs.",
               "transcript": "Accurate transcription of spoken audio or summary of the provided text content",
               "intent": "WATCH | EXPLORE | REMEMBER | COOK | VISIT | BUY | LEARN",
               "category": "Entertainment | Tech | Food | Travel | Learning | Shopping | Lifestyle | Fitness | Finance",
@@ -168,7 +168,7 @@ public class GoogleGenAIAdapter implements AIProvider {
                 }
               ]
             }
-            Do not include Markdown formatting or code fences. Return raw JSON only.
+            Do NOT wrap the JSON in Markdown code fences (no ```json ... ```). Return raw, valid JSON only. However, the string inside "summary" MUST use the requested Latyr semantic tags (==highlight==, ~wavy~, etc.).
             """.formatted(
                 isImage ? "image/screenshot" : "audio track and caption",
                 langInstruction,
