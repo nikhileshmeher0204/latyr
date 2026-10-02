@@ -7,6 +7,7 @@ import 'package:latyr_app/core/design/latyr_typography.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/entity_cards.dart';
 import 'package:latyr_app/core/services/color_extraction_service.dart';
+import 'package:latyr_app/core/widgets/rich_summary/latyr_rich_summary.dart';
 
 class CaptureDetailScreen extends StatefulWidget {
   final LocalCapture capture;
@@ -637,14 +638,13 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          Text(
-            summary,
-            style: TextStyle(
-              color: textColor.withValues(alpha: 0.92),
-              fontSize: 15.5,
-              height: 1.58,
-              fontWeight: FontWeight.w400,
-            ),
+          LatyrRichSummary(
+            text: summary,
+            textColor: textColor,
+            cardAccentColor: accentColor,
+            isDark: isDark,
+            fontSize: 15.5,
+            lineHeight: 1.58,
           ),
         ],
       ),

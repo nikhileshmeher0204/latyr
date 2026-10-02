@@ -86,6 +86,7 @@ class CaptureRepository {
         final entitiesJson = entities != null ? jsonEncode(entities) : null;
         final intent = event.data['intent']?.toString();
         final category = event.data['category']?.toString();
+        final summary = event.data['summary']?.toString();
         final title = event.data['title']?.toString();
         final transcript = event.data['audio_transcript']?.toString();
         final thumbnailUrl = event.data['thumbnail_url']?.toString();
@@ -98,6 +99,7 @@ class CaptureRepository {
               status: const Value('COMPLETED'),
               intent: Value(intent),
               category: Value(category),
+              summary: Value(summary ?? existing.summary),
               title: Value(title ?? existing.title),
               originalCaption: Value(rawCaption ?? existing.originalCaption),
               thumbnailUrl: Value(thumbnailUrl ?? existing.thumbnailUrl),
@@ -118,6 +120,7 @@ class CaptureRepository {
               status: const Value('COMPLETED'),
               intent: Value(intent),
               category: Value(category),
+              summary: Value(summary),
               title: Value(title),
               originalCaption: Value(rawCaption),
               thumbnailUrl: Value(thumbnailUrl),
