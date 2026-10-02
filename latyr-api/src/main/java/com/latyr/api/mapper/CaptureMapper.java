@@ -23,7 +23,9 @@ public interface CaptureMapper {
         @Result(property = "intent", column = "intent"),
         @Result(property = "category", column = "category"),
         @Result(property = "subCategory", column = "sub_category"),
+        @Result(property = "title", column = "title"),
         @Result(property = "originalCaption", column = "original_caption"),
+        @Result(property = "thumbnailUrl", column = "thumbnail_url"),
         @Result(property = "audioTranscript", column = "audio_transcript"),
         @Result(property = "notificationCopies", column = "notification_copies", typeHandler = StringArrayTypeHandler.class),
         @Result(property = "resurfaceCount", column = "resurface_count"),
@@ -90,7 +92,7 @@ public interface CaptureMapper {
     @Insert("""
         INSERT INTO captures (
             id, user_id, canonical_source_id, content_type, status, intent, category, sub_category,
-            original_caption, audio_transcript, notification_copies, resurface_count,
+            title, original_caption, thumbnail_url, audio_transcript, notification_copies, resurface_count,
             total_processing_duration_ms, scheduled_resurface_at, last_resurfaced_at,
             created_at, updated_at
         )
@@ -103,7 +105,9 @@ public interface CaptureMapper {
             #{intent},
             #{category},
             #{subCategory},
+            #{title},
             #{originalCaption},
+            #{thumbnailUrl},
             #{audioTranscript},
             #{notificationCopies, typeHandler=com.latyr.api.config.typehandler.StringArrayTypeHandler, jdbcType=ARRAY},
             #{resurfaceCount},
@@ -122,7 +126,9 @@ public interface CaptureMapper {
             intent = #{intent},
             category = #{category},
             sub_category = #{subCategory},
+            title = #{title},
             original_caption = #{originalCaption},
+            thumbnail_url = #{thumbnailUrl},
             audio_transcript = #{audioTranscript},
             notification_copies = #{notificationCopies, typeHandler=com.latyr.api.config.typehandler.StringArrayTypeHandler, jdbcType=ARRAY},
             resurface_count = #{resurfaceCount},

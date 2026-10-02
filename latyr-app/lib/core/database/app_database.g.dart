@@ -82,12 +82,32 @@ class $LocalCapturesTable extends LocalCaptures
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _originalCaptionMeta = const VerificationMeta(
     'originalCaption',
   );
   @override
   late final GeneratedColumn<String> originalCaption = GeneratedColumn<String>(
     'original_caption',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _thumbnailUrlMeta = const VerificationMeta(
+    'thumbnailUrl',
+  );
+  @override
+  late final GeneratedColumn<String> thumbnailUrl = GeneratedColumn<String>(
+    'thumbnail_url',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -170,7 +190,9 @@ class $LocalCapturesTable extends LocalCaptures
     status,
     intent,
     category,
+    title,
     originalCaption,
+    thumbnailUrl,
     audioTranscript,
     notificationCopiesJson,
     entitiesJson,
@@ -240,12 +262,27 @@ class $LocalCapturesTable extends LocalCaptures
         category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
       );
     }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
     if (data.containsKey('original_caption')) {
       context.handle(
         _originalCaptionMeta,
         originalCaption.isAcceptableOrUnknown(
           data['original_caption']!,
           _originalCaptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('thumbnail_url')) {
+      context.handle(
+        _thumbnailUrlMeta,
+        thumbnailUrl.isAcceptableOrUnknown(
+          data['thumbnail_url']!,
+          _thumbnailUrlMeta,
         ),
       );
     }
@@ -331,9 +368,17 @@ class $LocalCapturesTable extends LocalCaptures
         DriftSqlType.string,
         data['${effectivePrefix}category'],
       ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      ),
       originalCaption: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}original_caption'],
+      ),
+      thumbnailUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}thumbnail_url'],
       ),
       audioTranscript: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -376,7 +421,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
   final String status;
   final String? intent;
   final String? category;
+  final String? title;
   final String? originalCaption;
+  final String? thumbnailUrl;
   final String? audioTranscript;
   final String? notificationCopiesJson;
   final String? entitiesJson;
@@ -391,7 +438,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     required this.status,
     this.intent,
     this.category,
+    this.title,
     this.originalCaption,
+    this.thumbnailUrl,
     this.audioTranscript,
     this.notificationCopiesJson,
     this.entitiesJson,
@@ -417,8 +466,14 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<String>(category);
     }
+    if (!nullToAbsent || title != null) {
+      map['title'] = Variable<String>(title);
+    }
     if (!nullToAbsent || originalCaption != null) {
       map['original_caption'] = Variable<String>(originalCaption);
+    }
+    if (!nullToAbsent || thumbnailUrl != null) {
+      map['thumbnail_url'] = Variable<String>(thumbnailUrl);
     }
     if (!nullToAbsent || audioTranscript != null) {
       map['audio_transcript'] = Variable<String>(audioTranscript);
@@ -456,9 +511,15 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
+      title: title == null && nullToAbsent
+          ? const Value.absent()
+          : Value(title),
       originalCaption: originalCaption == null && nullToAbsent
           ? const Value.absent()
           : Value(originalCaption),
+      thumbnailUrl: thumbnailUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(thumbnailUrl),
       audioTranscript: audioTranscript == null && nullToAbsent
           ? const Value.absent()
           : Value(audioTranscript),
@@ -489,7 +550,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
       status: serializer.fromJson<String>(json['status']),
       intent: serializer.fromJson<String?>(json['intent']),
       category: serializer.fromJson<String?>(json['category']),
+      title: serializer.fromJson<String?>(json['title']),
       originalCaption: serializer.fromJson<String?>(json['originalCaption']),
+      thumbnailUrl: serializer.fromJson<String?>(json['thumbnailUrl']),
       audioTranscript: serializer.fromJson<String?>(json['audioTranscript']),
       notificationCopiesJson: serializer.fromJson<String?>(
         json['notificationCopiesJson'],
@@ -511,7 +574,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
       'status': serializer.toJson<String>(status),
       'intent': serializer.toJson<String?>(intent),
       'category': serializer.toJson<String?>(category),
+      'title': serializer.toJson<String?>(title),
       'originalCaption': serializer.toJson<String?>(originalCaption),
+      'thumbnailUrl': serializer.toJson<String?>(thumbnailUrl),
       'audioTranscript': serializer.toJson<String?>(audioTranscript),
       'notificationCopiesJson': serializer.toJson<String?>(
         notificationCopiesJson,
@@ -531,7 +596,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     String? status,
     Value<String?> intent = const Value.absent(),
     Value<String?> category = const Value.absent(),
+    Value<String?> title = const Value.absent(),
     Value<String?> originalCaption = const Value.absent(),
+    Value<String?> thumbnailUrl = const Value.absent(),
     Value<String?> audioTranscript = const Value.absent(),
     Value<String?> notificationCopiesJson = const Value.absent(),
     Value<String?> entitiesJson = const Value.absent(),
@@ -548,9 +615,11 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     status: status ?? this.status,
     intent: intent.present ? intent.value : this.intent,
     category: category.present ? category.value : this.category,
+    title: title.present ? title.value : this.title,
     originalCaption: originalCaption.present
         ? originalCaption.value
         : this.originalCaption,
+    thumbnailUrl: thumbnailUrl.present ? thumbnailUrl.value : this.thumbnailUrl,
     audioTranscript: audioTranscript.present
         ? audioTranscript.value
         : this.audioTranscript,
@@ -577,9 +646,13 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
       status: data.status.present ? data.status.value : this.status,
       intent: data.intent.present ? data.intent.value : this.intent,
       category: data.category.present ? data.category.value : this.category,
+      title: data.title.present ? data.title.value : this.title,
       originalCaption: data.originalCaption.present
           ? data.originalCaption.value
           : this.originalCaption,
+      thumbnailUrl: data.thumbnailUrl.present
+          ? data.thumbnailUrl.value
+          : this.thumbnailUrl,
       audioTranscript: data.audioTranscript.present
           ? data.audioTranscript.value
           : this.audioTranscript,
@@ -605,7 +678,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
           ..write('status: $status, ')
           ..write('intent: $intent, ')
           ..write('category: $category, ')
+          ..write('title: $title, ')
           ..write('originalCaption: $originalCaption, ')
+          ..write('thumbnailUrl: $thumbnailUrl, ')
           ..write('audioTranscript: $audioTranscript, ')
           ..write('notificationCopiesJson: $notificationCopiesJson, ')
           ..write('entitiesJson: $entitiesJson, ')
@@ -625,7 +700,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     status,
     intent,
     category,
+    title,
     originalCaption,
+    thumbnailUrl,
     audioTranscript,
     notificationCopiesJson,
     entitiesJson,
@@ -644,7 +721,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
           other.status == this.status &&
           other.intent == this.intent &&
           other.category == this.category &&
+          other.title == this.title &&
           other.originalCaption == this.originalCaption &&
+          other.thumbnailUrl == this.thumbnailUrl &&
           other.audioTranscript == this.audioTranscript &&
           other.notificationCopiesJson == this.notificationCopiesJson &&
           other.entitiesJson == this.entitiesJson &&
@@ -661,7 +740,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
   final Value<String> status;
   final Value<String?> intent;
   final Value<String?> category;
+  final Value<String?> title;
   final Value<String?> originalCaption;
+  final Value<String?> thumbnailUrl;
   final Value<String?> audioTranscript;
   final Value<String?> notificationCopiesJson;
   final Value<String?> entitiesJson;
@@ -677,7 +758,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     this.status = const Value.absent(),
     this.intent = const Value.absent(),
     this.category = const Value.absent(),
+    this.title = const Value.absent(),
     this.originalCaption = const Value.absent(),
+    this.thumbnailUrl = const Value.absent(),
     this.audioTranscript = const Value.absent(),
     this.notificationCopiesJson = const Value.absent(),
     this.entitiesJson = const Value.absent(),
@@ -694,7 +777,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     this.status = const Value.absent(),
     this.intent = const Value.absent(),
     this.category = const Value.absent(),
+    this.title = const Value.absent(),
     this.originalCaption = const Value.absent(),
+    this.thumbnailUrl = const Value.absent(),
     this.audioTranscript = const Value.absent(),
     this.notificationCopiesJson = const Value.absent(),
     this.entitiesJson = const Value.absent(),
@@ -711,7 +796,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     Expression<String>? status,
     Expression<String>? intent,
     Expression<String>? category,
+    Expression<String>? title,
     Expression<String>? originalCaption,
+    Expression<String>? thumbnailUrl,
     Expression<String>? audioTranscript,
     Expression<String>? notificationCopiesJson,
     Expression<String>? entitiesJson,
@@ -728,7 +815,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
       if (status != null) 'status': status,
       if (intent != null) 'intent': intent,
       if (category != null) 'category': category,
+      if (title != null) 'title': title,
       if (originalCaption != null) 'original_caption': originalCaption,
+      if (thumbnailUrl != null) 'thumbnail_url': thumbnailUrl,
       if (audioTranscript != null) 'audio_transcript': audioTranscript,
       if (notificationCopiesJson != null)
         'notification_copies_json': notificationCopiesJson,
@@ -748,7 +837,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     Value<String>? status,
     Value<String?>? intent,
     Value<String?>? category,
+    Value<String?>? title,
     Value<String?>? originalCaption,
+    Value<String?>? thumbnailUrl,
     Value<String?>? audioTranscript,
     Value<String?>? notificationCopiesJson,
     Value<String?>? entitiesJson,
@@ -765,7 +856,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
       status: status ?? this.status,
       intent: intent ?? this.intent,
       category: category ?? this.category,
+      title: title ?? this.title,
       originalCaption: originalCaption ?? this.originalCaption,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       audioTranscript: audioTranscript ?? this.audioTranscript,
       notificationCopiesJson:
           notificationCopiesJson ?? this.notificationCopiesJson,
@@ -801,8 +894,14 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     if (category.present) {
       map['category'] = Variable<String>(category.value);
     }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
     if (originalCaption.present) {
       map['original_caption'] = Variable<String>(originalCaption.value);
+    }
+    if (thumbnailUrl.present) {
+      map['thumbnail_url'] = Variable<String>(thumbnailUrl.value);
     }
     if (audioTranscript.present) {
       map['audio_transcript'] = Variable<String>(audioTranscript.value);
@@ -840,7 +939,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
           ..write('status: $status, ')
           ..write('intent: $intent, ')
           ..write('category: $category, ')
+          ..write('title: $title, ')
           ..write('originalCaption: $originalCaption, ')
+          ..write('thumbnailUrl: $thumbnailUrl, ')
           ..write('audioTranscript: $audioTranscript, ')
           ..write('notificationCopiesJson: $notificationCopiesJson, ')
           ..write('entitiesJson: $entitiesJson, ')
@@ -873,7 +974,9 @@ typedef $$LocalCapturesTableCreateCompanionBuilder =
       Value<String> status,
       Value<String?> intent,
       Value<String?> category,
+      Value<String?> title,
       Value<String?> originalCaption,
+      Value<String?> thumbnailUrl,
       Value<String?> audioTranscript,
       Value<String?> notificationCopiesJson,
       Value<String?> entitiesJson,
@@ -891,7 +994,9 @@ typedef $$LocalCapturesTableUpdateCompanionBuilder =
       Value<String> status,
       Value<String?> intent,
       Value<String?> category,
+      Value<String?> title,
       Value<String?> originalCaption,
+      Value<String?> thumbnailUrl,
       Value<String?> audioTranscript,
       Value<String?> notificationCopiesJson,
       Value<String?> entitiesJson,
@@ -945,8 +1050,18 @@ class $$LocalCapturesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get originalCaption => $composableBuilder(
     column: $table.originalCaption,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get thumbnailUrl => $composableBuilder(
+    column: $table.thumbnailUrl,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1025,8 +1140,18 @@ class $$LocalCapturesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get originalCaption => $composableBuilder(
     column: $table.originalCaption,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get thumbnailUrl => $composableBuilder(
+    column: $table.thumbnailUrl,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1097,8 +1222,16 @@ class $$LocalCapturesTableAnnotationComposer
   GeneratedColumn<String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
 
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
   GeneratedColumn<String> get originalCaption => $composableBuilder(
     column: $table.originalCaption,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get thumbnailUrl => $composableBuilder(
+    column: $table.thumbnailUrl,
     builder: (column) => column,
   );
 
@@ -1165,7 +1298,9 @@ class $$LocalCapturesTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String?> intent = const Value.absent(),
                 Value<String?> category = const Value.absent(),
+                Value<String?> title = const Value.absent(),
                 Value<String?> originalCaption = const Value.absent(),
+                Value<String?> thumbnailUrl = const Value.absent(),
                 Value<String?> audioTranscript = const Value.absent(),
                 Value<String?> notificationCopiesJson = const Value.absent(),
                 Value<String?> entitiesJson = const Value.absent(),
@@ -1181,7 +1316,9 @@ class $$LocalCapturesTableTableManager
                 status: status,
                 intent: intent,
                 category: category,
+                title: title,
                 originalCaption: originalCaption,
+                thumbnailUrl: thumbnailUrl,
                 audioTranscript: audioTranscript,
                 notificationCopiesJson: notificationCopiesJson,
                 entitiesJson: entitiesJson,
@@ -1199,7 +1336,9 @@ class $$LocalCapturesTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String?> intent = const Value.absent(),
                 Value<String?> category = const Value.absent(),
+                Value<String?> title = const Value.absent(),
                 Value<String?> originalCaption = const Value.absent(),
+                Value<String?> thumbnailUrl = const Value.absent(),
                 Value<String?> audioTranscript = const Value.absent(),
                 Value<String?> notificationCopiesJson = const Value.absent(),
                 Value<String?> entitiesJson = const Value.absent(),
@@ -1215,7 +1354,9 @@ class $$LocalCapturesTableTableManager
                 status: status,
                 intent: intent,
                 category: category,
+                title: title,
                 originalCaption: originalCaption,
+                thumbnailUrl: thumbnailUrl,
                 audioTranscript: audioTranscript,
                 notificationCopiesJson: notificationCopiesJson,
                 entitiesJson: entitiesJson,

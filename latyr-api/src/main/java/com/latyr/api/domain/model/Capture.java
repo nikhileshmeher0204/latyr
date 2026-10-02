@@ -19,7 +19,9 @@ public class Capture {
     private Intent intent;
     private String category;
     private String subCategory;
+    private String title;
     private String originalCaption;
+    private String thumbnailUrl;
     private String audioTranscript;
     private List<String> notificationCopies = new ArrayList<>();
     private int resurfaceCount = 0;
@@ -62,8 +64,14 @@ public class Capture {
     public String getSubCategory() { return subCategory; }
     public void setSubCategory(String subCategory) { this.subCategory = subCategory; }
 
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
     public String getOriginalCaption() { return originalCaption; }
     public void setOriginalCaption(String originalCaption) { this.originalCaption = originalCaption; }
+
+    public String getThumbnailUrl() { return thumbnailUrl; }
+    public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
 
     public String getAudioTranscript() { return audioTranscript; }
     public void setAudioTranscript(String audioTranscript) { this.audioTranscript = audioTranscript; }

@@ -17,6 +17,7 @@ public interface CanonicalSourceMapper {
         @Result(property = "canonicalUrlHash", column = "canonical_url_hash"),
         @Result(property = "sourceType", column = "source_type"),
         @Result(property = "originalUrl", column = "original_url"),
+        @Result(property = "thumbnailUrl", column = "thumbnail_url"),
         @Result(property = "rawMetadata", column = "raw_metadata", typeHandler = JsonbTypeHandler.class),
         @Result(property = "aiAnalysisCache", column = "ai_analysis_cache", typeHandler = JsonbTypeHandler.class),
         @Result(property = "createdAt", column = "created_at"),
@@ -32,12 +33,13 @@ public interface CanonicalSourceMapper {
     boolean existsByCanonicalUrlHash(@Param("canonicalUrlHash") String canonicalUrlHash);
 
     @Insert("""
-        INSERT INTO canonical_sources (id, canonical_url_hash, source_type, original_url, raw_metadata, ai_analysis_cache, created_at, updated_at)
+        INSERT INTO canonical_sources (id, canonical_url_hash, source_type, original_url, thumbnail_url, raw_metadata, ai_analysis_cache, created_at, updated_at)
         VALUES (
             COALESCE(#{id}, gen_random_uuid()),
             #{canonicalUrlHash},
             #{sourceType},
             #{originalUrl},
+            #{thumbnailUrl},
             #{rawMetadata, typeHandler=com.latyr.api.config.typehandler.JsonbTypeHandler, jdbcType=OTHER},
             #{aiAnalysisCache, typeHandler=com.latyr.api.config.typehandler.JsonbTypeHandler, jdbcType=OTHER},
             COALESCE(#{createdAt}, CURRENT_TIMESTAMP),
@@ -48,7 +50,8 @@ public interface CanonicalSourceMapper {
 
     @Update("""
         UPDATE canonical_sources
-        SET raw_metadata = #{rawMetadata, typeHandler=com.latyr.api.config.typehandler.JsonbTypeHandler, jdbcType=OTHER},
+        SET thumbnail_url = #{thumbnailUrl},
+            raw_metadata = #{rawMetadata, typeHandler=com.latyr.api.config.typehandler.JsonbTypeHandler, jdbcType=OTHER},
             ai_analysis_cache = #{aiAnalysisCache, typeHandler=com.latyr.api.config.typehandler.JsonbTypeHandler, jdbcType=OTHER},
             updated_at = CURRENT_TIMESTAMP
         WHERE id = #{id}

@@ -45,6 +45,12 @@ This document defines the core architecture principles, coding standards, and de
 
 ---
 
+## 🎨 Design Language & UI Philosophy
+- **Reference Design**: The file `latryl home screen.jpeg` (located at the root of the project) represents the core design language for Latyr.
+- **Consistency**: Whatever design we make moving forward MUST complement and strictly adhere to the aesthetics, blurring (SoftEdgeBlur), typography, and dark/light color palette established in this reference image.
+
+---
+
 ## 📱 Mobile Architecture Guidelines (`latyr-app`)
 - **Feature-First MVVM**: Organize by domain features (`features/capture`, `features/feed`, `features/auth`, `features/settings`).
 - **State Management**: Use `flutter_riverpod` (AsyncNotifier / StateNotifier).
@@ -55,5 +61,6 @@ This document defines the core architecture principles, coding standards, and de
 
 ## ?? E2E Testing & Verification Guidelines (CRITICAL)
 - **STRICT NO-MOCK DATA RULE**: When testing the Latyr ingestion pipeline (especially Instagram Reels or other media), **NEVER hallucinate, make up, or inject fake/mock URLs** via ADB intents. Mock data breaks downstream scrapers (like Apify) and creates false failures or empty AI results.
-- **ALWAYS USE ARTEMIS NATIVE UI**: To test sharing functionality, you must physically interact with the Android emulator. Use the Artemis mobile MCP (mobile_run_task) to open the actual target app (e.g., Instagram), scroll to a **real, publicly accessible Reel**, tap the native Share button, and select Latyr. Do not bypass the UI.
-- **Handling Rate Limits**: If Artemis hits an AI rate limit (e.g., Gemini 429 quota), **WAIT** for the quota to reset. Do not attempt to bypass the vision agent by manually injecting fake ADB intents.
+- **ALWAYS USE mobile-mcp NATIVE UI**: To test sharing functionality, you must physically interact with the Android emulator. Use the mobile-mcp mobile MCP (mobile_run_task) to open the actual target app (e.g., Instagram), scroll to a **real, publicly accessible Reel**, tap the native Share button, and select Latyr. Do not bypass the UI.
+- **Handling Rate Limits**: If mobile-mcp hits an AI rate limit (e.g., Gemini 429 quota), **WAIT** for the quota to reset. Do not attempt to bypass the vision agent by manually injecting fake ADB intents.
+

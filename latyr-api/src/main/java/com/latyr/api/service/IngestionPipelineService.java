@@ -31,6 +31,7 @@ public class IngestionPipelineService {
     private final EntityEnrichmentProvider entityEnricher;
     private final SseNotificationService sseNotificationService;
     private final FcmService fcmService;
+    private final FirebaseStorageService firebaseStorageService;
 
     public IngestionPipelineService(
             IngestionJobMapper ingestionJobMapper,
@@ -43,7 +44,8 @@ public class IngestionPipelineService {
             AIProvider aiProvider,
             EntityEnrichmentProvider entityEnricher,
             SseNotificationService sseNotificationService,
-            FcmService fcmService) {
+            FcmService fcmService,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) FirebaseStorageService firebaseStorageService) {
         this.ingestionJobMapper = ingestionJobMapper;
         this.captureMapper = captureMapper;
         this.canonicalSourceMapper = canonicalSourceMapper;
@@ -55,6 +57,7 @@ public class IngestionPipelineService {
         this.entityEnricher = entityEnricher;
         this.sseNotificationService = sseNotificationService;
         this.fcmService = fcmService;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
     @Transactional
@@ -119,6 +122,13 @@ public class IngestionPipelineService {
                 }
                 videoDurationSec = scraped.durationSec();
 
+                // Step 1.1: Persist thumbnail to Firebase Storage (with fallback)
+                String rawThumbnailUrl = scraped.thumbnailUrl();
+                String finalThumbnailUrl = rawThumbnailUrl;
+                if (firebaseStorageService != null && rawThumbnailUrl != null && !rawThumbnailUrl.isBlank()) {
+                    finalThumbnailUrl = firebaseStorageService.uploadImageFromUrl(rawThumbnailUrl, captureId);
+                }
+
                 // Step 2: Ephemeral in-memory audio download (capped at 15MB)
                 byte[] audioBytes = mediaStreamer.streamMedia(scraped.audioUrl());
 
@@ -127,6 +137,9 @@ public class IngestionPipelineService {
 
                 // Step 4: Immediate memory dereferencing for JVM Garbage Collection
                 audioBytes = null;
+
+                canonicalSource.setThumbnailUrl(finalThumbnailUrl);
+                capture.setThumbnailUrl(finalThumbnailUrl);
             }
 
             // Step 5: Secondary Entity Enrichment (TMDB & GitHub)
@@ -135,6 +148,7 @@ public class IngestionPipelineService {
             // Step 6: Atomic DB Persistence
             // 6.1 Update CanonicalSource 30-day cache
             Map<String, Object> cacheMap = new HashMap<>();
+            cacheMap.put("title", analysis.title());
             cacheMap.put("transcript", analysis.transcript());
             cacheMap.put("intent", analysis.intent().name());
             cacheMap.put("category", analysis.category());
@@ -143,6 +157,7 @@ public class IngestionPipelineService {
             cacheMap.put("notification_copies", analysis.notificationCopies());
             cacheMap.put("original_caption", caption);
             cacheMap.put("audio_transcript", analysis.transcript());
+            cacheMap.put("thumbnail_url", capture.getThumbnailUrl());
             cacheMap.put("entities", enrichedEntities.stream().map(e -> {
                 Map<String, Object> entityMap = new HashMap<>();
                 entityMap.put("title", e.title());
@@ -162,6 +177,7 @@ public class IngestionPipelineService {
             capture.setIntent(analysis.intent());
             capture.setCategory(analysis.category());
             capture.setSubCategory(analysis.subCategory());
+            capture.setTitle(analysis.title());
             capture.setOriginalCaption(caption);
             capture.setAudioTranscript(analysis.transcript());
             capture.setNotificationCopies(analysis.notificationCopies());
@@ -200,8 +216,10 @@ public class IngestionPipelineService {
                         "intent", analysis.intent().name(),
                         "category", analysis.category(),
                         "sub_category", analysis.subCategory() != null ? analysis.subCategory() : "",
+                        "title", analysis.title() != null ? analysis.title() : "",
                         "original_caption", caption != null ? caption : "",
                         "audio_transcript", analysis.transcript(),
+                        "thumbnail_url", capture.getThumbnailUrl() != null ? capture.getThumbnailUrl() : "",
                         "entities", enrichedEntities
                 ));
             }

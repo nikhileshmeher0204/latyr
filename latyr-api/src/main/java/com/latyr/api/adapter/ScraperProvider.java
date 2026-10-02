@@ -9,6 +9,7 @@ public interface ScraperProvider {
     record ScrapedMedia(
             String mediaUrl,
             String audioUrl,
+            String thumbnailUrl,
             String caption,
             String title,
             Integer durationSec,

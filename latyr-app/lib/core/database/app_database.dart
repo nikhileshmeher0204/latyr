@@ -15,7 +15,9 @@ class LocalCaptures extends Table {
   TextColumn get status => text().withDefault(const Constant('PENDING_SYNC'))();
   TextColumn get intent => text().nullable()();
   TextColumn get category => text().nullable()();
+  TextColumn get title => text().nullable()();
   TextColumn get originalCaption => text().nullable()();
+  TextColumn get thumbnailUrl => text().nullable()();
   TextColumn get audioTranscript => text().nullable()();
   TextColumn get notificationCopiesJson => text().nullable()();
   TextColumn get entitiesJson => text().nullable()();
@@ -34,7 +36,22 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (Migrator m) async {
+          await m.createAll();
+        },
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from < 2) {
+            await m.addColumn(localCaptures, localCaptures.thumbnailUrl);
+          }
+          if (from < 3) {
+            await m.addColumn(localCaptures, localCaptures.title);
+          }
+        },
+      );
 
   Stream<List<LocalCapture>> watchAllCaptures() {
     return (select(localCaptures)

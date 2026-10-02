@@ -86,7 +86,9 @@ class CaptureRepository {
         final entitiesJson = entities != null ? jsonEncode(entities) : null;
         final intent = event.data['intent']?.toString();
         final category = event.data['category']?.toString();
+        final title = event.data['title']?.toString();
         final transcript = event.data['audio_transcript']?.toString();
+        final thumbnailUrl = event.data['thumbnail_url']?.toString();
 
         if (existing != null) {
           await db.updateCapture(
@@ -96,7 +98,9 @@ class CaptureRepository {
               status: const Value('COMPLETED'),
               intent: Value(intent),
               category: Value(category),
+              title: Value(title ?? existing.title),
               originalCaption: Value(rawCaption ?? existing.originalCaption),
+              thumbnailUrl: Value(thumbnailUrl ?? existing.thumbnailUrl),
               audioTranscript: Value(transcript),
               entitiesJson: Value(entitiesJson),
               updatedAt: Value(DateTime.now()),
@@ -114,7 +118,9 @@ class CaptureRepository {
               status: const Value('COMPLETED'),
               intent: Value(intent),
               category: Value(category),
+              title: Value(title),
               originalCaption: Value(rawCaption),
+              thumbnailUrl: Value(thumbnailUrl),
               audioTranscript: Value(transcript),
               entitiesJson: Value(entitiesJson),
               createdAt: Value(DateTime.now()),
@@ -202,6 +208,7 @@ class CaptureRepository {
             intent: Value(data['intent']?.toString()),
             category: Value(data['category']?.toString()),
             originalCaption: Value(data['original_caption']?.toString() ?? caption),
+            thumbnailUrl: Value(data['thumbnail_url']?.toString()),
             updatedAt: Value(DateTime.now()),
             syncedAt: Value(DateTime.now()),
           ),
@@ -236,6 +243,7 @@ class CaptureRepository {
               status: Value(status),
               intent: Value(data?['intent']?.toString()),
               category: Value(data?['category']?.toString()),
+              thumbnailUrl: Value(data?['thumbnail_url']?.toString()),
               updatedAt: Value(DateTime.now()),
               syncedAt: Value(DateTime.now()),
             ),
@@ -281,7 +289,9 @@ class CaptureRepository {
               final newStatus = raw['status']?.toString() ?? 'COMPLETED';
               final newIntent = raw['intent']?.toString();
               final newCategory = raw['category']?.toString();
+              final newTitle = raw['title']?.toString();
               final rawTranscript = raw['audio_transcript']?.toString();
+              final rawThumbnail = raw['thumbnail_url']?.toString();
               final serverCreatedAt = raw['created_at'] != null
                   ? DateTime.tryParse(raw['created_at'].toString())
                   : null;
@@ -294,8 +304,10 @@ class CaptureRepository {
                     existing.status != newStatus ||
                     existing.intent != newIntent ||
                     existing.category != newCategory ||
+                    existing.title != newTitle ||
                     existing.originalCaption != rawCaption ||
                     existing.audioTranscript != rawTranscript ||
+                    existing.thumbnailUrl != rawThumbnail ||
                     existing.entitiesJson != entitiesJson;
 
                 if (!hasChanged) {
@@ -311,7 +323,9 @@ class CaptureRepository {
                     status: Value(newStatus),
                     intent: Value(newIntent),
                     category: Value(newCategory),
+                    title: Value(newTitle ?? existing.title),
                     originalCaption: Value(rawCaption),
+                    thumbnailUrl: Value(rawThumbnail ?? existing.thumbnailUrl),
                     audioTranscript: Value(rawTranscript),
                     entitiesJson: Value(entitiesJson),
                     updatedAt: Value(serverUpdatedAt ?? existing.updatedAt),
@@ -329,7 +343,9 @@ class CaptureRepository {
                     status: Value(newStatus),
                     intent: Value(newIntent),
                     category: Value(newCategory),
+                    title: Value(newTitle),
                     originalCaption: Value(rawCaption),
+                    thumbnailUrl: Value(rawThumbnail),
                     audioTranscript: Value(rawTranscript),
                     entitiesJson: Value(entitiesJson),
                     createdAt: Value(serverCreatedAt ?? DateTime.now()),
@@ -379,6 +395,7 @@ class CaptureRepository {
                 status: const Value('COMPLETED'),
                 intent: Value(data['intent']?.toString()),
                 category: Value(data['category']?.toString()),
+                title: Value(data['title']?.toString() ?? item.title),
                 originalCaption: Value(data['original_caption']?.toString()),
                 audioTranscript: Value(data['audio_transcript']?.toString()),
                 entitiesJson: Value(entities != null ? jsonEncode(entities) : null),

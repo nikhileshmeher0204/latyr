@@ -113,6 +113,7 @@ public class GoogleGenAIAdapter implements AIProvider {
                 log.warn("Gemini API rate limit/quota hit. Applying graceful testing fallback for image analysis.");
                 return new AIAnalysisResult(
                         "Captured Screenshot Content",
+                        "Captured Screenshot Content",
                         Intent.EXPLORE,
                         "Technology",
                         "Screenshots",
@@ -144,6 +145,7 @@ public class GoogleGenAIAdapter implements AIProvider {
             
             Return a JSON object with this exact schema:
             {
+              "title": "A concise, descriptive, and engaging 4-8 word title summarizing the core topic or hook of this content (e.g. 'Run AWS Services Locally with FLOCI', 'Top 5 AI Extensions for VS Code', 'Crispy Garlic Butter Smashed Potatoes'). Never use generic filler like 'Instagram Reel' or creator hashtags.",
               "transcript": "Accurate transcription of spoken audio or summary of the provided text content",
               "intent": "WATCH | EXPLORE | REMEMBER | COOK | VISIT | BUY | LEARN",
               "category": "Entertainment | Tech | Food | Travel | Learning | Shopping | Lifestyle | Fitness | Finance",
@@ -275,7 +277,19 @@ public class GoogleGenAIAdapter implements AIProvider {
             }
         }
 
+        String title = structured.get("title") != null ? structured.get("title").toString().trim() : null;
+        if (title == null || title.isEmpty()) {
+            if (!entities.isEmpty()) {
+                title = entities.get(0).title();
+            } else if (!transcript.isEmpty()) {
+                title = transcript.length() > 60 ? transcript.substring(0, 60).trim() + "..." : transcript;
+            } else {
+                title = "Saved Capture";
+            }
+        }
+
         return new AIAnalysisResult(
+                title,
                 transcript,
                 intent,
                 category,

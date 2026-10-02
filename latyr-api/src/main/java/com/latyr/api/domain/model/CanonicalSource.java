@@ -12,6 +12,7 @@ public class CanonicalSource {
     private String canonicalUrlHash;
     private SourceType sourceType;
     private String originalUrl;
+    private String thumbnailUrl;
     private Map<String, Object> rawMetadata = new HashMap<>();
     private Map<String, Object> aiAnalysisCache = new HashMap<>();
     private Instant createdAt = Instant.now();
@@ -36,6 +37,9 @@ public class CanonicalSource {
 
     public String getOriginalUrl() { return originalUrl; }
     public void setOriginalUrl(String originalUrl) { this.originalUrl = originalUrl; }
+
+    public String getThumbnailUrl() { return thumbnailUrl; }
+    public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
 
     public Map<String, Object> getRawMetadata() { return rawMetadata; }
     public void setRawMetadata(Map<String, Object> rawMetadata) { this.rawMetadata = rawMetadata; }

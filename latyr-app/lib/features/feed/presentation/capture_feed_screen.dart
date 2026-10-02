@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/core/design/latyr_colors.dart';
 import 'package:latyr_app/core/design/latyr_spacing.dart';
 import 'package:latyr_app/core/design/latyr_typography.dart';
+import 'package:latyr_app/core/services/dominant_color_service.dart';
 import 'package:latyr_app/features/capture/presentation/capture_providers.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/capture_card_widget.dart';
 
@@ -17,15 +19,9 @@ class CaptureFeedScreen extends ConsumerStatefulWidget {
 
 class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
   String _selectedCategory = 'All';
+  bool _isGrid = true;
 
-  final List<String> _categories = const [
-    'All',
-    'Entertainment',
-    'Technology',
-    'Food',
-    'Places',
-    'Books',
-  ];
+
 
   void _showQuickAddSheet(BuildContext context) {
     final textController = TextEditingController();
@@ -185,6 +181,16 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
               children: [
                 CupertinoButton(
                   padding: EdgeInsets.zero,
+                  onPressed: () => setState(() => _isGrid = !_isGrid),
+                  child: Icon(
+                    _isGrid ? CupertinoIcons.rectangle_grid_1x2 : CupertinoIcons.square_grid_2x2,
+                    size: 22,
+                    color: LColors.brandAmber,
+                  ),
+                ),
+                const SizedBox(width: LSpacing.xs),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
                   onPressed: () => ref.read(captureRepositoryProvider).fetchRemoteFeed(),
                   child: const Icon(CupertinoIcons.arrow_clockwise, size: 20, color: LColors.brandAmber),
                 ),
@@ -258,62 +264,45 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
             orElse: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
           ),
 
-          // ── Category Filter Pills ─────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: LSpacing.sm),
-              child: SizedBox(
-                height: 36,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: LSpacing.screenH),
-                  itemCount: _categories.length,
-                  separatorBuilder: (context, i) => const SizedBox(width: LSpacing.sm),
-                  itemBuilder: (context, index) {
-                    final cat = _categories[index];
-                    final isSelected = _selectedCategory == cat;
-                    return GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => setState(() => _selectedCategory = cat),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        curve: Curves.easeOutCubic,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: LSpacing.base,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected ? LColors.brandAmber : chipBg,
-                          borderRadius: LSpacing.brPill,
-                        ),
-                        child: Center(
-                          child: Text(
-                            cat,
-                            style: LTypography.subhead.copyWith(
-                              color: isSelected ? LColors.staticWhite : secondaryColor,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+          // ── Sticky Category Filter Pills with Liquid Glass ────────────────
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _CategoryHeaderDelegate(
+              categories: [
+                {'name': 'All', 'icon': CupertinoIcons.sparkles, 'color': CupertinoColors.systemGrey},
+                {'name': 'Entertainment', 'icon': CupertinoIcons.play_rectangle_fill, 'color': CupertinoColors.systemPurple},
+                {'name': 'Technology', 'icon': CupertinoIcons.device_laptop, 'color': CupertinoColors.systemBlue},
+                {'name': 'Food', 'icon': CupertinoIcons.heart_fill, 'color': CupertinoColors.systemOrange},
+                {'name': 'Places', 'icon': CupertinoIcons.location_solid, 'color': CupertinoColors.systemGreen},
+                {'name': 'Books', 'icon': CupertinoIcons.book_fill, 'color': CupertinoColors.systemBrown},
+              ],
+              selectedCategory: _selectedCategory,
+              onCategorySelected: (cat) {
+                setState(() => _selectedCategory = cat);
+              },
+              isDark: isDark,
+              chipBg: chipBg,
+              labelColor: labelColor,
+              secondaryColor: secondaryColor,
             ),
           ),
 
           // ── Captures List / Feed ──────────────────────────────────────────
-          capturesAsync.when(
-            loading: () => const SliverFillRemaining(
-              child: Center(child: CupertinoActivityIndicator(radius: 14)),
-            ),
-            error: (err, _) => SliverFillRemaining(
-              child: Center(
-                child: Text('Error: $err', style: LTypography.footnote.copyWith(color: LColors.error)),
+          ...capturesAsync.when(
+            loading: () => [
+              const SliverFillRemaining(
+                child: Center(child: CupertinoActivityIndicator(radius: 14)),
               ),
-            ),
+            ],
+            error: (err, _) => [
+              SliverFillRemaining(
+                child: Center(
+                  child: Text('Error: $err', style: LTypography.footnote.copyWith(color: LColors.error)),
+                ),
+              ),
+            ],
             data: (captures) {
+              DominantColorService.instance.warmUp(captures.map((c) => c.thumbnailUrl));
               final filtered = _selectedCategory == 'All'
                   ? captures
                   : captures.where((c) {
@@ -324,45 +313,19 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
                     }).toList();
 
               if (filtered.isEmpty) {
-                return SliverFillRemaining(
-                  child: _buildEmptyState(isDark, labelColor, secondaryColor),
-                );
+                return [
+                  SliverFillRemaining(
+                    child: _buildEmptyState(isDark, labelColor, secondaryColor),
+                  ),
+                ];
               }
 
-              final feedItems = _buildFeedItems(filtered);
-
-              return SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
-                  LSpacing.screenH,
-                  LSpacing.xs,
-                  LSpacing.screenH,
-                  LSpacing.xl3,
-                ),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = feedItems[index];
-                      if (item is _SectionHeaderFeedItem) {
-                        return _buildSectionHeader(
-                          title: item.title,
-                          count: item.count,
-                          isFirst: item.isFirst,
-                          isDark: isDark,
-                          labelColor: labelColor,
-                          secondaryColor: secondaryColor,
-                          chipBg: chipBg,
-                        );
-                      } else if (item is _CaptureCardFeedItem) {
-                        return _buildTimelineCard(
-                          capture: item.capture,
-                          isDark: isDark,
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                    childCount: feedItems.length,
-                  ),
-                ),
+              return _buildCaptureSlivers(
+                filtered,
+                isDark: isDark,
+                labelColor: labelColor,
+                secondaryColor: secondaryColor,
+                chipBg: chipBg,
               );
             },
           ),
@@ -440,7 +403,7 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
     }
   }
 
-  List<_FeedItem> _buildFeedItems(List<LocalCapture> captures) {
+  Map<String, List<LocalCapture>> _groupCaptures(List<LocalCapture> captures) {
     final sorted = List<LocalCapture>.from(captures)
       ..sort((a, b) => _getEffectiveTimestamp(b).compareTo(_getEffectiveTimestamp(a)));
 
@@ -450,23 +413,88 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
       final key = _getTimelineGroup(_getEffectiveTimestamp(capture), now);
       grouped.putIfAbsent(key, () => []).add(capture);
     }
+    return grouped;
+  }
 
-    final List<_FeedItem> items = [];
-    bool isFirstGroup = true;
+  List<Widget> _buildCaptureSlivers(
+    List<LocalCapture> captures, {
+    required bool isDark,
+    required Color labelColor,
+    required Color secondaryColor,
+    required Color chipBg,
+  }) {
+    final grouped = _groupCaptures(captures);
+    final slivers = <Widget>[];
+    bool isFirst = true;
+
     grouped.forEach((title, groupCaptures) {
-      items.add(_SectionHeaderFeedItem(
-        title: title,
-        count: groupCaptures.length,
-        isFirst: isFirstGroup,
-      ));
-      isFirstGroup = false;
+      // 1. Section Header
+      slivers.add(
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: LSpacing.screenH),
+            child: _buildSectionHeader(
+              title: title,
+              count: groupCaptures.length,
+              isFirst: isFirst,
+              isDark: isDark,
+              labelColor: labelColor,
+              secondaryColor: secondaryColor,
+              chipBg: chipBg,
+            ),
+          ),
+        ),
+      );
+      isFirst = false;
 
-      for (final capture in groupCaptures) {
-        items.add(_CaptureCardFeedItem(capture: capture));
+      // 2. Section Content (2-Column Grid or Single-Column List)
+      if (_isGrid) {
+        slivers.add(
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              LSpacing.screenH,
+              0,
+              LSpacing.screenH,
+              LSpacing.sm,
+            ),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 1.0,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => CaptureCardWidget(
+                  key: ValueKey(groupCaptures[index].id),
+                  capture: groupCaptures[index],
+                  isGrid: true,
+                ),
+                childCount: groupCaptures.length,
+              ),
+            ),
+          ),
+        );
+      } else {
+        slivers.add(
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: LSpacing.screenH),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _buildTimelineCard(
+                  capture: groupCaptures[index],
+                  isDark: isDark,
+                ),
+                childCount: groupCaptures.length,
+              ),
+            ),
+          ),
+        );
       }
     });
 
-    return items;
+    slivers.add(const SliverToBoxAdapter(child: SizedBox(height: LSpacing.xl3)));
+    return slivers;
   }
 
   Widget _buildSectionHeader({
@@ -536,27 +564,25 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
     required LocalCapture capture,
     required bool isDark,
   }) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: LSpacing.md),
+      child: Stack(
         children: [
-          SizedBox(
-            width: 14,
-            child: Center(
-              child: Container(
-                width: 2,
-                color: isDark ? const Color(0xFF38383A) : const Color(0xFFD8D8DC),
-              ),
+          Positioned(
+            left: 6,
+            top: 0,
+            bottom: 0,
+            child: Container(
+              width: 2,
+              color: isDark ? const Color(0xFF38383A) : const Color(0xFFD8D8DC),
             ),
           ),
-          const SizedBox(width: LSpacing.md),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: LSpacing.md),
-              child: CaptureCardWidget(
-                key: ValueKey(capture.id),
-                capture: capture,
-              ),
+          Padding(
+            padding: const EdgeInsets.only(left: 14 + LSpacing.md),
+            child: CaptureCardWidget(
+              key: ValueKey(capture.id),
+              capture: capture,
+              isGrid: false,
             ),
           ),
         ],
@@ -565,20 +591,114 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
   }
 }
 
-sealed class _FeedItem {}
 
-class _SectionHeaderFeedItem extends _FeedItem {
-  final String title;
-  final int count;
-  final bool isFirst;
-  _SectionHeaderFeedItem({
-    required this.title,
-    required this.count,
-    required this.isFirst,
+class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final List<Map<String, dynamic>> categories;
+  final String selectedCategory;
+  final Function(String) onCategorySelected;
+  final bool isDark;
+  final Color chipBg;
+  final Color labelColor;
+  final Color secondaryColor;
+
+  _CategoryHeaderDelegate({
+    required this.categories,
+    required this.selectedCategory,
+    required this.onCategorySelected,
+    required this.isDark,
+    required this.chipBg,
+    required this.labelColor,
+    required this.secondaryColor,
   });
-}
 
-class _CaptureCardFeedItem extends _FeedItem {
-  final LocalCapture capture;
-  _CaptureCardFeedItem({required this.capture});
+  @override
+  double get minExtent => 60.0;
+  @override
+  double get maxExtent => 60.0;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    // Liquid glass effect for the sticky header background
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          color: CupertinoColors.systemGroupedBackground
+              .resolveFrom(context)
+              .withValues(alpha: 0.7), // Transparent base color to let blur show through
+          alignment: Alignment.center,
+          child: SizedBox(
+            height: 36,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: LSpacing.screenH),
+              itemCount: categories.length,
+              separatorBuilder: (context, i) => const SizedBox(width: LSpacing.sm),
+              itemBuilder: (context, index) {
+                final catData = categories[index];
+                final catName = catData['name'] as String;
+                final catIcon = catData['icon'] as IconData;
+                final catColor = catData['color'] as Color;
+                final isSelected = selectedCategory == catName;
+
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => onCategorySelected(catName),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutCubic,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: LSpacing.base,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      // Subtle glassy inner background
+                      color: isSelected
+                          ? LColors.brandAmber
+                          : isDark
+                              ? const Color(0xFF2C2C2E).withValues(alpha: 0.6)
+                              : const Color(0xFFFFFFFF).withValues(alpha: 0.5),
+                      borderRadius: LSpacing.brPill,
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0x00000000)
+                            : isDark
+                                ? const Color(0x33FFFFFF)
+                                : const Color(0x33000000),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          catIcon,
+                          size: 16,
+                          color: isSelected ? LColors.staticWhite : catColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          catName,
+                          style: LTypography.subhead.copyWith(
+                            color: isSelected ? LColors.staticWhite : secondaryColor,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _CategoryHeaderDelegate oldDelegate) {
+    return selectedCategory != oldDelegate.selectedCategory ||
+        isDark != oldDelegate.isDark;
+  }
 }

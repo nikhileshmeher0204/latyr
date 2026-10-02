@@ -181,7 +181,7 @@ class CollectionsScreen extends ConsumerWidget {
   }
 }
 
-class _CollectionDetailPage extends StatelessWidget {
+class _CollectionDetailPage extends StatefulWidget {
   final _CollectionItem collection;
   final List<LocalCapture> captures;
 
@@ -191,15 +191,35 @@ class _CollectionDetailPage extends StatelessWidget {
   });
 
   @override
+  State<_CollectionDetailPage> createState() => _CollectionDetailPageState();
+}
+
+class _CollectionDetailPageState extends State<_CollectionDetailPage> {
+  bool _isGrid = true;
+
+  @override
   Widget build(BuildContext context) {
     final labelColor = CupertinoColors.label.resolveFrom(context);
     final secondaryColor = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final captures = widget.captures;
+    final collection = widget.collection;
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(context),
       navigationBar: CupertinoNavigationBar(
         middle: Text(collection.name, style: LTypography.headline.copyWith(color: labelColor)),
         previousPageTitle: 'Collections',
+        trailing: captures.isEmpty
+            ? null
+            : CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () => setState(() => _isGrid = !_isGrid),
+                child: Icon(
+                  _isGrid ? CupertinoIcons.rectangle_grid_1x2 : CupertinoIcons.square_grid_2x2,
+                  size: 20,
+                  color: LColors.brandAmber,
+                ),
+              ),
       ),
       child: SafeArea(
         child: captures.isEmpty
@@ -235,21 +255,44 @@ class _CollectionDetailPage extends StatelessWidget {
                   ),
                 ),
               )
-            : ListView.separated(
-                physics: const BouncingScrollPhysics(
-                  decelerationRate: ScrollDecelerationRate.fast,
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: LSpacing.screenH,
-                  vertical: LSpacing.md,
-                ),
-                itemCount: captures.length,
-                separatorBuilder: (context, i) => const SizedBox(height: LSpacing.md),
-                itemBuilder: (context, index) => CaptureCardWidget(
-                  key: ValueKey(captures[index].id),
-                  capture: captures[index],
-                ),
-              ),
+            : _isGrid
+                ? GridView.builder(
+                    physics: const BouncingScrollPhysics(
+                      decelerationRate: ScrollDecelerationRate.fast,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: LSpacing.screenH,
+                      vertical: LSpacing.md,
+                    ),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 1.0,
+                    ),
+                    itemCount: captures.length,
+                    itemBuilder: (context, index) => CaptureCardWidget(
+                      key: ValueKey(captures[index].id),
+                      capture: captures[index],
+                      isGrid: true,
+                    ),
+                  )
+                : ListView.separated(
+                    physics: const BouncingScrollPhysics(
+                      decelerationRate: ScrollDecelerationRate.fast,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: LSpacing.screenH,
+                      vertical: LSpacing.md,
+                    ),
+                    itemCount: captures.length,
+                    separatorBuilder: (context, i) => const SizedBox(height: LSpacing.md),
+                    itemBuilder: (context, index) => CaptureCardWidget(
+                      key: ValueKey(captures[index].id),
+                      capture: captures[index],
+                      isGrid: false,
+                    ),
+                  ),
       ),
     );
   }

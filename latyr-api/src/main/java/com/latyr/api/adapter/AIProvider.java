@@ -15,6 +15,7 @@ public interface AIProvider {
     AIAnalysisResult analyzeImage(byte[] imageBytes, String mimeType, Language language);
 
     record AIAnalysisResult(
+            String title,
             String transcript,
             Intent intent,
             String category,

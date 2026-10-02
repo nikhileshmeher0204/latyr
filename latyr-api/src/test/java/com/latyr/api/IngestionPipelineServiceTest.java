@@ -49,6 +49,7 @@ class IngestionPipelineServiceTest {
         entityEnricher = mock(EntityEnrichmentProvider.class);
         sseNotificationService = mock(com.latyr.api.service.SseNotificationService.class);
         fcmService = mock(com.latyr.api.service.FcmService.class);
+        com.latyr.api.service.FirebaseStorageService firebaseStorageService = mock(com.latyr.api.service.FirebaseStorageService.class);
 
         pipelineService = new IngestionPipelineService(
                 ingestionJobMapper,
@@ -61,7 +62,8 @@ class IngestionPipelineServiceTest {
                 aiProvider,
                 entityEnricher,
                 sseNotificationService,
-                fcmService
+                fcmService,
+                firebaseStorageService
         );
     }
 
@@ -103,6 +105,7 @@ class IngestionPipelineServiceTest {
         ScraperProvider.ScrapedMedia scraped = new ScraperProvider.ScrapedMedia(
                 "https://cdn.latyr.internal/video.mp4",
                 "https://cdn.latyr.internal/audio.mp3",
+                "https://cdn.latyr.internal/thumb.jpg",
                 "5 suspense movies you must watch",
                 "Movie list",
                 60,
@@ -122,6 +125,7 @@ class IngestionPipelineServiceTest {
                 new HashMap<>()
         );
         AIProvider.AIAnalysisResult analysis = new AIProvider.AIAnalysisResult(
+                "5 Suspense Movies You Must Watch",
                 "Transcript: watch these 5 movies...",
                 Intent.WATCH,
                 "Entertainment",
@@ -138,6 +142,7 @@ class IngestionPipelineServiceTest {
 
         // Verify Capture updated to COMPLETED (updated twice: PROCESSING then COMPLETED)
         assertEquals(CaptureStatus.COMPLETED, capture.getStatus());
+        assertEquals("5 Suspense Movies You Must Watch", capture.getTitle());
         assertEquals(Intent.WATCH, capture.getIntent());
         assertEquals("Entertainment", capture.getCategory());
         assertEquals("Thriller Shows", capture.getSubCategory());
@@ -200,7 +205,7 @@ class IngestionPipelineServiceTest {
         assertEquals(JobStatus.PENDING, job.getStatus()); // Requeued for exponential backoff
         assertNull(job.getLockedAt());
         assertNull(job.getLockedBy());
-        verify(ingestionJobMapper, times(1)).update(job);
+        verify(ingestionJobMapper, times(2)).update(job);
     }
 
     @Test
@@ -242,9 +247,9 @@ class IngestionPipelineServiceTest {
 
         assertEquals(3, job.getAttemptCount());
         assertEquals(JobStatus.FAILED, job.getStatus());
-        verify(ingestionJobMapper, times(1)).update(job);
+        verify(ingestionJobMapper, times(2)).update(job);
 
         assertEquals(CaptureStatus.FAILED, capture.getStatus());
-        verify(captureMapper, times(1)).update(capture);
+        verify(captureMapper, times(2)).update(capture);
     }
 }

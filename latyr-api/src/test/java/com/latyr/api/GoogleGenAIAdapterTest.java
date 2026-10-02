@@ -32,6 +32,7 @@ class GoogleGenAIAdapterTest {
 
         String validJson = """
             {
+              "title": "Top 5 Sci-Fi Thriller Shows",
               "transcript": "5 mind bending thriller shows on Netflix including Dark",
               "intent": "WATCH",
               "category": "Entertainment",
@@ -59,6 +60,7 @@ class GoogleGenAIAdapterTest {
         AIProvider.AIAnalysisResult result = adapter.analyzeMedia("bytes".getBytes(), "audio/mp3", "Caption", Language.ENGLISH);
 
         assertNotNull(result);
+        assertEquals("Top 5 Sci-Fi Thriller Shows", result.title());
         assertEquals(Intent.WATCH, result.intent());
         assertEquals("Entertainment", result.category());
         assertEquals("Sci-Fi TV Shows", result.subCategory());

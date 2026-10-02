@@ -41,9 +41,9 @@ public class ApifyScraperAdapter implements ScraperProvider {
     public ScrapedMedia extractMedia(String url) {
         if (apiToken == null || apiToken.trim().isEmpty()) {
             log.info("Apify API token is not configured. Extracting public OpenGraph metadata for URL: {}", url);
-            String ogCaption = fetchInstagramOgDescription(url);
-            String caption = (ogCaption != null && !ogCaption.isBlank()) ? ogCaption : ("Instagram Reel: " + url);
-            return new ScrapedMedia(url, null, caption, "Instagram Reel", 30, Map.of("fallback", true, "url", url, "scraped_og", ogCaption != null));
+            OgMetadata og = fetchInstagramOgMetadata(url);
+            String caption = (og.caption() != null && !og.caption().isBlank()) ? og.caption() : ("Instagram Reel: " + url);
+            return new ScrapedMedia(url, null, og.imageUrl(), caption, "Instagram Reel", 30, Map.of("fallback", true, "url", url, "scraped_og", og.caption() != null));
         }
 
         log.info("Executing live Apify Instagram Scraper for URL: {}", url);
@@ -76,6 +76,17 @@ public class ApifyScraperAdapter implements ScraperProvider {
             String audioUrl = (String) item.getOrDefault("audioUrl", videoUrl);
             String title = (String) item.getOrDefault("title", "Saved Reel");
 
+            String thumbnailUrl = (String) item.get("displayUrl");
+            if (thumbnailUrl == null || thumbnailUrl.isBlank()) {
+                thumbnailUrl = (String) item.get("thumbnailUrl");
+            }
+            if (thumbnailUrl == null || thumbnailUrl.isBlank()) {
+                thumbnailUrl = (String) item.get("displayResource");
+            }
+            if ((thumbnailUrl == null || thumbnailUrl.isBlank()) && item.get("images") instanceof List<?> imgList && !imgList.isEmpty()) {
+                thumbnailUrl = String.valueOf(imgList.get(0));
+            }
+
             Integer duration = null;
             Object durObj = item.get("videoDuration");
             if (durObj instanceof Number num) {
@@ -91,7 +102,7 @@ public class ApifyScraperAdapter implements ScraperProvider {
                 }
             }
 
-            return new ScrapedMedia(videoUrl, audioUrl, caption, title, duration, sanitizedMetadata);
+            return new ScrapedMedia(videoUrl, audioUrl, thumbnailUrl, caption, title, duration, sanitizedMetadata);
         } catch (LatyrException le) {
             throw le;
         } catch (Exception e) {
@@ -102,7 +113,11 @@ public class ApifyScraperAdapter implements ScraperProvider {
         }
     }
 
-    private String fetchInstagramOgDescription(String url) {
+    private record OgMetadata(String caption, String imageUrl) {}
+
+    private OgMetadata fetchInstagramOgMetadata(String url) {
+        String caption = null;
+        String imageUrl = null;
         try {
             String html = webClient.get()
                     .uri(url)
@@ -112,17 +127,23 @@ public class ApifyScraperAdapter implements ScraperProvider {
                     .block(Duration.ofSeconds(10));
 
             if (html != null) {
-                // Find og:description or og:title
-                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("<meta\\s+(?:property|name)=[\"'](?:og:description|description)[\"']\\s+content=[\"'](.*?)[\"']", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL);
-                java.util.regex.Matcher matcher = pattern.matcher(html);
-                if (matcher.find()) {
-                    String desc = matcher.group(1);
-                    return org.springframework.web.util.HtmlUtils.htmlUnescape(desc).trim();
+                // Find og:description or description
+                java.util.regex.Pattern descPattern = java.util.regex.Pattern.compile("<meta\\s+(?:property|name)=[\"'](?:og:description|description)[\"']\\s+content=[\"'](.*?)[\"']", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL);
+                java.util.regex.Matcher descMatcher = descPattern.matcher(html);
+                if (descMatcher.find()) {
+                    caption = org.springframework.web.util.HtmlUtils.htmlUnescape(descMatcher.group(1)).trim();
+                }
+
+                // Find og:image
+                java.util.regex.Pattern imgPattern = java.util.regex.Pattern.compile("<meta\\s+(?:property|name)=[\"']og:image[\"']\\s+content=[\"'](.*?)[\"']", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL);
+                java.util.regex.Matcher imgMatcher = imgPattern.matcher(html);
+                if (imgMatcher.find()) {
+                    imageUrl = org.springframework.web.util.HtmlUtils.htmlUnescape(imgMatcher.group(1)).trim();
                 }
             }
         } catch (Exception e) {
             log.warn("Could not extract public OG tags from Instagram URL {}: {}", url, e.getMessage());
         }
-        return null;
+        return new OgMetadata(caption, imageUrl);
     }
 }
