@@ -15,7 +15,9 @@ class LocalCaptures extends Table {
   TextColumn get status => text().withDefault(const Constant('PENDING_SYNC'))();
   TextColumn get intent => text().nullable()();
   TextColumn get category => text().nullable()();
+  TextColumn get subCategory => text().nullable()();
   TextColumn get title => text().nullable()();
+  TextColumn get summary => text().nullable()();
   TextColumn get originalCaption => text().nullable()();
   TextColumn get thumbnailUrl => text().nullable()();
   TextColumn get audioTranscript => text().nullable()();
@@ -36,7 +38,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -49,6 +51,10 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.addColumn(localCaptures, localCaptures.title);
+          }
+          if (from < 4) {
+            await m.addColumn(localCaptures, localCaptures.subCategory);
+            await m.addColumn(localCaptures, localCaptures.summary);
           }
         },
       );

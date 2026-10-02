@@ -2,43 +2,46 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:latyr_app/core/design/latyr_colors.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
-import 'package:latyr_app/shared/widgets/apple_tv_badge.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EntityCardRouter extends StatelessWidget {
   final ExtractedEntityModel entity;
+  final Color? cardColor;
 
-  const EntityCardRouter({super.key, required this.entity});
+  const EntityCardRouter({super.key, required this.entity, this.cardColor});
 
   @override
   Widget build(BuildContext context) {
     switch (entity.entityType.toUpperCase()) {
       case 'MOVIE':
       case 'TV_SHOW':
-        return _MovieShowCard(entity: entity);
+        return _MovieShowCard(entity: entity, cardColor: cardColor);
       case 'GITHUB_REPO':
-        return _GitHubRepoCard(entity: entity);
+        return _GitHubRepoCard(entity: entity, cardColor: cardColor);
       case 'QUOTE':
-        return _QuoteCard(entity: entity);
+        return _QuoteCard(entity: entity, cardColor: cardColor);
       default:
-        return _GenericCard(entity: entity);
+        return _GenericCard(entity: entity, cardColor: cardColor);
     }
   }
 }
 
-// ─── Movie / Show Card ───────────────────────────────────────────────────────
-
 class _MovieShowCard extends StatelessWidget {
   final ExtractedEntityModel entity;
-  const _MovieShowCard({required this.entity});
+  final Color? cardColor;
+  
+  const _MovieShowCard({required this.entity, this.cardColor});
 
   @override
   Widget build(BuildContext context) {
     final posterUrl = entity.metadata['poster_url']?.toString();
     final rating = entity.metadata['rating']?.toString();
     final releaseYear = entity.metadata['release_year']?.toString();
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
 
-    return _AppleTvCardContainer(
+    return _CardContainer(
+      cardColor: cardColor,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -50,11 +53,11 @@ class _MovieShowCard extends StatelessWidget {
                 width: 54,
                 height: 76,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stack) => _buildPlaceholderPoster(),
+                errorBuilder: (context, error, stack) => _buildPlaceholderPoster(isDark),
               ),
             )
           else
-            _buildPlaceholderPoster(),
+            _buildPlaceholderPoster(isDark),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -65,8 +68,8 @@ class _MovieShowCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         entity.title,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: textColor,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.2,
@@ -77,7 +80,7 @@ class _MovieShowCard extends StatelessWidget {
                     ),
                     if (rating != null) ...[
                       const SizedBox(width: 6),
-                      AppleTvBadge(label: rating, emoji: '★'),
+                      _PillBadge(label: rating, emoji: '\u2605', textColor: textColor, isDark: isDark),
                     ],
                   ],
                 ),
@@ -86,7 +89,7 @@ class _MovieShowCard extends StatelessWidget {
                   Text(
                     releaseYear,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
+                      color: textColor.withOpacity(0.5),
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -97,7 +100,7 @@ class _MovieShowCard extends StatelessWidget {
                   Text(
                     entity.description!,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.72),
+                      color: textColor.withOpacity(0.72),
                       fontSize: 12,
                       height: 1.35,
                     ),
@@ -108,10 +111,11 @@ class _MovieShowCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: _AppleTvCtaButton(
+                  child: _CtaButton(
                     ctaText: 'WATCH',
                     url: entity.externalUrl,
                     icon: CupertinoIcons.play_arrow_solid,
+                    isDark: isDark,
                   ),
                 ),
               ],
@@ -122,38 +126,36 @@ class _MovieShowCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholderPoster() {
+  Widget _buildPlaceholderPoster(bool isDark) {
     return Container(
       width: 54,
       height: 76,
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2230),
+        color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 0.8),
       ),
       child: const Center(
-        child: Icon(
-          CupertinoIcons.film,
-          color: Color(0xFFBF5AF2),
-          size: 24,
-        ),
+        child: Icon(CupertinoIcons.film, color: Color(0xFFBF5AF2), size: 24),
       ),
     );
   }
 }
 
-// ─── GitHub Repo Card ─────────────────────────────────────────────────────────
-
 class _GitHubRepoCard extends StatelessWidget {
   final ExtractedEntityModel entity;
-  const _GitHubRepoCard({required this.entity});
+  final Color? cardColor;
+  
+  const _GitHubRepoCard({required this.entity, this.cardColor});
 
   @override
   Widget build(BuildContext context) {
     final stars = entity.metadata['stars']?.toString();
     final language = entity.metadata['language']?.toString();
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
 
-    return _AppleTvCardContainer(
+    return _CardContainer(
+      cardColor: cardColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -162,7 +164,7 @@ class _GitHubRepoCard extends StatelessWidget {
               _buildIconSquare(
                 icon: CupertinoIcons.chevron_left_slash_chevron_right,
                 iconColor: const Color(0xFF64D2FF),
-                bgColor: const Color(0xFF64D2FF).withValues(alpha: 0.15),
+                bgColor: const Color(0xFF64D2FF).withOpacity(0.15),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -171,8 +173,8 @@ class _GitHubRepoCard extends StatelessWidget {
                   children: [
                     Text(
                       entity.title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: textColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.2,
@@ -183,34 +185,43 @@ class _GitHubRepoCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        const AppleTvBadge(label: 'REPO', fontSize: 9),
                         if (stars != null) ...[
-                          const SizedBox(width: 5),
-                          AppleTvBadge(label: stars, emoji: '★', fontSize: 9),
+                          Icon(CupertinoIcons.star_fill, size: 10, color: textColor.withOpacity(0.5)),
+                          const SizedBox(width: 4),
+                          Text(
+                            stars,
+                            style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 11),
+                          ),
+                          const SizedBox(width: 10),
                         ],
                         if (language != null) ...[
-                          const SizedBox(width: 5),
-                          AppleTvBadge(label: language.toUpperCase(), fontSize: 9),
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFFD60A),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            language,
+                            style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 11),
+                          ),
                         ],
                       ],
                     ),
                   ],
                 ),
               ),
-              if (entity.externalUrl != null)
-                _AppleTvCtaButton(
-                  ctaText: 'GITHUB',
-                  url: entity.externalUrl,
-                  icon: CupertinoIcons.arrow_up_right,
-                ),
             ],
           ),
           if (entity.description != null && entity.description!.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               entity.description!,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.72),
+                color: textColor.withOpacity(0.72),
                 fontSize: 12,
                 height: 1.35,
               ),
@@ -218,22 +229,36 @@ class _GitHubRepoCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ],
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: _CtaButton(
+              ctaText: 'VIEW REPO',
+              url: entity.externalUrl,
+              icon: CupertinoIcons.arrow_up_right,
+              isDark: isDark,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-// ─── Quote Card ──────────────────────────────────────────────────────────────
-
 class _QuoteCard extends StatelessWidget {
   final ExtractedEntityModel entity;
-  const _QuoteCard({required this.entity});
+  final Color? cardColor;
+  
+  const _QuoteCard({required this.entity, this.cardColor});
 
   @override
   Widget build(BuildContext context) {
-    return _AppleTvCardContainer(
-      borderColor: LColors.brandAmber.withValues(alpha: 0.25),
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+
+    return _CardContainer(
+      cardColor: cardColor,
+      borderColor: LColors.brandAmber.withOpacity(0.25),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -243,17 +268,16 @@ class _QuoteCard extends StatelessWidget {
               _buildIconSquare(
                 icon: CupertinoIcons.quote_bubble_fill,
                 iconColor: LColors.brandAmber,
-                bgColor: LColors.brandAmber.withValues(alpha: 0.15),
+                bgColor: LColors.brandAmber.withOpacity(0.15),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  '“${entity.title}”',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  '\u201C${entity.title}\u201D',
+                  style: TextStyle(
+                    color: textColor,
                     fontSize: 13,
                     fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.w600,
                     height: 1.4,
                   ),
                 ),
@@ -261,15 +285,15 @@ class _QuoteCard extends StatelessWidget {
             ],
           ),
           if (entity.description != null && entity.description!.isNotEmpty) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.only(left: 46),
+              padding: const EdgeInsets.only(left: 42),
               child: Text(
-                '— ${entity.description!}',
+                '\u2014 ${entity.description}',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.55),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  color: textColor.withOpacity(0.6),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -280,17 +304,20 @@ class _QuoteCard extends StatelessWidget {
   }
 }
 
-// ─── Generic Card (Tools, Places, Books, Food, etc.) ─────────────────────────
-
 class _GenericCard extends StatelessWidget {
   final ExtractedEntityModel entity;
-  const _GenericCard({required this.entity});
+  final Color? cardColor;
+  
+  const _GenericCard({required this.entity, this.cardColor});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
     final typeInfo = _resolveTypeInfo(entity.entityType);
 
-    return _AppleTvCardContainer(
+    return _CardContainer(
+      cardColor: cardColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -300,7 +327,7 @@ class _GenericCard extends StatelessWidget {
               _buildIconSquare(
                 icon: typeInfo.icon,
                 iconColor: typeInfo.color,
-                bgColor: typeInfo.color.withValues(alpha: 0.15),
+                bgColor: typeInfo.color.withOpacity(0.15),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -309,8 +336,8 @@ class _GenericCard extends StatelessWidget {
                   children: [
                     Text(
                       entity.title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: textColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.2,
@@ -318,28 +345,29 @@ class _GenericCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
-                    AppleTvBadge(
-                      label: entity.entityType.toUpperCase(),
-                      fontSize: 9,
-                    ),
+                    if (entity.entityType.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        entity.entityType,
+                        style: TextStyle(
+                          color: typeInfo.color.withOpacity(0.8),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              if (entity.externalUrl != null && entity.externalUrl!.isNotEmpty)
-                _AppleTvCtaButton(
-                  ctaText: entity.actionCta,
-                  url: entity.externalUrl,
-                  icon: CupertinoIcons.arrow_up_right,
-                ),
             ],
           ),
           if (entity.description != null && entity.description!.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               entity.description!,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.72),
+                color: textColor.withOpacity(0.72),
                 fontSize: 12,
                 height: 1.35,
               ),
@@ -347,102 +375,96 @@ class _GenericCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ],
+          if (entity.externalUrl != null && entity.externalUrl!.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: _CtaButton(
+                ctaText: 'OPEN',
+                url: entity.externalUrl,
+                icon: CupertinoIcons.arrow_right,
+                isDark: isDark,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
-
-  _TypeInfo _resolveTypeInfo(String type) {
-    switch (type.toUpperCase()) {
-      case 'BOOK':
-        return _TypeInfo(CupertinoIcons.book_fill, const Color(0xFFFF9F0A));
-      case 'RECIPE':
-        return _TypeInfo(CupertinoIcons.flame_fill, const Color(0xFFFF453A));
-      case 'PLACE':
-        return _TypeInfo(CupertinoIcons.map_pin_ellipse, const Color(0xFF30D158));
-      case 'TOOL':
-        return _TypeInfo(CupertinoIcons.wrench_fill, const Color(0xFF64D2FF));
-      default:
-        return _TypeInfo(CupertinoIcons.sparkles, const Color(0xFFBF5AF2));
-    }
-  }
 }
 
-class _TypeInfo {
-  final IconData icon;
-  final Color color;
-  _TypeInfo(this.icon, this.color);
+Widget _buildIconSquare({required IconData icon, required Color iconColor, required Color bgColor}) {
+  return Container(
+    width: 32,
+    height: 32,
+    decoration: BoxDecoration(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Center(
+      child: Icon(icon, color: iconColor, size: 16),
+    ),
+  );
 }
 
-// ─── Card Container (Apple TV Frosted Dark Surface) ───────────────────────────
-
-class _AppleTvCardContainer extends StatelessWidget {
+class _CardContainer extends StatelessWidget {
   final Widget child;
   final Color? borderColor;
+  final Color? cardColor;
 
-  const _AppleTvCardContainer({required this.child, this.borderColor});
+  const _CardContainer({required this.child, this.borderColor, this.cardColor});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
+    
+    // Fallback if no card color provided
+    final fallbackColor = isDark ? const Color(0x1A000000) : CupertinoColors.white.withOpacity(0.4);
+    
+    // We apply border style matching home UI if cardColor is provided
+    final hasCardColor = cardColor != null;
+    final bColor = hasCardColor 
+        ? (isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white)
+        : (borderColor ?? (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)));
+    
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF161A26),
-        borderRadius: BorderRadius.circular(14),
+        color: cardColor ?? fallbackColor,
+        borderRadius: BorderRadius.circular(hasCardColor ? 24 : 14),
         border: Border.all(
-          color: borderColor ?? Colors.white.withValues(alpha: 0.1),
-          width: 0.8,
+          color: bColor,
+          width: hasCardColor ? 2.5 : 0.8,
         ),
-        boxShadow: [
+        boxShadow: hasCardColor ? [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
-        ],
+        ] : null,
       ),
       child: child,
     );
   }
 }
 
-Widget _buildIconSquare({
-  required IconData icon,
-  required Color iconColor,
-  required Color bgColor,
-}) {
-  return Container(
-    width: 36,
-    height: 36,
-    decoration: BoxDecoration(
-      color: bgColor,
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(
-        color: iconColor.withValues(alpha: 0.3),
-        width: 0.8,
-      ),
-    ),
-    child: Center(
-      child: Icon(icon, size: 18, color: iconColor),
-    ),
-  );
-}
-
-// ─── Apple TV Glass CTA Button ────────────────────────────────────────────────
-
-class _AppleTvCtaButton extends StatelessWidget {
+class _CtaButton extends StatelessWidget {
   final String ctaText;
   final String? url;
   final IconData icon;
+  final bool isDark;
 
-  const _AppleTvCtaButton({
+  const _CtaButton({
     required this.ctaText,
     required this.url,
     required this.icon,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
+    final textColor = isDark ? Colors.white : Colors.black;
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: () async {
@@ -454,32 +476,96 @@ class _AppleTvCtaButton extends StatelessWidget {
         }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.22),
-            width: 0.8,
-          ),
+          color: isDark ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              ctaText.toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 10,
+              ctaText,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5,
               ),
             ),
             const SizedBox(width: 4),
-            Icon(icon, size: 10, color: Colors.white),
+            Icon(icon, size: 10, color: textColor),
           ],
         ),
       ),
     );
+  }
+}
+
+class _PillBadge extends StatelessWidget {
+  final String label;
+  final String emoji;
+  final Color textColor;
+  final bool isDark;
+
+  const _PillBadge({required this.label, required this.emoji, required this.textColor, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 10)),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TypeInfo {
+  final IconData icon;
+  final Color color;
+  _TypeInfo(this.icon, this.color);
+}
+
+_TypeInfo _resolveTypeInfo(String type) {
+  switch (type.toUpperCase()) {
+    case 'PLACE':
+    case 'LOCATION':
+      return _TypeInfo(CupertinoIcons.map_pin_ellipse, const Color(0xFF32ADE6));
+    case 'PRODUCT':
+      return _TypeInfo(CupertinoIcons.bag_fill, const Color(0xFFFF9F0A));
+    case 'RECIPE':
+    case 'FOOD':
+      return _TypeInfo(CupertinoIcons.flame_fill, const Color(0xFFFF453A));
+    case 'PERSON':
+    case 'CREATOR':
+      return _TypeInfo(CupertinoIcons.person_crop_circle_fill, const Color(0xFFBF5AF2));
+    case 'ARTICLE':
+    case 'BLOG':
+      return _TypeInfo(CupertinoIcons.doc_text_fill, const Color(0xFF30D158));
+    case 'TOOL':
+    case 'APP':
+      return _TypeInfo(CupertinoIcons.wrench_fill, const Color(0xFF0A84FF));
+    case 'IDEA':
+    case 'CONCEPT':
+      return _TypeInfo(CupertinoIcons.lightbulb_fill, const Color(0xFFFFD60A));
+    default:
+      return _TypeInfo(CupertinoIcons.sparkles, const Color(0xFF64D2FF));
   }
 }

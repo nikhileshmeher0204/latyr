@@ -82,10 +82,32 @@ class $LocalCapturesTable extends LocalCaptures
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _subCategoryMeta = const VerificationMeta(
+    'subCategory',
+  );
+  @override
+  late final GeneratedColumn<String> subCategory = GeneratedColumn<String>(
+    'sub_category',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
     'title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _summaryMeta = const VerificationMeta(
+    'summary',
+  );
+  @override
+  late final GeneratedColumn<String> summary = GeneratedColumn<String>(
+    'summary',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -190,7 +212,9 @@ class $LocalCapturesTable extends LocalCaptures
     status,
     intent,
     category,
+    subCategory,
     title,
+    summary,
     originalCaption,
     thumbnailUrl,
     audioTranscript,
@@ -262,10 +286,25 @@ class $LocalCapturesTable extends LocalCaptures
         category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
       );
     }
+    if (data.containsKey('sub_category')) {
+      context.handle(
+        _subCategoryMeta,
+        subCategory.isAcceptableOrUnknown(
+          data['sub_category']!,
+          _subCategoryMeta,
+        ),
+      );
+    }
     if (data.containsKey('title')) {
       context.handle(
         _titleMeta,
         title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('summary')) {
+      context.handle(
+        _summaryMeta,
+        summary.isAcceptableOrUnknown(data['summary']!, _summaryMeta),
       );
     }
     if (data.containsKey('original_caption')) {
@@ -368,9 +407,17 @@ class $LocalCapturesTable extends LocalCaptures
         DriftSqlType.string,
         data['${effectivePrefix}category'],
       ),
+      subCategory: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sub_category'],
+      ),
       title: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}title'],
+      ),
+      summary: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}summary'],
       ),
       originalCaption: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -421,7 +468,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
   final String status;
   final String? intent;
   final String? category;
+  final String? subCategory;
   final String? title;
+  final String? summary;
   final String? originalCaption;
   final String? thumbnailUrl;
   final String? audioTranscript;
@@ -438,7 +487,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     required this.status,
     this.intent,
     this.category,
+    this.subCategory,
     this.title,
+    this.summary,
     this.originalCaption,
     this.thumbnailUrl,
     this.audioTranscript,
@@ -466,8 +517,14 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<String>(category);
     }
+    if (!nullToAbsent || subCategory != null) {
+      map['sub_category'] = Variable<String>(subCategory);
+    }
     if (!nullToAbsent || title != null) {
       map['title'] = Variable<String>(title);
+    }
+    if (!nullToAbsent || summary != null) {
+      map['summary'] = Variable<String>(summary);
     }
     if (!nullToAbsent || originalCaption != null) {
       map['original_caption'] = Variable<String>(originalCaption);
@@ -511,9 +568,15 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
+      subCategory: subCategory == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subCategory),
       title: title == null && nullToAbsent
           ? const Value.absent()
           : Value(title),
+      summary: summary == null && nullToAbsent
+          ? const Value.absent()
+          : Value(summary),
       originalCaption: originalCaption == null && nullToAbsent
           ? const Value.absent()
           : Value(originalCaption),
@@ -550,7 +613,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
       status: serializer.fromJson<String>(json['status']),
       intent: serializer.fromJson<String?>(json['intent']),
       category: serializer.fromJson<String?>(json['category']),
+      subCategory: serializer.fromJson<String?>(json['subCategory']),
       title: serializer.fromJson<String?>(json['title']),
+      summary: serializer.fromJson<String?>(json['summary']),
       originalCaption: serializer.fromJson<String?>(json['originalCaption']),
       thumbnailUrl: serializer.fromJson<String?>(json['thumbnailUrl']),
       audioTranscript: serializer.fromJson<String?>(json['audioTranscript']),
@@ -574,7 +639,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
       'status': serializer.toJson<String>(status),
       'intent': serializer.toJson<String?>(intent),
       'category': serializer.toJson<String?>(category),
+      'subCategory': serializer.toJson<String?>(subCategory),
       'title': serializer.toJson<String?>(title),
+      'summary': serializer.toJson<String?>(summary),
       'originalCaption': serializer.toJson<String?>(originalCaption),
       'thumbnailUrl': serializer.toJson<String?>(thumbnailUrl),
       'audioTranscript': serializer.toJson<String?>(audioTranscript),
@@ -596,7 +663,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     String? status,
     Value<String?> intent = const Value.absent(),
     Value<String?> category = const Value.absent(),
+    Value<String?> subCategory = const Value.absent(),
     Value<String?> title = const Value.absent(),
+    Value<String?> summary = const Value.absent(),
     Value<String?> originalCaption = const Value.absent(),
     Value<String?> thumbnailUrl = const Value.absent(),
     Value<String?> audioTranscript = const Value.absent(),
@@ -615,7 +684,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     status: status ?? this.status,
     intent: intent.present ? intent.value : this.intent,
     category: category.present ? category.value : this.category,
+    subCategory: subCategory.present ? subCategory.value : this.subCategory,
     title: title.present ? title.value : this.title,
+    summary: summary.present ? summary.value : this.summary,
     originalCaption: originalCaption.present
         ? originalCaption.value
         : this.originalCaption,
@@ -646,7 +717,11 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
       status: data.status.present ? data.status.value : this.status,
       intent: data.intent.present ? data.intent.value : this.intent,
       category: data.category.present ? data.category.value : this.category,
+      subCategory: data.subCategory.present
+          ? data.subCategory.value
+          : this.subCategory,
       title: data.title.present ? data.title.value : this.title,
+      summary: data.summary.present ? data.summary.value : this.summary,
       originalCaption: data.originalCaption.present
           ? data.originalCaption.value
           : this.originalCaption,
@@ -678,7 +753,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
           ..write('status: $status, ')
           ..write('intent: $intent, ')
           ..write('category: $category, ')
+          ..write('subCategory: $subCategory, ')
           ..write('title: $title, ')
+          ..write('summary: $summary, ')
           ..write('originalCaption: $originalCaption, ')
           ..write('thumbnailUrl: $thumbnailUrl, ')
           ..write('audioTranscript: $audioTranscript, ')
@@ -700,7 +777,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     status,
     intent,
     category,
+    subCategory,
     title,
+    summary,
     originalCaption,
     thumbnailUrl,
     audioTranscript,
@@ -721,7 +800,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
           other.status == this.status &&
           other.intent == this.intent &&
           other.category == this.category &&
+          other.subCategory == this.subCategory &&
           other.title == this.title &&
+          other.summary == this.summary &&
           other.originalCaption == this.originalCaption &&
           other.thumbnailUrl == this.thumbnailUrl &&
           other.audioTranscript == this.audioTranscript &&
@@ -740,7 +821,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
   final Value<String> status;
   final Value<String?> intent;
   final Value<String?> category;
+  final Value<String?> subCategory;
   final Value<String?> title;
+  final Value<String?> summary;
   final Value<String?> originalCaption;
   final Value<String?> thumbnailUrl;
   final Value<String?> audioTranscript;
@@ -758,7 +841,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     this.status = const Value.absent(),
     this.intent = const Value.absent(),
     this.category = const Value.absent(),
+    this.subCategory = const Value.absent(),
     this.title = const Value.absent(),
+    this.summary = const Value.absent(),
     this.originalCaption = const Value.absent(),
     this.thumbnailUrl = const Value.absent(),
     this.audioTranscript = const Value.absent(),
@@ -777,7 +862,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     this.status = const Value.absent(),
     this.intent = const Value.absent(),
     this.category = const Value.absent(),
+    this.subCategory = const Value.absent(),
     this.title = const Value.absent(),
+    this.summary = const Value.absent(),
     this.originalCaption = const Value.absent(),
     this.thumbnailUrl = const Value.absent(),
     this.audioTranscript = const Value.absent(),
@@ -796,7 +883,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     Expression<String>? status,
     Expression<String>? intent,
     Expression<String>? category,
+    Expression<String>? subCategory,
     Expression<String>? title,
+    Expression<String>? summary,
     Expression<String>? originalCaption,
     Expression<String>? thumbnailUrl,
     Expression<String>? audioTranscript,
@@ -815,7 +904,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
       if (status != null) 'status': status,
       if (intent != null) 'intent': intent,
       if (category != null) 'category': category,
+      if (subCategory != null) 'sub_category': subCategory,
       if (title != null) 'title': title,
+      if (summary != null) 'summary': summary,
       if (originalCaption != null) 'original_caption': originalCaption,
       if (thumbnailUrl != null) 'thumbnail_url': thumbnailUrl,
       if (audioTranscript != null) 'audio_transcript': audioTranscript,
@@ -837,7 +928,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     Value<String>? status,
     Value<String?>? intent,
     Value<String?>? category,
+    Value<String?>? subCategory,
     Value<String?>? title,
+    Value<String?>? summary,
     Value<String?>? originalCaption,
     Value<String?>? thumbnailUrl,
     Value<String?>? audioTranscript,
@@ -856,7 +949,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
       status: status ?? this.status,
       intent: intent ?? this.intent,
       category: category ?? this.category,
+      subCategory: subCategory ?? this.subCategory,
       title: title ?? this.title,
+      summary: summary ?? this.summary,
       originalCaption: originalCaption ?? this.originalCaption,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       audioTranscript: audioTranscript ?? this.audioTranscript,
@@ -894,8 +989,14 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     if (category.present) {
       map['category'] = Variable<String>(category.value);
     }
+    if (subCategory.present) {
+      map['sub_category'] = Variable<String>(subCategory.value);
+    }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
+    }
+    if (summary.present) {
+      map['summary'] = Variable<String>(summary.value);
     }
     if (originalCaption.present) {
       map['original_caption'] = Variable<String>(originalCaption.value);
@@ -939,7 +1040,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
           ..write('status: $status, ')
           ..write('intent: $intent, ')
           ..write('category: $category, ')
+          ..write('subCategory: $subCategory, ')
           ..write('title: $title, ')
+          ..write('summary: $summary, ')
           ..write('originalCaption: $originalCaption, ')
           ..write('thumbnailUrl: $thumbnailUrl, ')
           ..write('audioTranscript: $audioTranscript, ')
@@ -974,7 +1077,9 @@ typedef $$LocalCapturesTableCreateCompanionBuilder =
       Value<String> status,
       Value<String?> intent,
       Value<String?> category,
+      Value<String?> subCategory,
       Value<String?> title,
+      Value<String?> summary,
       Value<String?> originalCaption,
       Value<String?> thumbnailUrl,
       Value<String?> audioTranscript,
@@ -994,7 +1099,9 @@ typedef $$LocalCapturesTableUpdateCompanionBuilder =
       Value<String> status,
       Value<String?> intent,
       Value<String?> category,
+      Value<String?> subCategory,
       Value<String?> title,
+      Value<String?> summary,
       Value<String?> originalCaption,
       Value<String?> thumbnailUrl,
       Value<String?> audioTranscript,
@@ -1050,8 +1157,18 @@ class $$LocalCapturesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get subCategory => $composableBuilder(
+    column: $table.subCategory,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get title => $composableBuilder(
     column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get summary => $composableBuilder(
+    column: $table.summary,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1140,8 +1257,18 @@ class $$LocalCapturesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get subCategory => $composableBuilder(
+    column: $table.subCategory,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get title => $composableBuilder(
     column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get summary => $composableBuilder(
+    column: $table.summary,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1222,8 +1349,16 @@ class $$LocalCapturesTableAnnotationComposer
   GeneratedColumn<String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
 
+  GeneratedColumn<String> get subCategory => $composableBuilder(
+    column: $table.subCategory,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get summary =>
+      $composableBuilder(column: $table.summary, builder: (column) => column);
 
   GeneratedColumn<String> get originalCaption => $composableBuilder(
     column: $table.originalCaption,
@@ -1298,7 +1433,9 @@ class $$LocalCapturesTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String?> intent = const Value.absent(),
                 Value<String?> category = const Value.absent(),
+                Value<String?> subCategory = const Value.absent(),
                 Value<String?> title = const Value.absent(),
+                Value<String?> summary = const Value.absent(),
                 Value<String?> originalCaption = const Value.absent(),
                 Value<String?> thumbnailUrl = const Value.absent(),
                 Value<String?> audioTranscript = const Value.absent(),
@@ -1316,7 +1453,9 @@ class $$LocalCapturesTableTableManager
                 status: status,
                 intent: intent,
                 category: category,
+                subCategory: subCategory,
                 title: title,
+                summary: summary,
                 originalCaption: originalCaption,
                 thumbnailUrl: thumbnailUrl,
                 audioTranscript: audioTranscript,
@@ -1336,7 +1475,9 @@ class $$LocalCapturesTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String?> intent = const Value.absent(),
                 Value<String?> category = const Value.absent(),
+                Value<String?> subCategory = const Value.absent(),
                 Value<String?> title = const Value.absent(),
+                Value<String?> summary = const Value.absent(),
                 Value<String?> originalCaption = const Value.absent(),
                 Value<String?> thumbnailUrl = const Value.absent(),
                 Value<String?> audioTranscript = const Value.absent(),
@@ -1354,7 +1495,9 @@ class $$LocalCapturesTableTableManager
                 status: status,
                 intent: intent,
                 category: category,
+                subCategory: subCategory,
                 title: title,
+                summary: summary,
                 originalCaption: originalCaption,
                 thumbnailUrl: thumbnailUrl,
                 audioTranscript: audioTranscript,

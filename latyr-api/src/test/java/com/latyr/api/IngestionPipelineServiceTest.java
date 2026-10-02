@@ -126,6 +126,7 @@ class IngestionPipelineServiceTest {
         );
         AIProvider.AIAnalysisResult analysis = new AIProvider.AIAnalysisResult(
                 "5 Suspense Movies You Must Watch",
+                "Summary",
                 "Transcript: watch these 5 movies...",
                 Intent.WATCH,
                 "Entertainment",

@@ -113,6 +113,7 @@ public class GoogleGenAIAdapter implements AIProvider {
                 log.warn("Gemini API rate limit/quota hit. Applying graceful testing fallback for image analysis.");
                 return new AIAnalysisResult(
                         "Captured Screenshot Content",
+                        "A temporary fallback summary generated due to rate limits.",
                         "Captured Screenshot Content",
                         Intent.EXPLORE,
                         "Technology",
@@ -146,6 +147,7 @@ public class GoogleGenAIAdapter implements AIProvider {
             Return a JSON object with this exact schema:
             {
               "title": "A concise, descriptive, and engaging 4-8 word title summarizing the core topic or hook of this content (e.g. 'Run AWS Services Locally with FLOCI', 'Top 5 AI Extensions for VS Code', 'Crispy Garlic Butter Smashed Potatoes'). Never use generic filler like 'Instagram Reel' or creator hashtags.",
+              "summary": "A concise 2-3 sentence summary of the key content, transcription, or main takeaway.",
               "transcript": "Accurate transcription of spoken audio or summary of the provided text content",
               "intent": "WATCH | EXPLORE | REMEMBER | COOK | VISIT | BUY | LEARN",
               "category": "Entertainment | Tech | Food | Travel | Learning | Shopping | Lifestyle | Fitness | Finance",
@@ -195,6 +197,7 @@ public class GoogleGenAIAdapter implements AIProvider {
         Map<String, Object> structured = objectMapper.readValue(cleanJson, new TypeReference<Map<String, Object>>() {});
 
         String transcript = structured.get("transcript") != null ? structured.get("transcript").toString() : "";
+        String summary = structured.get("summary") != null ? structured.get("summary").toString() : "";
         String intentStr = structured.get("intent") != null ? structured.get("intent").toString() : "EXPLORE";
         Intent intent = Intent.EXPLORE;
         try {
@@ -290,6 +293,7 @@ public class GoogleGenAIAdapter implements AIProvider {
 
         return new AIAnalysisResult(
                 title,
+                summary,
                 transcript,
                 intent,
                 category,

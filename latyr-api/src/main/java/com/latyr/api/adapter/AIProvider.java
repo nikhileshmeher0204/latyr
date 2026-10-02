@@ -16,6 +16,7 @@ public interface AIProvider {
 
     record AIAnalysisResult(
             String title,
+            String summary,
             String transcript,
             Intent intent,
             String category,

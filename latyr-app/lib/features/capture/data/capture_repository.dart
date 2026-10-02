@@ -288,7 +288,7 @@ class CaptureRepository {
 
               final newStatus = raw['status']?.toString() ?? 'COMPLETED';
               final newIntent = raw['intent']?.toString();
-              final newCategory = raw['category']?.toString();
+              final newCategory = raw['category']?.toString(); final newSubCategory = raw['sub_category']?.toString(); final newSummary = raw['summary']?.toString();
               final newTitle = raw['title']?.toString();
               final rawTranscript = raw['audio_transcript']?.toString();
               final rawThumbnail = raw['thumbnail_url']?.toString();
@@ -303,7 +303,7 @@ class CaptureRepository {
                 final bool hasChanged = existing.serverCaptureId != serverId ||
                     existing.status != newStatus ||
                     existing.intent != newIntent ||
-                    existing.category != newCategory ||
+                    existing.category != newCategory || existing.subCategory != newSubCategory || existing.summary != newSummary ||
                     existing.title != newTitle ||
                     existing.originalCaption != rawCaption ||
                     existing.audioTranscript != rawTranscript ||
@@ -322,7 +322,7 @@ class CaptureRepository {
                     serverCaptureId: Value(serverId),
                     status: Value(newStatus),
                     intent: Value(newIntent),
-                    category: Value(newCategory),
+                    category: Value(newCategory), subCategory: Value(newSubCategory), summary: Value(newSummary),
                     title: Value(newTitle ?? existing.title),
                     originalCaption: Value(rawCaption),
                     thumbnailUrl: Value(rawThumbnail ?? existing.thumbnailUrl),
@@ -342,7 +342,7 @@ class CaptureRepository {
                     contentType: Value(raw['content_type']?.toString() ?? 'URL'),
                     status: Value(newStatus),
                     intent: Value(newIntent),
-                    category: Value(newCategory),
+                    category: Value(newCategory), subCategory: Value(newSubCategory), summary: Value(newSummary),
                     title: Value(newTitle),
                     originalCaption: Value(rawCaption),
                     thumbnailUrl: Value(rawThumbnail),

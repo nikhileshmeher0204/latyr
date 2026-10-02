@@ -51,6 +51,13 @@ class ApiClient {
     );
   }
 
+  Future<Response<Map<String, dynamic>>> getWeatherContext(double? lat, double? lon) async {
+    final params = <String, dynamic>{};
+    if (lat != null) params['lat'] = lat;
+    if (lon != null) params['lon'] = lon;
+    return dio.get<Map<String, dynamic>>('/context/weather', queryParameters: params);
+  }
+
   Future<Response<Map<String, dynamic>>> getCaptures({
     int page = 0,
     int size = 20,
@@ -83,3 +90,6 @@ class ApiClient {
     );
   }
 }
+
+
+

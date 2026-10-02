@@ -24,6 +24,7 @@ public interface CaptureMapper {
         @Result(property = "category", column = "category"),
         @Result(property = "subCategory", column = "sub_category"),
         @Result(property = "title", column = "title"),
+        @Result(property = "summary", column = "summary"),
         @Result(property = "originalCaption", column = "original_caption"),
         @Result(property = "thumbnailUrl", column = "thumbnail_url"),
         @Result(property = "audioTranscript", column = "audio_transcript"),
@@ -92,7 +93,7 @@ public interface CaptureMapper {
     @Insert("""
         INSERT INTO captures (
             id, user_id, canonical_source_id, content_type, status, intent, category, sub_category,
-            title, original_caption, thumbnail_url, audio_transcript, notification_copies, resurface_count,
+            title, summary, original_caption, thumbnail_url, audio_transcript, notification_copies, resurface_count,
             total_processing_duration_ms, scheduled_resurface_at, last_resurfaced_at,
             created_at, updated_at
         )
@@ -106,6 +107,7 @@ public interface CaptureMapper {
             #{category},
             #{subCategory},
             #{title},
+            #{summary},
             #{originalCaption},
             #{thumbnailUrl},
             #{audioTranscript},
@@ -127,6 +129,7 @@ public interface CaptureMapper {
             category = #{category},
             sub_category = #{subCategory},
             title = #{title},
+            summary = #{summary},
             original_caption = #{originalCaption},
             thumbnail_url = #{thumbnailUrl},
             audio_transcript = #{audioTranscript},

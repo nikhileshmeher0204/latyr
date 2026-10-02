@@ -20,6 +20,7 @@ public class Capture {
     private String category;
     private String subCategory;
     private String title;
+    private String summary;
     private String originalCaption;
     private String thumbnailUrl;
     private String audioTranscript;
@@ -66,6 +67,9 @@ public class Capture {
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
+
+    public String getSummary() { return summary; }
+    public void setSummary(String summary) { this.summary = summary; }
 
     public String getOriginalCaption() { return originalCaption; }
     public void setOriginalCaption(String originalCaption) { this.originalCaption = originalCaption; }

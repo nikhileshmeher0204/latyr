@@ -178,6 +178,7 @@ public class IngestionPipelineService {
             capture.setCategory(analysis.category());
             capture.setSubCategory(analysis.subCategory());
             capture.setTitle(analysis.title());
+            capture.setSummary(analysis.summary());
             capture.setOriginalCaption(caption);
             capture.setAudioTranscript(analysis.transcript());
             capture.setNotificationCopies(analysis.notificationCopies());
@@ -210,18 +211,20 @@ public class IngestionPipelineService {
 
             // 6.5 Real-Time SSE Notification Broadcast to Foreground Mobile Device
             if (sseNotificationService != null) {
-                sseNotificationService.emitCaptureEvent(userId, "CAPTURE_COMPLETED", Map.of(
-                        "capture_id", captureId,
-                        "status", "COMPLETED",
-                        "intent", analysis.intent().name(),
-                        "category", analysis.category(),
-                        "sub_category", analysis.subCategory() != null ? analysis.subCategory() : "",
-                        "title", analysis.title() != null ? analysis.title() : "",
-                        "original_caption", caption != null ? caption : "",
-                        "audio_transcript", analysis.transcript(),
-                        "thumbnail_url", capture.getThumbnailUrl() != null ? capture.getThumbnailUrl() : "",
-                        "entities", enrichedEntities
-                ));
+                Map<String, Object> payload = new java.util.HashMap<>();
+                payload.put("capture_id", captureId);
+                payload.put("status", "COMPLETED");
+                payload.put("intent", analysis.intent().name());
+                payload.put("category", analysis.category());
+                payload.put("sub_category", analysis.subCategory() != null ? analysis.subCategory() : "");
+                payload.put("title", analysis.title() != null ? analysis.title() : "");
+                payload.put("summary", analysis.summary() != null ? analysis.summary() : "");
+                payload.put("original_caption", caption != null ? caption : "");
+                payload.put("audio_transcript", analysis.transcript() != null ? analysis.transcript() : "");
+                payload.put("thumbnail_url", capture.getThumbnailUrl() != null ? capture.getThumbnailUrl() : "");
+                payload.put("entities", enrichedEntities);
+
+                sseNotificationService.emitCaptureEvent(userId, "CAPTURE_COMPLETED", payload);
             }
 
             // 6.6 Silent FCM Push Notification for Background Sync
