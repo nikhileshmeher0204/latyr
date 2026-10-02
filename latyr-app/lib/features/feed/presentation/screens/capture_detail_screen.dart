@@ -79,6 +79,24 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     return '$month ${d.day} · $hour:$minute $period';
   }
 
+  Color _deriveFunkyTitleColor(Color baseColor, bool isDark) {
+    final hsv = HSVColor.fromColor(baseColor);
+    if (isDark) {
+      // In dark mode: luminous, elevated vibrant tint of the extracted color instead of plain white.
+      // Moderate-to-high saturation (0.35-0.65) and bright value (0.96) so the hue radiates with elegance.
+      final saturation = (hsv.saturation * 1.35).clamp(0.35, 0.65);
+      const value = 0.96;
+      return HSVColor.fromAHSV(1.0, hsv.hue, saturation, value).toColor();
+    } else {
+      // In light mode: deep, rich, saturated ink tone of the extracted color instead of plain black.
+      // High saturation (0.70-0.98) and deep value (0.22-0.30) for punchy contrast against pastel background aura.
+      final isYellowWarm = hsv.hue >= 35.0 && hsv.hue <= 70.0;
+      final saturation = (hsv.saturation * 1.6).clamp(0.70, 0.98);
+      final value = isYellowWarm ? 0.30 : 0.22;
+      return HSVColor.fromAHSV(1.0, hsv.hue, saturation, value).toColor();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final capture = widget.capture;
@@ -99,6 +117,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     final cardSurfaceColor = isDark ? const Color(0xFF1C1C1E) : CupertinoColors.white;
     final textColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
     final subtextColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF8A8A8E);
+    final titleColor = _deriveFunkyTitleColor(cardColor, isDark);
 
     final entities = ExtractedEntityModel.parseListFromJsonString(capture.entitiesJson);
     final isProcessing = capture.status == 'PROCESSING' ||
@@ -164,7 +183,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                           height: 1.16,
                           fontWeight: FontWeight.w600,
                           letterSpacing: -0.4,
-                          color: textColor,
+                          color: titleColor,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -189,11 +208,15 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            capture.contentType == 'VIDEO' ? 'Reel / Video' : 'Saved Capture',
-                            style: LTypography.caption1.copyWith(
-                              color: subtextColor,
-                              fontWeight: FontWeight.w500,
+                          Flexible(
+                            child: Text(
+                              capture.contentType == 'VIDEO' ? 'Reel / Video' : 'Saved Capture',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: LTypography.caption1.copyWith(
+                                color: subtextColor,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         ],
@@ -345,35 +368,42 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                         child: Icon(CupertinoIcons.back, color: textColor, size: 20),
                       ),
                     ),
+                    const SizedBox(width: 8),
 
                     // Centered Sub Category Bubble Pill (WITHOUT icon)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10.5),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                            blurRadius: 14,
-                            offset: const Offset(0, 3),
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10.5),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                            width: 1.5,
                           ),
-                        ],
-                      ),
-                      child: Text(
-                        navTitle.toUpperCase(),
-                        style: LTypography.footnoteSemibold.copyWith(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.0,
-                          color: textColor,
+                          boxShadow: [
+                            BoxShadow(
+                              color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                              blurRadius: 14,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          navTitle.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: LTypography.footnoteSemibold.copyWith(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.0,
+                            color: textColor,
+                          ),
                         ),
                       ),
                     ),
+
+                    const SizedBox(width: 8),
 
                     // Right Actions: Favorite & Share
                     Row(
@@ -826,12 +856,16 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
             Icon(icon, size: 12, color: textColor),
             const SizedBox(width: 5),
           ],
-          Text(
-            text.toUpperCase(),
-            style: LTypography.caption2.copyWith(
-              fontWeight: FontWeight.w800,
-              color: textColor,
-              letterSpacing: 0.6,
+          Flexible(
+            child: Text(
+              text.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: LTypography.caption2.copyWith(
+                fontWeight: FontWeight.w800,
+                color: textColor,
+                letterSpacing: 0.6,
+              ),
             ),
           ),
         ],
