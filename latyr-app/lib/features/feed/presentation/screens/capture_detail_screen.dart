@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/core/design/latyr_typography.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
@@ -18,6 +17,7 @@ class CaptureDetailScreen extends StatefulWidget {
 
 class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
   bool _isCaptionExpanded = false;
+  bool _isFavorited = false;
   Color? _extractedCardColor;
 
   @override
@@ -64,12 +64,25 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     return capture.originalUrl ?? 'Saved Media';
   }
 
+  String _formatDate(DateTime? date) {
+    final d = date ?? DateTime.now();
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    final month = months[d.month - 1];
+    final hour = d.hour > 12 ? d.hour - 12 : (d.hour == 0 ? 12 : d.hour);
+    final period = d.hour >= 12 ? 'PM' : 'AM';
+    final minute = d.minute.toString().padLeft(2, '0');
+    return '$month ${d.day} · $hour:$minute $period';
+  }
+
   @override
   Widget build(BuildContext context) {
     final capture = widget.capture;
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     
-    // Page background is the capture card color
+    // Fallback pastel palette if extraction is pending
     final colorList = [
       isDark ? const Color(0xFFC7A222) : const Color(0xFFFFE873),
       isDark ? const Color(0xFF2A9D8F) : const Color(0xFF88D4C8),
@@ -78,11 +91,12 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
       isDark ? const Color(0xFFD65DB1) : const Color(0xFFFF9CEE),
     ];
     final cardColor = _extractedCardColor ?? colorList[capture.id.hashCode.abs() % colorList.length];
-    final scaffoldBgColor = cardColor;
     
-    // Containers use Home Tab background color (not pure white)
-    final containerBgColor = isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF9F9F9);
-    final textColor = isDark ? CupertinoColors.white : CupertinoColors.black;
+    // Light, fresh airy canvas matching the Home Tab
+    final scaffoldBgColor = isDark ? const Color(0xFF000000) : const Color(0xFFF8F9FA);
+    final cardSurfaceColor = isDark ? const Color(0xFF1C1C1E) : CupertinoColors.white;
+    final textColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
+    final subtextColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF8A8A8E);
 
     final entities = ExtractedEntityModel.parseListFromJsonString(capture.entitiesJson);
     final isProcessing = capture.status == 'PROCESSING' ||
@@ -90,36 +104,123 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
         capture.status == 'PENDING_SYNC';
 
     final navTitle = capture.subCategory ?? capture.category ?? 'Moment';
+    final title = _resolveTitle(capture);
+    final hasImage = capture.thumbnailUrl != null && capture.thumbnailUrl!.isNotEmpty;
 
     return CupertinoPageScaffold(
       backgroundColor: scaffoldBgColor,
       child: Stack(
         children: [
-          // Main scrollable content
+          // 1. Continuous Ambient Pastel Aura: Flows from top (y=0) all the way down behind hero
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 520,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: const [0.0, 0.35, 0.70, 1.0],
+                    colors: [
+                      cardColor.withValues(alpha: isDark ? 0.38 : 0.45),
+                      cardColor.withValues(alpha: isDark ? 0.22 : 0.28),
+                      cardColor.withValues(alpha: isDark ? 0.07 : 0.09),
+                      scaffoldBgColor.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // 2. Main Scrollable Content
           SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Hero Image with Top and Bottom soft edge blur
-                _buildHeroHeader(capture, scaffoldBgColor, textColor, isDark),
-                
+                // Top spacing so title sits with comfortable breathing room below floating bar
+                const SafeArea(
+                  bottom: false,
+                  child: SizedBox(height: 64),
+                ),
+
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Badges
-                      _buildBadgesRow(capture, entities.length, textColor, isDark, containerBgColor),
+                      // Editorial Title in Georgia Serif
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontFamily: 'Georgia',
+                          fontSize: 32,
+                          height: 1.16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.4,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Editorial Metadata Row
+                      Row(
+                        children: [
+                          Text(
+                            _formatDate(capture.createdAt),
+                            style: LTypography.caption1.copyWith(
+                              color: subtextColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 3,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: subtextColor.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            capture.contentType == 'VIDEO' ? 'Reel / Video' : 'Saved Capture',
+                            style: LTypography.caption1.copyWith(
+                              color: subtextColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Curated Polaroid / Framed Hero Photo Card
+                      if (hasImage) ...[
+                        _buildCuratedMediaCard(
+                          capture: capture,
+                          cardColor: cardColor,
+                          isDark: isDark,
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // Candy Context Badges Row
+                      _buildBadgesRow(capture, entities.length, textColor, isDark, cardColor),
                       const SizedBox(height: 24),
 
-                      // Summary
+                      // Editorial Summary Card
                       if (capture.summary != null && capture.summary!.trim().isNotEmpty) ...[
                         _buildSummaryContainer(
                           summary: capture.summary!.trim(),
                           textColor: textColor,
+                          subtextColor: subtextColor,
                           isDark: isDark,
-                          cardColor: containerBgColor,
+                          cardColor: cardSurfaceColor,
+                          accentColor: cardColor,
                         ),
                         const SizedBox(height: 24),
                       ],
@@ -127,13 +228,14 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                       // Original Caption
                       if (capture.originalCaption != null &&
                           capture.originalCaption!.trim().isNotEmpty &&
-                          capture.originalCaption!.trim() != _resolveTitle(capture).trim()) ...[
+                          capture.originalCaption!.trim() != title.trim()) ...[
                         _buildCollapsibleCaptionContainer(
                           title: 'ORIGINAL CAPTION',
                           content: capture.originalCaption!,
                           textColor: textColor,
+                          subtextColor: subtextColor,
                           isDark: isDark,
-                          cardColor: containerBgColor,
+                          cardColor: cardSurfaceColor,
                         ),
                         const SizedBox(height: 24),
                       ],
@@ -141,26 +243,34 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                       // Audio Transcript
                       if (capture.audioTranscript != null &&
                           capture.audioTranscript!.isNotEmpty) ...[
-                        _buildAudioTranscriptSection(capture.audioTranscript!, textColor, isDark, containerBgColor),
+                        _buildAudioTranscriptSection(
+                          capture.audioTranscript!,
+                          textColor,
+                          subtextColor,
+                          isDark,
+                          cardSurfaceColor,
+                          cardColor,
+                        ),
                         const SizedBox(height: 24),
                       ],
 
-                      // Processing State
+                      // Processing State Banner
                       if (isProcessing) ...[
-                        _buildProcessingBanner(textColor, isDark, containerBgColor),
+                        _buildProcessingBanner(textColor, isDark, cardSurfaceColor),
                         const SizedBox(height: 24),
                       ],
 
-                      // Entities
-                      _buildEntitiesSection(entities, textColor, isDark, containerBgColor),
+                      // Extracted Insights & Actions
+                      _buildEntitiesSection(entities, textColor, isDark, cardSurfaceColor),
+                      const SizedBox(height: 48),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          
-          // Floating Top Navigation Bar
+
+          // 3. Floating Navigation Bar (Seamless, transparent backdrop without cut-off box)
           Positioned(
             top: 0,
             left: 0,
@@ -168,42 +278,130 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    // Back Button
                     CupertinoButton(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: EdgeInsets.zero,
                       onPressed: () => Navigator.of(context).pop(),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        width: 42,
+                        height: 42,
                         decoration: BoxDecoration(
-                          color: containerBgColor.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white, width: 1.5),
+                          color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                            width: 1.5,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.08),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                              blurRadius: 12,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(CupertinoIcons.back, color: textColor, size: 20),
-                            const SizedBox(width: 4),
-                            Text(
-                              navTitle,
-                              style: TextStyle(
-                                color: textColor,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                        child: Icon(CupertinoIcons.back, color: textColor, size: 20),
+                      ),
+                    ),
+
+                    // Centered Sub Category Bubble Pill (WITHOUT icon)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10.5),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                            blurRadius: 14,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        navTitle.toUpperCase(),
+                        style: LTypography.footnoteSemibold.copyWith(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.0,
+                          color: textColor,
                         ),
                       ),
+                    ),
+
+                    // Right Actions: Favorite & Share
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            setState(() {
+                              _isFavorited = !_isFavorited;
+                            });
+                          },
+                          child: Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              _isFavorited ? CupertinoIcons.suit_heart_fill : CupertinoIcons.suit_heart,
+                              color: _isFavorited ? CupertinoColors.systemPink : textColor,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            // Share action placeholder
+                          },
+                          child: Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Icon(CupertinoIcons.share, color: textColor, size: 20),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -211,6 +409,79 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCuratedMediaCard({
+    required LocalCapture capture,
+    required Color cardColor,
+    required bool isDark,
+  }) {
+    return Container(
+      width: double.infinity,
+      height: 240,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: CupertinoColors.white, width: 3.5),
+        boxShadow: [
+          BoxShadow(
+            color: cardColor.withValues(alpha: isDark ? 0.4 : 0.32),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: CupertinoColors.black.withValues(alpha: isDark ? 0.4 : 0.07),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22.5),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CachedNetworkImage(
+              imageUrl: capture.thumbnailUrl!,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(color: cardColor.withValues(alpha: 0.3)),
+              errorWidget: (context, url, error) => Container(color: cardColor.withValues(alpha: 0.3)),
+            ),
+            // Floating badge on the image
+            Positioned(
+              bottom: 12,
+              right: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: CupertinoColors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: CupertinoColors.white.withValues(alpha: 0.3), width: 1),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      capture.contentType == 'VIDEO' ? CupertinoIcons.play_arrow_solid : CupertinoIcons.photo,
+                      size: 11,
+                      color: CupertinoColors.white,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      capture.contentType == 'VIDEO' ? 'REEL' : 'PHOTO',
+                      style: LTypography.caption2.copyWith(
+                        color: CupertinoColors.white,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -223,8 +494,8 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
       border: Border.all(color: borderColor, width: 2.5),
       boxShadow: [
         BoxShadow(
-          color: CupertinoColors.black.withOpacity(isDark ? 0.35 : 0.08),
-          blurRadius: 16,
+          color: CupertinoColors.black.withValues(alpha: isDark ? 0.35 : 0.05),
+          blurRadius: 18,
           offset: const Offset(0, 6),
         ),
       ],
@@ -234,12 +505,14 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
   Widget _buildSummaryContainer({
     required String summary,
     required Color textColor,
+    required Color subtextColor,
     required bool isDark,
     required Color cardColor,
+    required Color accentColor,
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       decoration: _buildCardDecoration(cardColor, isDark),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,26 +521,22 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0x33FFFFFF) : CupertinoColors.white,
+                  color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFF2F2F7),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: CupertinoColors.black.withOpacity(isDark ? 0.2 : 0.06),
-                    width: 1,
-                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(CupertinoIcons.text_alignleft, size: 12, color: textColor),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 5),
                     Text(
                       'SUMMARY',
                       style: LTypography.caption2.copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
                         color: textColor,
-                        letterSpacing: 0.5,
+                        letterSpacing: 0.6,
                       ),
                     ),
                   ],
@@ -277,41 +546,37 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                 children: [
                   CupertinoButton(
                     padding: EdgeInsets.zero,
-                    minSize: 0,
-                    onPressed: () {
-                      // Placeholder for Translate functionality
-                    },
+                    minimumSize: Size.zero,
+                    onPressed: () {},
                     child: Icon(
                       CupertinoIcons.globe,
-                      size: 20,
-                      color: textColor.withOpacity(0.7),
+                      size: 19,
+                      color: subtextColor,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
                   CupertinoButton(
                     padding: EdgeInsets.zero,
-                    minSize: 0,
-                    onPressed: () {
-                      // Placeholder for Audio/Text-to-Speech functionality
-                    },
+                    minimumSize: Size.zero,
+                    onPressed: () {},
                     child: Icon(
-                      CupertinoIcons.speaker_2_fill,
-                      size: 20,
-                      color: textColor.withOpacity(0.7),
+                      CupertinoIcons.speaker_2,
+                      size: 19,
+                      color: subtextColor,
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Text(
             summary,
             style: TextStyle(
-              color: textColor.withOpacity(0.95),
-              fontSize: 15,
-              height: 1.45,
-              fontWeight: FontWeight.w600,
+              color: textColor.withValues(alpha: 0.92),
+              fontSize: 15.5,
+              height: 1.58,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ],
@@ -323,46 +588,44 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     required String title,
     required String content,
     required Color textColor,
+    required Color subtextColor,
     required bool isDark,
     required Color cardColor,
   }) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _isCaptionExpanded = !_isCaptionExpanded;
-        });
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: _buildCardDecoration(cardColor, isDark),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Container(
+      width: double.infinity,
+      decoration: _buildCardDecoration(cardColor, isDark),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              setState(() {
+                _isCaptionExpanded = !_isCaptionExpanded;
+              });
+            },
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0x33FFFFFF) : CupertinoColors.white,
+                    color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFF2F2F7),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: CupertinoColors.black.withOpacity(isDark ? 0.2 : 0.06),
-                      width: 1,
-                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(CupertinoIcons.text_quote, size: 12, color: textColor),
-                      const SizedBox(width: 4),
+                      Icon(CupertinoIcons.quote_bubble, size: 12, color: textColor),
+                      const SizedBox(width: 5),
                       Text(
                         title,
                         style: LTypography.caption2.copyWith(
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w800,
                           color: textColor,
-                          letterSpacing: 0.5,
+                          letterSpacing: 0.6,
                         ),
                       ),
                     ],
@@ -371,29 +634,36 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                 Icon(
                   _isCaptionExpanded ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down,
                   size: 16,
-                  color: textColor.withOpacity(0.7),
+                  color: subtextColor,
                 ),
               ],
             ),
-            if (_isCaptionExpanded) ...[
-              const SizedBox(height: 16),
-              SelectableText(
-                content,
-                style: TextStyle(
-                  color: textColor.withOpacity(0.95),
-                  fontSize: 14,
-                  height: 1.5,
-                  fontWeight: FontWeight.w500,
-                ),
+          ),
+          if (_isCaptionExpanded) ...[
+            const SizedBox(height: 14),
+            Text(
+              content,
+              style: TextStyle(
+                color: textColor.withValues(alpha: 0.88),
+                fontSize: 14,
+                height: 1.52,
+                fontWeight: FontWeight.w400,
               ),
-            ],
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildAudioTranscriptSection(String transcript, Color textColor, bool isDark, Color cardColor) {
+  Widget _buildAudioTranscriptSection(
+    String transcript,
+    Color textColor,
+    Color subtextColor,
+    bool isDark,
+    Color cardColor,
+    Color accentColor,
+  ) {
     return Container(
       width: double.infinity,
       decoration: _buildCardDecoration(cardColor, isDark),
@@ -402,39 +672,35 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0x33FFFFFF) : CupertinoColors.white,
+              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFF2F2F7),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: CupertinoColors.black.withOpacity(isDark ? 0.2 : 0.06),
-                width: 1,
-              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(CupertinoIcons.waveform, size: 12, color: textColor),
-                const SizedBox(width: 4),
+                const SizedBox(width: 5),
                 Text(
                   'AUDIO TRANSCRIPT',
                   style: LTypography.caption2.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     color: textColor,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.6,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Text(
             transcript,
             style: TextStyle(
-              color: textColor.withOpacity(0.95),
+              color: textColor.withValues(alpha: 0.9),
               fontSize: 14,
-              height: 1.5,
-              fontWeight: FontWeight.w500,
+              height: 1.55,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ],
@@ -466,9 +732,9 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                 Text(
                   'Extracting transcription, tools, repos & highlights...',
                   style: TextStyle(
-                    color: textColor.withOpacity(0.8),
+                    color: textColor.withValues(alpha: 0.75),
                     fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -476,98 +742,6 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildHeroHeader(LocalCapture capture, Color scaffoldBgColor, Color textColor, bool isDark) {
-    final thumbnailUrl = capture.thumbnailUrl;
-    final hasImage = thumbnailUrl != null && thumbnailUrl.isNotEmpty;
-    final title = _resolveTitle(capture);
-
-    return Stack(
-      alignment: Alignment.bottomLeft,
-      children: [
-        if (hasImage)
-          AspectRatio(
-            aspectRatio: 1 / 1, // Square aspect ratio for a larger immersive header
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // 1. Base image with smooth alpha dissipation into scaffoldBgColor
-                ShaderMask(
-                  shaderCallback: (Rect bounds) {
-                    return LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: const [0.0, 0.25, 0.48, 0.72, 1.0],
-                      colors: [
-                        const Color(0xFFFFFFFF),
-                        const Color(0xFFFFFFFF),
-                        const Color(0x80FFFFFF),
-                        const Color(0x00FFFFFF),
-                        const Color(0x00FFFFFF),
-                      ],
-                    ).createShader(bounds);
-                  },
-                  blendMode: BlendMode.dstIn,
-                  child: CachedNetworkImage(
-                    imageUrl: thumbnailUrl,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    placeholder: (context, url) => Container(color: scaffoldBgColor),
-                    errorWidget: (context, url, error) => Container(color: scaffoldBgColor),
-                  ),
-                ),
-                // 2. Gentle color wash over the transition zone for harmonious palette blending
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        stops: const [0.0, 0.20, 0.48, 0.72, 1.0],
-                        colors: [
-                          scaffoldBgColor.withOpacity(0.0),
-                          scaffoldBgColor.withOpacity(0.0),
-                          scaffoldBgColor.withOpacity(0.45),
-                          scaffoldBgColor,
-                          scaffoldBgColor,
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )
-        else
-          AspectRatio(
-            aspectRatio: 1 / 1,
-            child: Container(
-              color: scaffoldBgColor,
-              child: Center(
-                child: Icon(
-                  capture.contentType == 'IMAGE' ? CupertinoIcons.photo : CupertinoIcons.play_rectangle,
-                  color: textColor.withOpacity(0.2),
-                  size: 64,
-                ),
-              ),
-            ),
-          ),
-        
-        // Title Overlay
-        Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-          child: Text(
-            title,
-            style: LTypography.title1.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.w800,
-              height: 1.1,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -592,18 +766,18 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
 
   Widget _buildPill(String text, Color textColor, bool isDark, {IconData? icon, required Color cardColor}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 4,
+            color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -613,14 +787,14 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
         children: [
           if (icon != null) ...[
             Icon(icon, size: 12, color: textColor),
-            const SizedBox(width: 4),
+            const SizedBox(width: 5),
           ],
           Text(
             text.toUpperCase(),
             style: LTypography.caption2.copyWith(
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
               color: textColor,
-              letterSpacing: 0.5,
+              letterSpacing: 0.6,
             ),
           ),
         ],
@@ -660,8 +834,3 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     );
   }
 }
-
-
-
-
-

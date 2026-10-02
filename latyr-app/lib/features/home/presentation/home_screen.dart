@@ -9,6 +9,7 @@ import 'package:latyr_app/core/design/latyr_typography.dart';
 import 'package:latyr_app/features/capture/presentation/capture_providers.dart';
 import 'package:latyr_app/features/home/presentation/home_providers.dart';
 import 'package:latyr_app/core/database/app_database.dart';
+import 'package:latyr_app/features/feed/presentation/screens/capture_detail_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -682,12 +683,22 @@ class _StackedFeedCarouselState extends State<StackedFeedCarousel> {
           // Stacked cards
           for (int i in sortedIndices) _buildAnimatedCard(i),
 
-          // Transparent PageView to capture swipe gestures
+          // Transparent PageView to capture swipe gestures and card taps
           PageView.builder(
             controller: _pageController,
             itemCount: widget.captures.length,
             physics: const BouncingScrollPhysics(),
-            itemBuilder: (context, index) => const SizedBox(),
+            itemBuilder: (context, index) => GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                Navigator.of(context).push(
+                  CupertinoPageRoute(
+                    builder: (context) => CaptureDetailScreen(capture: widget.captures[index]),
+                  ),
+                );
+              },
+              child: const SizedBox.expand(),
+            ),
           ),
         ],
       ),
