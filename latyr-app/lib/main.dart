@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latyr_app/core/widgets/latyr_progressive_blur.dart';
 import 'package:latyr_app/app.dart';
 import 'package:latyr_app/config/environment_config.dart';
 import 'package:latyr_app/features/capture/presentation/capture_providers.dart';
@@ -15,6 +16,13 @@ void main() async {
     debugPrint('Firebase initialized successfully on mobile.');
   } catch (e) {
     debugPrint('Firebase initialization: $e');
+  }
+
+  try {
+    await LatyrProgressiveBlur.precache();
+    debugPrint('LatyrProgressiveBlur shader precached successfully.');
+  } catch (e) {
+    debugPrint('LatyrProgressiveBlur precache: $e');
   }
 
   runApp(

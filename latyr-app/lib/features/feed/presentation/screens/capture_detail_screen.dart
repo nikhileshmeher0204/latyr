@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:latyr_app/config/app_properties.dart';
+import 'package:latyr_app/core/widgets/latyr_progressive_blur.dart';
 import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/core/design/latyr_typography.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
@@ -107,6 +109,9 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     final title = _resolveTitle(capture);
     final hasImage = capture.thumbnailUrl != null && capture.thumbnailUrl!.isNotEmpty;
 
+    final topPadding = MediaQuery.of(context).padding.top;
+    final navBarHeight = topPadding + 58.0;
+
     return CupertinoPageScaffold(
       backgroundColor: scaffoldBgColor,
       child: Stack(
@@ -143,10 +148,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Top spacing so title sits with comfortable breathing room below floating bar
-                const SafeArea(
-                  bottom: false,
-                  child: SizedBox(height: 64),
-                ),
+                SizedBox(height: topPadding + 68),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -270,7 +272,42 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
             ),
           ),
 
-          // 3. Floating Navigation Bar (Seamless, transparent backdrop without cut-off box)
+          // 3. High-Performance Progressive Frosted Blur Backdrop
+          if (AppProperties.enableTopBlur || AppProperties.enableTopTint)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: navBarHeight + 10.0,
+              child: IgnorePointer(
+                child: LatyrProgressiveBlur(
+                  enabled: AppProperties.enableTopBlur,
+                  sigmaStart: 25.0,
+                  sigmaEnd: 0.0,
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  child: AppProperties.enableTopTint
+                      ? DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              stops: const [0.0, 0.45, 0.80, 1.0],
+                              colors: [
+                                scaffoldBgColor.withValues(alpha: isDark ? 0.85 : 0.82),
+                                scaffoldBgColor.withValues(alpha: isDark ? 0.60 : 0.50),
+                                scaffoldBgColor.withValues(alpha: isDark ? 0.20 : 0.12),
+                                scaffoldBgColor.withValues(alpha: 0.0),
+                              ],
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+            ),
+
+          // 4. Floating Navigation Bar (Seamless, transparent backdrop without cut-off box)
           Positioned(
             top: 0,
             left: 0,

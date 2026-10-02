@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:latyr_app/config/app_properties.dart';
+import 'package:latyr_app/core/widgets/latyr_progressive_blur.dart';
 import 'package:latyr_app/core/widgets/latyr_capture_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
@@ -23,6 +25,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? CupertinoColors.black : const Color(0xFFF9F9F9);
+    final topPadding = MediaQuery.of(context).padding.top;
+    final topBlurHeight = topPadding + 14.0;
 
     return CupertinoPageScaffold(
       backgroundColor: bgColor,
@@ -30,18 +34,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           SoftEdgeBlur(
             edges: [
-              EdgeBlur(
-                type: EdgeType.topEdge,
-                size: 80,
-                sigma: 50,
-                controlPoints: [
-                  ControlPoint(position: 0.0, type: ControlPointType.visible),
-                  ControlPoint(
-                    position: 1.0,
-                    type: ControlPointType.transparent,
-                  ),
-                ],
-              ),
               EdgeBlur(
                 type: EdgeType.bottomEdge,
                 size: 150,
@@ -95,6 +87,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ), // Close RefreshIndicator
           ), // Close SoftEdgeBlur
+
+          // High-Performance Progressive Frosted Blur Backdrop
+          if (AppProperties.enableTopBlur || AppProperties.enableTopTint)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: topBlurHeight,
+              child: IgnorePointer(
+                child: LatyrProgressiveBlur(
+                  enabled: AppProperties.enableTopBlur,
+                  sigmaStart: 20.0,
+                  sigmaEnd: 0.0,
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  child: AppProperties.enableTopTint
+                      ? DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              stops: const [0.0, 0.50, 0.85, 1.0],
+                              colors: [
+                                bgColor.withValues(alpha: isDark ? 0.88 : 0.85),
+                                bgColor.withValues(alpha: isDark ? 0.65 : 0.55),
+                                bgColor.withValues(alpha: isDark ? 0.20 : 0.15),
+                                bgColor.withValues(alpha: 0.0),
+                              ],
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+            ),
+
           _buildFloatingActionBar(context, isDark),
         ],
       ),
@@ -118,7 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.04),
+                color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.04),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
