@@ -28,7 +28,15 @@ class SseClient {
   Duration _reconnectDelay = const Duration(seconds: 2);
 
   SseClient({Dio? dio, this.tokenProvider})
-      : _dio = dio ?? Dio();
+      : _dio = dio ??
+            Dio(
+              BaseOptions(
+                // SSE is a long-lived stream — no receive timeout.
+                // connectTimeout must be non-zero or Dio rejects immediately.
+                connectTimeout: const Duration(seconds: 30),
+                receiveTimeout: Duration.zero,
+              ),
+            );
 
   Stream<SseCaptureEvent> get events => _eventController.stream;
   bool get isConnected => _isConnected;
