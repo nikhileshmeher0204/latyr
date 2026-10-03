@@ -515,9 +515,9 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                                     ),
                                   const SizedBox(width: 5),
                                   Icon(
-                                    CupertinoIcons.arrow_up_right,
+                                    CupertinoIcons.chevron_forward,
                                     color: textColor.withValues(alpha: 0.8),
-                                    size: 13.5,
+                                    size: 14.0,
                                   ),
                                 ],
                               ),
