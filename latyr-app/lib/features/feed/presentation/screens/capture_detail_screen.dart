@@ -23,9 +23,25 @@ class CaptureDetailScreen extends StatefulWidget {
 }
 
 class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
-  bool _isCaptionExpanded = false;
+  int _selectedSourceTab = 0;
+  bool _isSourceTextExpanded = false;
   bool _isFavorited = false;
   Color? _extractedCardColor;
+
+  @override
+  void initState() {
+    super.initState();
+    final rawCaption = widget.capture.originalCaption?.trim();
+    final hasCaption = rawCaption != null &&
+        rawCaption.isNotEmpty &&
+        rawCaption != _resolveTitle(widget.capture).trim();
+    final rawTranscript = widget.capture.audioTranscript?.trim();
+    final hasTranscript = rawTranscript != null && rawTranscript.isNotEmpty;
+
+    if (!hasCaption && hasTranscript) {
+      _selectedSourceTab = 1;
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -273,6 +289,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                           summary: capture.summary!.trim(),
                           textColor: textColor,
                           subtextColor: subtextColor,
+                          titleColor: titleColor,
                           isDark: isDark,
                           cardColor: cardSurfaceColor,
                           accentColor: cardColor,
@@ -280,43 +297,29 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                         const SizedBox(height: 24),
                       ],
 
-                      // Original Caption
-                      if (capture.originalCaption != null &&
-                          capture.originalCaption!.trim().isNotEmpty &&
-                          capture.originalCaption!.trim() != title.trim()) ...[
-                        _buildCollapsibleCaptionContainer(
-                          title: 'ORIGINAL CAPTION',
-                          content: capture.originalCaption!,
-                          textColor: textColor,
-                          subtextColor: subtextColor,
-                          isDark: isDark,
-                          cardColor: cardSurfaceColor,
-                        ),
+                      // Capture Intents (formerly Extracted Insights & Actions) - directly below Summary
+                      if (entities.isNotEmpty) ...[
+                        _buildEntitiesSection(entities, textColor, titleColor, isDark, cardSurfaceColor),
                         const SizedBox(height: 24),
                       ],
 
-                      // Audio Transcript
-                      if (capture.audioTranscript != null &&
-                          capture.audioTranscript!.isNotEmpty) ...[
-                        _buildAudioTranscriptSection(
-                          capture.audioTranscript!,
-                          textColor,
-                          subtextColor,
-                          isDark,
-                          cardSurfaceColor,
-                          cardColor,
-                        ),
-                        const SizedBox(height: 24),
-                      ],
+                      // Merged Caption & Audio Transcript Card with iOS style sliding pill
+                      _buildMediaTextCard(
+                        capture: capture,
+                        title: title,
+                        textColor: textColor,
+                        subtextColor: subtextColor,
+                        titleColor: titleColor,
+                        isDark: isDark,
+                        cardColor: cardSurfaceColor,
+                      ),
+                      const SizedBox(height: 24),
 
                       // Processing State Banner
                       if (isProcessing) ...[
                         _buildProcessingBanner(textColor, isDark, cardSurfaceColor),
                         const SizedBox(height: 24),
                       ],
-
-                      // Extracted Insights & Actions
-                      _buildEntitiesSection(entities, textColor, isDark, cardSurfaceColor),
                       const SizedBox(height: 48),
                     ],
                   ),
@@ -606,6 +609,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     required String summary,
     required Color textColor,
     required Color subtextColor,
+    required Color titleColor,
     required bool isDark,
     required Color cardColor,
     required Color accentColor,
@@ -620,26 +624,13 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFF2F2F7),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(CupertinoIcons.text_alignleft, size: 12, color: textColor),
-                    const SizedBox(width: 5),
-                    Text(
-                      'SUMMARY',
-                      style: LTypography.caption2.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: textColor,
-                        letterSpacing: 0.6,
-                      ),
-                    ),
-                  ],
+              Text(
+                'SUMMARY',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                  color: titleColor,
                 ),
               ),
               Row(
@@ -683,14 +674,37 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     );
   }
 
-  Widget _buildCollapsibleCaptionContainer({
+  Widget _buildMediaTextCard({
+    required LocalCapture capture,
     required String title,
-    required String content,
     required Color textColor,
     required Color subtextColor,
+    required Color titleColor,
     required bool isDark,
     required Color cardColor,
   }) {
+    final rawCaption = capture.originalCaption?.trim();
+    final hasCaption = rawCaption != null &&
+        rawCaption.isNotEmpty &&
+        rawCaption != title.trim();
+    final rawTranscript = capture.audioTranscript?.trim();
+    final hasTranscript = rawTranscript != null && rawTranscript.isNotEmpty;
+
+    if (!hasCaption && !hasTranscript) return const SizedBox.shrink();
+
+    final showSegmentedControl = hasCaption && hasTranscript;
+    final String currentText;
+    if (_selectedSourceTab == 0) {
+      currentText = hasCaption ? rawCaption : (rawTranscript ?? '');
+    } else {
+      currentText = hasTranscript ? rawTranscript : (rawCaption ?? '');
+    }
+
+    final isLongText = currentText.length > 350;
+    final displayText = (isLongText && !_isSourceTextExpanded)
+        ? '${currentText.substring(0, 320)}...'
+        : currentText;
+
     return Container(
       width: double.infinity,
       decoration: _buildCardDecoration(cardColor, isDark),
@@ -698,110 +712,107 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              setState(() {
-                _isCaptionExpanded = !_isCaptionExpanded;
-              });
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFF2F2F7),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(CupertinoIcons.quote_bubble, size: 12, color: textColor),
-                      const SizedBox(width: 5),
-                      Text(
-                        title,
-                        style: LTypography.caption2.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
-                          letterSpacing: 0.6,
-                        ),
+          if (showSegmentedControl)
+            Center(
+              child: CupertinoSlidingSegmentedControl<int>(
+                groupValue: _selectedSourceTab,
+                backgroundColor: isDark ? const Color(0x33FFFFFF) : const Color(0x14000000),
+                thumbColor: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                padding: const EdgeInsets.all(3),
+                children: {
+                  0: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                    child: Text(
+                      'CAPTION',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
+                        color: _selectedSourceTab == 0 ? textColor : subtextColor,
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                Icon(
-                  _isCaptionExpanded ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down,
-                  size: 16,
-                  color: subtextColor,
-                ),
-              ],
-            ),
-          ),
-          if (_isCaptionExpanded) ...[
-            const SizedBox(height: 14),
+                  1: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                    child: Text(
+                      'TRANSCRIPT',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
+                        color: _selectedSourceTab == 1 ? textColor : subtextColor,
+                      ),
+                    ),
+                  ),
+                },
+                onValueChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _selectedSourceTab = val;
+                      _isSourceTextExpanded = false;
+                    });
+                  }
+                },
+              ),
+            )
+          else
             Text(
-              content,
+              hasCaption ? 'ORIGINAL CAPTION' : 'AUDIO TRANSCRIPT',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+                color: titleColor,
+              ),
+            ),
+          const SizedBox(height: 16),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+            child: Text(
+              displayText,
+              key: ValueKey<String>('${_selectedSourceTab}_$_isSourceTextExpanded'),
               style: TextStyle(
                 color: textColor.withValues(alpha: 0.88),
                 fontSize: 14,
-                height: 1.52,
+                height: 1.55,
                 fontWeight: FontWeight.w400,
               ),
             ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAudioTranscriptSection(
-    String transcript,
-    Color textColor,
-    Color subtextColor,
-    bool isDark,
-    Color cardColor,
-    Color accentColor,
-  ) {
-    return Container(
-      width: double.infinity,
-      decoration: _buildCardDecoration(cardColor, isDark),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0x33FFFFFF) : const Color(0xFFF2F2F7),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(CupertinoIcons.waveform, size: 12, color: textColor),
-                const SizedBox(width: 5),
-                Text(
-                  'AUDIO TRANSCRIPT',
-                  style: LTypography.caption2.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: textColor,
-                    letterSpacing: 0.6,
-                  ),
+          ),
+          if (isLongText) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                setState(() {
+                  _isSourceTextExpanded = !_isSourceTextExpanded;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _isSourceTextExpanded ? 'Show less' : 'Show more',
+                      style: TextStyle(
+                        color: subtextColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    Icon(
+                      _isSourceTextExpanded ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down,
+                      size: 13,
+                      color: subtextColor,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            transcript,
-            style: TextStyle(
-              color: textColor.withValues(alpha: 0.9),
-              fontSize: 14,
-              height: 1.55,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
+          ],
         ],
       ),
     );
@@ -844,30 +855,28 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     );
   }
 
-
-
-  Widget _buildEntitiesSection(List<ExtractedEntityModel> entities, Color textColor, bool isDark, Color cardColor) {
+  Widget _buildEntitiesSection(
+    List<ExtractedEntityModel> entities,
+    Color textColor,
+    Color titleColor,
+    bool isDark,
+    Color cardColor,
+  ) {
     if (entities.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(CupertinoIcons.sparkles, size: 18, color: textColor),
-            const SizedBox(width: 8),
-            Text(
-              'Extracted Insights & Actions',
-              style: TextStyle(
-                color: textColor,
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ],
+        Text(
+          'CAPTURE INTENTS',
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
+            color: titleColor,
+          ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
         ...entities.map(
           (entity) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
