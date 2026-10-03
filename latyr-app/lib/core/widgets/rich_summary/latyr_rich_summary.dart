@@ -299,7 +299,8 @@ class _LatyrRichSummaryState extends State<LatyrRichSummary> {
           );
 
           // Interactive text span
-          final decorationStyle = actionType == 'tip'
+          final isTip = actionType == 'tip';
+          final decorationStyle = isTip
               ? TextDecorationStyle.dotted
               : TextDecorationStyle.solid;
 
@@ -312,8 +313,8 @@ class _LatyrRichSummaryState extends State<LatyrRichSummary> {
                 fontWeight: FontWeight.w600,
                 decoration: TextDecoration.underline,
                 decorationStyle: decorationStyle,
-                decorationColor: linkColor.withValues(alpha: 0.6),
-                decorationThickness: 1.2,
+                decorationColor: linkColor.withValues(alpha: isTip ? 0.88 : 0.65),
+                decorationThickness: isTip ? 2.2 : 1.3,
               ),
             ),
           );
