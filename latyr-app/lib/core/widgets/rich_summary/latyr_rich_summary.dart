@@ -311,8 +311,8 @@ class _LatyrRichSummaryState extends State<LatyrRichSummary> {
                     fontWeight: FontWeight.w600,
                   ),
                   dotColor: linkColor,
-                  dotRadius: 1.7, // 3.4px diameter crisp circular dots
-                  spacing: 4.2,   // distinct spacing between dots
+                  dotRadius: 1.25, // 2.5px diameter refined circular dots
+                  spacing: 3.6,    // harmonious spacing between dots
                   onTap: () {
                     SummaryActionHandler.handleAction(
                       context: context,
@@ -456,8 +456,8 @@ class _DottedUnderlineText extends StatelessWidget {
     required this.text,
     required this.style,
     required this.dotColor,
-    this.dotRadius = 1.7,
-    this.spacing = 4.2,
+    this.dotRadius = 1.25,
+    this.spacing = 3.6,
     this.onTap,
   });
 
