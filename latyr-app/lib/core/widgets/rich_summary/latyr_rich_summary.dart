@@ -388,8 +388,9 @@ class _HandwrittenWavePainter extends CustomPainter {
       ..strokeCap   = StrokeCap.round
       ..strokeJoin  = StrokeJoin.round;
 
-    // Anchor wave center in the natural line descent area
-    final double cy = size.height - 1.0;
+    // Position wave center 1.2px into the natural line leading valley.
+    // Because the WidgetSpan layout box is unchanged, space below does NOT increase.
+    final double cy = size.height + 1.2;
     final double w  = wavelength;
 
     final path = Path()..moveTo(0, cy);
