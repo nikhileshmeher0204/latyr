@@ -299,25 +299,47 @@ class _LatyrRichSummaryState extends State<LatyrRichSummary> {
           );
 
           // Interactive text span
-          final isTip = actionType == 'tip';
-          final decorationStyle = isTip
-              ? TextDecorationStyle.dotted
-              : TextDecorationStyle.solid;
-
-          spans.add(
-            TextSpan(
-              text: token.text,
-              recognizer: item.recognizer,
-              style: baseStyle.copyWith(
-                color: linkColor,
-                fontWeight: FontWeight.w600,
-                decoration: TextDecoration.underline,
-                decorationStyle: decorationStyle,
-                decorationColor: linkColor.withValues(alpha: isTip ? 0.88 : 0.65),
-                decorationThickness: isTip ? 2.2 : 1.3,
+          if (actionType == 'tip') {
+            spans.add(
+              WidgetSpan(
+                alignment: PlaceholderAlignment.baseline,
+                baseline: TextBaseline.alphabetic,
+                child: _DottedUnderlineText(
+                  text: token.text,
+                  style: baseStyle.copyWith(
+                    color: linkColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  dotColor: linkColor,
+                  dotRadius: 1.7, // 3.4px diameter crisp circular dots
+                  spacing: 4.2,   // distinct spacing between dots
+                  onTap: () {
+                    SummaryActionHandler.handleAction(
+                      context: context,
+                      label: token.text,
+                      actionType: actionType,
+                      payload: payload,
+                    );
+                  },
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            spans.add(
+              TextSpan(
+                text: token.text,
+                recognizer: item.recognizer,
+                style: baseStyle.copyWith(
+                  color: linkColor,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                  decorationStyle: TextDecorationStyle.solid,
+                  decorationColor: linkColor.withValues(alpha: 0.65),
+                  decorationThickness: 1.3,
+                ),
+              ),
+            );
+          }
           break;
       }
     }
@@ -426,3 +448,75 @@ class _HandwrittenWavePainter extends CustomPainter {
       old.amplitude   != amplitude   ||
       old.wavelength  != wavelength;
 }
+
+/// A text widget that renders the given [text] with a clear, visibly larger
+/// circular dotted underline drawn via [CustomPainter] without inflating the line-height.
+class _DottedUnderlineText extends StatelessWidget {
+  const _DottedUnderlineText({
+    required this.text,
+    required this.style,
+    required this.dotColor,
+    this.dotRadius = 1.7,
+    this.spacing = 4.2,
+    this.onTap,
+  });
+
+  final String text;
+  final TextStyle style;
+  final Color dotColor;
+  final double dotRadius;
+  final double spacing;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: CustomPaint(
+        foregroundPainter: _DottedUnderlinePainter(
+          color: dotColor,
+          dotRadius: dotRadius,
+          spacing: spacing,
+        ),
+        child: Text(text, style: style),
+      ),
+    );
+  }
+}
+
+/// Draws clean, perfectly round circular dots beneath the text baseline.
+class _DottedUnderlinePainter extends CustomPainter {
+  const _DottedUnderlinePainter({
+    required this.color,
+    required this.dotRadius,
+    required this.spacing,
+  });
+
+  final Color color;
+  final double dotRadius;
+  final double spacing;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withValues(alpha: 0.92)
+      ..style = PaintingStyle.fill;
+
+    // Anchor dots right below the baseline in the line descent area
+    final double cy = size.height - 1.0;
+    final double step = dotRadius * 2 + spacing;
+
+    double x = dotRadius + 1.0;
+    while (x < size.width - dotRadius) {
+      canvas.drawCircle(Offset(x, cy), dotRadius, paint);
+      x += step;
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DottedUnderlinePainter old) =>
+      old.color     != color     ||
+      old.dotRadius != dotRadius ||
+      old.spacing   != spacing;
+}
+
