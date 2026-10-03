@@ -12,16 +12,21 @@ import 'package:latyr_app/features/feed/presentation/screens/capture_detail_scre
 /// smooth cross-fade and deterministic pastel fallback.
 class LatyrCaptureCard extends StatefulWidget {
   final LocalCapture capture;
+  final bool? isDark;
 
-  const LatyrCaptureCard({super.key, required this.capture});
+  const LatyrCaptureCard({
+    super.key,
+    required this.capture,
+    this.isDark,
+  });
 
   static Color cardColorFor(LocalCapture capture, {required bool isDark}) {
     final colorList = [
-      isDark ? const Color(0xFFC7A222) : const Color(0xFFFFE873),
-      isDark ? const Color(0xFF2A9D8F) : const Color(0xFF88D4C8),
-      isDark ? const Color(0xFF4C956C) : const Color(0xFFA8E6B6),
-      isDark ? const Color(0xFF845EC2) : const Color(0xFFD6B5FF),
-      isDark ? const Color(0xFFD65DB1) : const Color(0xFFFF9CEE),
+      isDark ? const Color(0xFF382E18) : const Color(0xFFFFE873), // Warm bronze / Amber
+      isDark ? const Color(0xFF1E3A36) : const Color(0xFF88D4C8), // Deep teal / Seafoam
+      isDark ? const Color(0xFF224430) : const Color(0xFFA8E6B6), // Deep forest / Sage
+      isDark ? const Color(0xFF2C2044) : const Color(0xFFD6B5FF), // Deep plum / Lavender
+      isDark ? const Color(0xFF421E36) : const Color(0xFFFF9CEE), // Deep wine / Rose
     ];
     return colorList[capture.id.hashCode.abs() % colorList.length];
   }
@@ -32,53 +37,68 @@ class LatyrCaptureCard extends StatefulWidget {
 
 class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
   Color? _extractedColor;
+  bool? _lastIsDark;
+
+  bool _computeIsDark() {
+    return widget.isDark ??
+        (MediaQuery.maybePlatformBrightnessOf(context) == Brightness.dark ||
+            CupertinoTheme.of(context).brightness == Brightness.dark);
+  }
 
   @override
-  void initState() {
-    super.initState();
-    _resolveColor();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final isDark = _computeIsDark();
+    if (_lastIsDark != isDark) {
+      _lastIsDark = isDark;
+      _resolveColor(isDark);
+    }
   }
 
   @override
   void didUpdateWidget(covariant LatyrCaptureCard oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final isDark = _computeIsDark();
     if (oldWidget.capture.thumbnailUrl != widget.capture.thumbnailUrl ||
-        oldWidget.capture.id != widget.capture.id) {
-      _resolveColor();
+        oldWidget.capture.id != widget.capture.id ||
+        oldWidget.isDark != widget.isDark ||
+        _lastIsDark != isDark) {
+      _lastIsDark = isDark;
+      _resolveColor(isDark);
     }
   }
 
-  void _resolveColor() {
+  void _resolveColor(bool isDark) {
     final url = widget.capture.thumbnailUrl;
     if (url == null || url.isEmpty) {
-      _extractedColor = null;
+      if (_extractedColor != null) {
+        setState(() => _extractedColor = null);
+      }
       return;
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
-      final cached = ColorExtractionService.getCachedColor(url, isDark: isDark);
-      if (cached != null) {
-        if (_extractedColor != cached) {
-          setState(() => _extractedColor = cached);
-        }
-        return;
+    final cached = ColorExtractionService.getCachedColor(url, isDark: isDark);
+    if (cached != null) {
+      if (_extractedColor != cached) {
+        setState(() => _extractedColor = cached);
       }
+      return;
+    }
 
-      final fallback = LatyrCaptureCard.cardColorFor(widget.capture, isDark: isDark);
-      ColorExtractionService.extractDominantColor(url, isDark: isDark, fallback: fallback).then((color) {
-        if (mounted && _extractedColor != color) {
-          setState(() => _extractedColor = color);
-        }
-      });
+    final fallback = LatyrCaptureCard.cardColorFor(widget.capture, isDark: isDark);
+    ColorExtractionService.extractDominantColor(url, isDark: isDark, fallback: fallback).then((color) {
+      if (mounted && _lastIsDark == isDark && _extractedColor != color) {
+        setState(() => _extractedColor = color);
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
-    final borderColor = isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white;
+    final isDark = _computeIsDark();
+    final borderColor = isDark
+        ? CupertinoColors.white.withValues(alpha: 0.16)
+        : CupertinoColors.white;
     final textColor = isDark ? CupertinoColors.white : CupertinoColors.black;
     final fallbackColor = LatyrCaptureCard.cardColorFor(widget.capture, isDark: isDark);
     final bgColor = _extractedColor ?? fallbackColor;
@@ -101,8 +121,8 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
           border: Border.all(color: borderColor, width: 3.5),
           boxShadow: [
             BoxShadow(
-              color: CupertinoColors.black.withOpacity(isDark ? 0.35 : 0.08),
-              blurRadius: 18,
+              color: CupertinoColors.black.withValues(alpha: isDark ? 0.45 : 0.08),
+              blurRadius: isDark ? 20 : 18,
               offset: const Offset(0, 8),
             ),
           ],
@@ -116,10 +136,14 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0x33FFFFFF) : CupertinoColors.white.withOpacity(0.55),
+                  color: isDark
+                      ? CupertinoColors.white.withValues(alpha: 0.12)
+                      : CupertinoColors.white.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: CupertinoColors.white.withOpacity(isDark ? 0.15 : 0.6),
+                    color: isDark
+                        ? CupertinoColors.white.withValues(alpha: 0.18)
+                        : CupertinoColors.white.withValues(alpha: 0.60),
                     width: 0.8,
                   ),
                 ),
@@ -129,7 +153,7 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
                     Icon(
                       CupertinoIcons.circle_grid_hex,
                       size: 10,
-                      color: textColor.withOpacity(0.85),
+                      color: textColor.withValues(alpha: 0.85),
                     ),
                     const SizedBox(width: 4),
                     Flexible(
@@ -139,7 +163,7 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
                           fontSize: 9.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
-                          color: textColor.withOpacity(0.85),
+                          color: textColor.withValues(alpha: 0.85),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -153,13 +177,13 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
             // 4 Media & Activity Icons
             Row(
               children: [
-                Icon(CupertinoIcons.photo_fill, size: 22, color: textColor.withOpacity(0.85)),
+                Icon(CupertinoIcons.photo_fill, size: 22, color: textColor.withValues(alpha: 0.85)),
                 const SizedBox(width: 9),
-                Icon(CupertinoIcons.map_fill, size: 22, color: textColor.withOpacity(0.85)),
+                Icon(CupertinoIcons.map_fill, size: 22, color: textColor.withValues(alpha: 0.85)),
                 const SizedBox(width: 9),
-                Icon(Icons.directions_run_rounded, size: 23, color: textColor.withOpacity(0.85)),
+                Icon(Icons.directions_run_rounded, size: 23, color: textColor.withValues(alpha: 0.85)),
                 const SizedBox(width: 9),
-                Icon(Icons.graphic_eq_rounded, size: 23, color: textColor.withOpacity(0.85)),
+                Icon(Icons.graphic_eq_rounded, size: 23, color: textColor.withValues(alpha: 0.85)),
               ],
             ),
             const SizedBox(height: 14),
@@ -180,10 +204,10 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
             // Summary
             Flexible(
               child: Text(
-                widget.capture.summary ?? 'A captured moment in time.',
+                _cleanPreviewSummary(widget.capture.summary ?? 'A captured moment in time.'),
                 style: TextStyle(
                   fontSize: 12,
-                  color: textColor.withOpacity(0.70),
+                  color: textColor.withValues(alpha: isDark ? 0.75 : 0.70),
                   height: 1.4,
                   letterSpacing: -0.1,
                 ),
@@ -195,5 +219,20 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
         ),
       ),
     );
+  }
+
+  String _cleanPreviewSummary(String raw) {
+    var cleaned = raw;
+    // Strip custom icon tags like [icon:brain]
+    cleaned = cleaned.replaceAll(RegExp(r'\[icon:[^\]]+\]'), '');
+    // Strip markdown links/tips [Text](url) -> Text
+    cleaned = cleaned.replaceAllMapped(RegExp(r'\[([^\]]+)\]\([^\)]+\)'), (m) => m.group(1) ?? '');
+    // Strip ==highlight== -> highlight
+    cleaned = cleaned.replaceAllMapped(RegExp(r'==([^=]+)=='), (m) => m.group(1) ?? '');
+    // Strip bold/italics
+    cleaned = cleaned.replaceAllMapped(RegExp(r'(\*\*|\*|__|_)(.*?)\1'), (m) => m.group(2) ?? '');
+    // Clean up multiple spaces
+    cleaned = cleaned.replaceAll(RegExp(r'\s+'), ' ');
+    return cleaned.trim();
   }
 }

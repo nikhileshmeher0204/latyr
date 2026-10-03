@@ -23,7 +23,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
+    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark ||
+        CupertinoTheme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? CupertinoColors.black : const Color(0xFFF9F9F9);
     final topPadding = MediaQuery.of(context).padding.top;
     final topBlurHeight = topPadding + 14.0;
@@ -324,11 +325,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: _buildStatCard(
               isDark: isDark,
               color: isDark ? const Color(0xFF28543A) : const Color(0xFFC7F0D8),
-              iconColor: const Color(0xFF2A8A5C),
+              counterColor: isDark ? const Color(0xFF88F0B8) : const Color(0xFF0F472A),
+              labelColor: isDark ? const Color(0xFFA5EAC2).withValues(alpha: 0.85) : const Color(0xFF1D5A37).withValues(alpha: 0.85),
+              iconColor: isDark ? const Color(0xFF78E4A5) : const Color(0xFF2A8A5C),
               icon: CupertinoIcons.paw,
               value: stats.capturesToday.toString(),
               label: "Captures Today",
-              chartWidget: _buildSquigglyChart(const Color(0xFF2A8A5C)),
+              chartWidget: _buildSquigglyChart(isDark ? const Color(0xFF78E4A5) : const Color(0xFF2A8A5C)),
             ),
           ),
           const SizedBox(width: LSpacing.sm),
@@ -336,11 +339,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: _buildStatCard(
               isDark: isDark,
               color: isDark ? const Color(0xFF24466B) : const Color(0xFFCBE3FA),
-              iconColor: const Color(0xFF3B7FC4),
+              counterColor: isDark ? const Color(0xFF9BD4FF) : const Color(0xFF0D3666),
+              labelColor: isDark ? const Color(0xFFBCE0FF).withValues(alpha: 0.85) : const Color(0xFF1B497D).withValues(alpha: 0.85),
+              iconColor: isDark ? const Color(0xFF8AC7FF) : const Color(0xFF3B7FC4),
               icon: CupertinoIcons.person_solid,
               value: stats.categoriesDiscovered.toString(),
               label: "Categories",
-              chartWidget: _buildBarChart(const Color(0xFF3B7FC4)),
+              chartWidget: _buildBarChart(isDark ? const Color(0xFF8AC7FF) : const Color(0xFF3B7FC4)),
             ),
           ),
           const SizedBox(width: LSpacing.sm),
@@ -348,11 +353,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: _buildStatCard(
               isDark: isDark,
               color: isDark ? const Color(0xFF6B332C) : const Color(0xFFFFD1CC),
-              iconColor: const Color(0xFFC75748),
+              counterColor: isDark ? const Color(0xFFFFB2A8) : const Color(0xFF6E1C14),
+              labelColor: isDark ? const Color(0xFFFFCDC6).withValues(alpha: 0.85) : const Color(0xFF7E261C).withValues(alpha: 0.85),
+              iconColor: isDark ? const Color(0xFFFF9E94) : const Color(0xFFC75748),
               icon: CupertinoIcons.flame_fill,
               value: stats.processingQueue.toString(),
               label: "Processing",
-              chartWidget: _buildRingChart(const Color(0xFFC75748)),
+              chartWidget: _buildRingChart(isDark ? const Color(0xFFFF9E94) : const Color(0xFFC75748)),
             ),
           ),
         ],
@@ -373,6 +380,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildStatCard({
     required bool isDark,
     required Color color,
+    required Color counterColor,
+    required Color labelColor,
     required Color iconColor,
     required IconData icon,
     required String value,
@@ -380,21 +389,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required Widget chartWidget,
   }) {
     final borderColor = isDark
-        ? const Color(0xFF2C2C2E)
+        ? const Color(0xFF38383A)
         : CupertinoColors.white;
     return AspectRatio(
-      aspectRatio: 1.15, // Make them shorter (more rectangular/square)
+      aspectRatio: 1.38, // Sleeker, reduced vertical height
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: borderColor, width: 2),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: borderColor, width: 3.0),
           boxShadow: [
             BoxShadow(
-              color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -407,37 +416,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: isDark
                         ? const Color(0x33FFFFFF)
                         : CupertinoColors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 14, color: iconColor),
+                  child: Icon(icon, size: 13, color: iconColor),
                 ),
                 chartWidget,
               ],
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   value,
                   style: LTypography.headline.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isDark
-                        ? CupertinoColors.white
-                        : CupertinoColors.black,
+                    color: counterColor,
+                    height: 1.1,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   label,
                   style: LTypography.caption2.copyWith(
-                    color: isDark
-                        ? CupertinoColors.systemGrey
-                        : CupertinoColors.systemGrey,
+                    color: labelColor,
                     fontSize: 10,
+                    fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -502,11 +511,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ? const Color(0xFF3A3A3C)
           : const Color(0xFFF2F2F7),
       child: AspectRatio(
-        aspectRatio: 1.15,
+        aspectRatio: 1.38,
         child: Container(
           decoration: BoxDecoration(
             color: CupertinoColors.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isDark ? const Color(0xFF38383A) : CupertinoColors.white,
+              width: 3.0,
+            ),
           ),
         ),
       ),
@@ -809,7 +822,10 @@ class _StackedFeedCarouselState extends State<StackedFeedCarousel> {
     return SizedBox(
       width: 220,
       height: 260,
-      child: LatyrCaptureCard(capture: capture),
+      child: LatyrCaptureCard(
+        capture: capture,
+        isDark: isDark,
+      ),
     );
   }
 }

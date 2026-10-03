@@ -44,6 +44,11 @@ class ColorExtractionService {
     }
   }
 
+  static void clearCache() {
+    _resolvedCache.clear();
+    _inFlightCache.clear();
+  }
+
   static Future<Color> _performExtraction(
     String imagePathOrUrl,
     bool isDark,
@@ -69,14 +74,14 @@ class ColorExtractionService {
 
       // Latyr Aesthetic Knobs:
       // Light mode: soft, clean pastel card backgrounds (lightness ~0.78, saturation ~0.65)
-      // Dark mode: deep, rich jewel tones (lightness ~0.38, saturation ~0.75)
-      final targetSaturation = isDark ? 0.75 : 0.65;
-      final targetLightness = isDark ? 0.38 : 0.78;
-
-      final boostedSaturation = hsl.saturation.clamp(targetSaturation, 0.92);
+      // Dark mode: deep, rich jewel tones (lightness ~0.20, saturation ~0.32)
+      final targetLightness = isDark ? 0.20 : 0.78;
+      final finalSaturation = isDark
+          ? hsl.saturation.clamp(0.24, 0.38)
+          : hsl.saturation.clamp(0.50, 0.85);
 
       return hsl
-          .withSaturation(boostedSaturation)
+          .withSaturation(finalSaturation)
           .withLightness(targetLightness)
           .toColor();
     } catch (e) {
