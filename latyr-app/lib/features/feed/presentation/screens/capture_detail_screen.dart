@@ -223,9 +223,8 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                       ),
                       const SizedBox(height: 10),
 
-                      // Editorial Metadata Row (Time Pill + Content Type)
+                      // Relative Time Pill
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           // White (light mode) / Dynamic Dark (dark mode) Pill with Colored Time Icon
                           Container(
@@ -264,27 +263,6 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                                   ),
                                 ),
                               ],
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Container(
-                            width: 3,
-                            height: 3,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: subtextColor.withValues(alpha: 0.6),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Flexible(
-                            child: Text(
-                              capture.contentType == 'VIDEO' ? 'Reel / Video' : 'Saved Capture',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: LTypography.caption1.copyWith(
-                                color: subtextColor,
-                                fontWeight: FontWeight.w500,
-                              ),
                             ),
                           ),
                         ],
