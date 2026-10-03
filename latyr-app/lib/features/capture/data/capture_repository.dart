@@ -99,7 +99,13 @@ class CaptureRepository {
               id: Value(existing.id),
               serverCaptureId: Value(captureId),
               status: const Value('COMPLETED'),
-              sourceType: Value(sourceType ?? existing.sourceType),
+              sourceType: Value(
+                sourceType ??
+                    existing.sourceType ??
+                    CaptureSourceClassifier.classify(
+                      rawCaption ?? existing.originalUrl ?? existing.originalCaption,
+                    )?.name.toUpperCase(),
+              ),
               intent: Value(intent),
               category: Value(category),
               summary: Value(summary ?? existing.summary),

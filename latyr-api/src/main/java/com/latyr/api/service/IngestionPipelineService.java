@@ -222,6 +222,7 @@ public class IngestionPipelineService {
                 payload.put("original_caption", caption != null ? caption : "");
                 payload.put("audio_transcript", analysis.transcript() != null ? analysis.transcript() : "");
                 payload.put("thumbnail_url", capture.getThumbnailUrl() != null ? capture.getThumbnailUrl() : "");
+                payload.put("source_type", capture.getSourceType() != null ? capture.getSourceType().name() : null);
                 payload.put("entities", enrichedEntities);
 
                 sseNotificationService.emitCaptureEvent(userId, "CAPTURE_COMPLETED", payload);

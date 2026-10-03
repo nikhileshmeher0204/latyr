@@ -45,6 +45,7 @@ public interface CanonicalSourceMapper {
             COALESCE(#{createdAt}, CURRENT_TIMESTAMP),
             CURRENT_TIMESTAMP
         )
+        ON CONFLICT (canonical_url_hash) DO NOTHING
     """)
     int insert(CanonicalSource source);
 

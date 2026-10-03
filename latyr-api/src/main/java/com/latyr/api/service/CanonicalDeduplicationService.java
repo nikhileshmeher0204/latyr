@@ -68,14 +68,13 @@ public class CanonicalDeduplicationService {
         source.setCreatedAt(Instant.now());
         source.setUpdatedAt(Instant.now());
 
-        try {
-            canonicalSourceMapper.insert(source);
-            log.info("Created new canonical source {} with hash {}", source.getId(), canonicalHash);
-            return source;
-        } catch (org.springframework.dao.DuplicateKeyException dke) {
+        int rows = canonicalSourceMapper.insert(source);
+        if (rows == 0) {
             log.info("Concurrent insert collision for canonical hash {}. Re-fetching existing record.", canonicalHash);
             return canonicalSourceMapper.findByCanonicalUrlHash(canonicalHash)
                     .orElseThrow(() -> new IllegalStateException("Canonical source expected to exist for hash: " + canonicalHash));
         }
+        log.info("Created new canonical source {} with hash {}", source.getId(), canonicalHash);
+        return source;
     }
 }
