@@ -18,6 +18,7 @@ public interface CaptureMapper {
         @Result(property = "id", column = "id"),
         @Result(property = "userId", column = "user_id"),
         @Result(property = "canonicalSourceId", column = "canonical_source_id"),
+        @Result(property = "sourceType", column = "source_type"),
         @Result(property = "contentType", column = "content_type"),
         @Result(property = "status", column = "status"),
         @Result(property = "intent", column = "intent"),
@@ -92,7 +93,7 @@ public interface CaptureMapper {
 
     @Insert("""
         INSERT INTO captures (
-            id, user_id, canonical_source_id, content_type, status, intent, category, sub_category,
+            id, user_id, canonical_source_id, source_type, content_type, status, intent, category, sub_category,
             title, summary, original_caption, thumbnail_url, audio_transcript, notification_copies, resurface_count,
             total_processing_duration_ms, scheduled_resurface_at, last_resurfaced_at,
             created_at, updated_at
@@ -101,6 +102,7 @@ public interface CaptureMapper {
             COALESCE(#{id}, gen_random_uuid()),
             #{userId},
             #{canonicalSourceId},
+            #{sourceType},
             #{contentType},
             #{status},
             #{intent},
@@ -125,6 +127,7 @@ public interface CaptureMapper {
     @Update("""
         UPDATE captures
         SET status = #{status},
+            source_type = #{sourceType},
             intent = #{intent},
             category = #{category},
             sub_category = #{subCategory},

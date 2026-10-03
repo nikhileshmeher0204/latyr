@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/core/design/latyr_typography.dart';
+import 'package:latyr_app/core/enums/capture_source.dart';
 import 'package:latyr_app/core/services/color_extraction_service.dart';
+import 'package:latyr_app/core/util/capture_source_classifier.dart';
+import 'package:latyr_app/core/widgets/capture_source_icon.dart';
 import 'package:latyr_app/features/feed/presentation/screens/capture_detail_screen.dart';
 
 /// The single, canonical capture card used across the app —
@@ -174,17 +177,81 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
               ),
             ),
             const SizedBox(height: 20),
-            // 4 Media & Activity Icons
-            Row(
-              children: [
-                Icon(CupertinoIcons.photo_fill, size: 22, color: textColor.withValues(alpha: 0.85)),
-                const SizedBox(width: 9),
-                Icon(CupertinoIcons.map_fill, size: 22, color: textColor.withValues(alpha: 0.85)),
-                const SizedBox(width: 9),
-                Icon(Icons.directions_run_rounded, size: 23, color: textColor.withValues(alpha: 0.85)),
-                const SizedBox(width: 9),
-                Icon(Icons.graphic_eq_rounded, size: 23, color: textColor.withValues(alpha: 0.85)),
-              ],
+            // Dynamic 4-Slot Media & Metadata Row:
+            // 1. Source Brand Glyph (Instagram, YouTube, Web globe, Photo) - omitted if unidentified
+            // 2. Action Trigger (Play triangle, Open Link, Viewfinder)
+            // 3. Compact Relative Time (e.g. 2m, 3h, 1d)
+            // 4. Insights Sparkle Counter (e.g. ✨ 3)
+            Builder(
+              builder: (context) {
+                final source = CaptureSource.fromString(widget.capture.sourceType) ??
+                    CaptureSourceClassifier.classify(widget.capture.originalUrl ?? widget.capture.originalCaption);
+                final insightsCount = _getInsightsCount();
+
+                return Row(
+                  children: [
+                    // Slot 1: Source Brand Glyph (omitted cleanly if unknown)
+                    if (source != null) ...[
+                      CaptureSourceIcon(
+                        source: source,
+                        size: 19,
+                        color: textColor.withValues(alpha: 0.85),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    // Slot 2: Action Icon
+                    Icon(
+                      source?.actionIcon ?? CupertinoIcons.arrow_up_right,
+                      size: 19,
+                      color: textColor.withValues(alpha: 0.85),
+                    ),
+                    const SizedBox(width: 8),
+                    // Slot 3: Time since added
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          CupertinoIcons.clock,
+                          size: 13,
+                          color: textColor.withValues(alpha: 0.80),
+                        ),
+                        const SizedBox(width: 3.5),
+                        Text(
+                          _formatCompactTime(widget.capture.createdAt),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: textColor.withValues(alpha: 0.85),
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 8),
+                    // Slot 4: Insights Counter with Sparkle
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          CupertinoIcons.sparkles,
+                          size: 13,
+                          color: textColor.withValues(alpha: 0.80),
+                        ),
+                        const SizedBox(width: 3.5),
+                        Text(
+                          '$insightsCount',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: textColor.withValues(alpha: 0.85),
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 14),
             // Title (3 lines)
@@ -234,5 +301,25 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
     // Clean up multiple spaces
     cleaned = cleaned.replaceAll(RegExp(r'\s+'), ' ');
     return cleaned.trim();
+  }
+
+  String _formatCompactTime(DateTime? date) {
+    if (date == null) return 'now';
+    final diff = DateTime.now().difference(date);
+    if (diff.inSeconds < 60) return '${diff.inSeconds <= 0 ? 1 : diff.inSeconds}s';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m';
+    if (diff.inHours < 24) return '${diff.inHours}h';
+    if (diff.inDays < 7) return '${diff.inDays}d';
+    return '${(diff.inDays / 7).floor()}w';
+  }
+
+  int _getInsightsCount() {
+    final raw = widget.capture.entitiesJson;
+    if (raw == null || raw.isEmpty) return 0;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is List) return decoded.length;
+    } catch (_) {}
+    return 0;
   }
 }

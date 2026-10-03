@@ -1,13 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:latyr_app/config/app_properties.dart';
-import 'package:latyr_app/core/widgets/latyr_progressive_blur.dart';
 import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/core/design/latyr_typography.dart';
+import 'package:latyr_app/core/enums/capture_source.dart';
+import 'package:latyr_app/core/services/color_extraction_service.dart';
+import 'package:latyr_app/core/util/capture_source_classifier.dart';
+import 'package:latyr_app/core/widgets/capture_source_icon.dart';
+import 'package:latyr_app/core/widgets/latyr_progressive_blur.dart';
+import 'package:latyr_app/core/widgets/rich_summary/latyr_rich_summary.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/entity_cards.dart';
-import 'package:latyr_app/core/services/color_extraction_service.dart';
-import 'package:latyr_app/core/widgets/rich_summary/latyr_rich_summary.dart';
 
 class CaptureDetailScreen extends StatefulWidget {
   final LocalCapture capture;
@@ -65,19 +68,6 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
       }
     }
     return capture.originalUrl ?? 'Saved Media';
-  }
-
-  String _formatDate(DateTime? date) {
-    final d = date ?? DateTime.now();
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    final month = months[d.month - 1];
-    final hour = d.hour > 12 ? d.hour - 12 : (d.hour == 0 ? 12 : d.hour);
-    final period = d.hour >= 12 ? 'PM' : 'AM';
-    final minute = d.minute.toString().padLeft(2, '0');
-    return '$month ${d.day} · $hour:$minute $period';
   }
 
   String _formatRelativeTime(DateTime? date) {
@@ -264,6 +254,56 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                                 ),
                               ],
                             ),
+                          ),
+                          // Source Attribution Pill (omitted cleanly if unknown)
+                          Builder(
+                            builder: (context) {
+                              final source = CaptureSource.fromString(capture.sourceType) ??
+                                  CaptureSourceClassifier.classify(capture.originalUrl ?? capture.originalCaption);
+                              if (source == null) return const SizedBox.shrink();
+
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white,
+                                    borderRadius: BorderRadius.circular(100),
+                                    border: Border.all(
+                                      color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: CupertinoColors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CaptureSourceIcon(
+                                        source: source,
+                                        size: 13,
+                                        color: textColor,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        source.displayName,
+                                        style: LTypography.caption2.copyWith(
+                                          color: textColor,
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

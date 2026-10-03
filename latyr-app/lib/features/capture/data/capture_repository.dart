@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/core/network/api_client.dart';
 import 'package:latyr_app/core/network/sse_client.dart';
+import 'package:latyr_app/core/util/capture_source_classifier.dart';
 import 'package:uuid/uuid.dart';
 
 class CaptureRepository {
@@ -90,6 +91,7 @@ class CaptureRepository {
         final title = event.data['title']?.toString();
         final transcript = event.data['audio_transcript']?.toString();
         final thumbnailUrl = event.data['thumbnail_url']?.toString();
+        final sourceType = event.data['source_type']?.toString();
 
         if (existing != null) {
           await db.updateCapture(
@@ -97,6 +99,7 @@ class CaptureRepository {
               id: Value(existing.id),
               serverCaptureId: Value(captureId),
               status: const Value('COMPLETED'),
+              sourceType: Value(sourceType ?? existing.sourceType),
               intent: Value(intent),
               category: Value(category),
               summary: Value(summary ?? existing.summary),
@@ -116,6 +119,7 @@ class CaptureRepository {
               id: Value(_uuid.v4()),
               serverCaptureId: Value(captureId),
               originalUrl: Value(rawCaption),
+              sourceType: Value(sourceType ?? CaptureSourceClassifier.classify(rawCaption)?.name.toUpperCase()),
               contentType: const Value('URL'),
               status: const Value('COMPLETED'),
               intent: Value(intent),
@@ -178,9 +182,14 @@ class CaptureRepository {
     final localId = existingLocal?.id ?? _uuid.v4();
     final now = DateTime.now();
 
+    final detectedSource = CaptureSourceClassifier.classify(rawUrl) ??
+        CaptureSourceClassifier.classify(cleanUrl);
+    final initialSourceType = detectedSource?.name.toUpperCase();
+
     final entry = LocalCapturesCompanion(
       id: Value(localId),
-      originalUrl: Value(cleanUrl),
+      originalUrl: Value(rawUrl.trim()),
+      sourceType: Value(initialSourceType),
       contentType: const Value('URL'),
       originalCaption: Value(caption ?? existingLocal?.originalCaption),
       status: const Value('PENDING_SYNC'),
@@ -202,12 +211,14 @@ class CaptureRepository {
       if ((response.statusCode == 200 || response.statusCode == 202) && data != null) {
         final serverId = data['id']?.toString();
         final serverStatus = data['status']?.toString();
+        final serverSourceType = data['source_type']?.toString();
         final status = response.statusCode == 200 ? 'COMPLETED' : (serverStatus ?? 'PROCESSING');
         await db.updateCapture(
           LocalCapturesCompanion(
             id: Value(localId),
             serverCaptureId: Value(serverId),
             status: Value(status),
+            sourceType: Value(serverSourceType ?? initialSourceType),
             intent: Value(data['intent']?.toString()),
             category: Value(data['category']?.toString()),
             originalCaption: Value(data['original_caption']?.toString() ?? caption),
@@ -290,6 +301,8 @@ class CaptureRepository {
               }
 
               final newStatus = raw['status']?.toString() ?? 'COMPLETED';
+              final newSourceType = raw['source_type']?.toString() ??
+                  CaptureSourceClassifier.classify(rawCaption)?.name.toUpperCase();
               final newIntent = raw['intent']?.toString();
               final newCategory = raw['category']?.toString(); final newSubCategory = raw['sub_category']?.toString(); final newSummary = raw['summary']?.toString();
               final newTitle = raw['title']?.toString();
@@ -305,6 +318,7 @@ class CaptureRepository {
               if (existing != null) {
                 final bool hasChanged = existing.serverCaptureId != serverId ||
                     existing.status != newStatus ||
+                    existing.sourceType != newSourceType ||
                     existing.intent != newIntent ||
                     existing.category != newCategory || existing.subCategory != newSubCategory || existing.summary != newSummary ||
                     existing.title != newTitle ||
@@ -324,6 +338,7 @@ class CaptureRepository {
                     id: Value(existing.id),
                     serverCaptureId: Value(serverId),
                     status: Value(newStatus),
+                    sourceType: Value(newSourceType ?? existing.sourceType),
                     intent: Value(newIntent),
                     category: Value(newCategory), subCategory: Value(newSubCategory), summary: Value(newSummary),
                     title: Value(newTitle ?? existing.title),
@@ -342,6 +357,7 @@ class CaptureRepository {
                     id: Value(id),
                     serverCaptureId: Value(serverId),
                     originalUrl: Value(raw['original_caption']?.toString()),
+                    sourceType: Value(newSourceType),
                     contentType: Value(raw['content_type']?.toString() ?? 'URL'),
                     status: Value(newStatus),
                     intent: Value(newIntent),

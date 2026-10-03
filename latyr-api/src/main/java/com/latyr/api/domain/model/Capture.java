@@ -3,6 +3,7 @@ package com.latyr.api.domain.model;
 import com.latyr.api.domain.enums.CaptureStatus;
 import com.latyr.api.domain.enums.ContentType;
 import com.latyr.api.domain.enums.Intent;
+import com.latyr.api.domain.enums.SourceType;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ public class Capture {
     private UUID id;
     private UUID userId;
     private UUID canonicalSourceId;
+    private SourceType sourceType;
     private ContentType contentType;
     private CaptureStatus status = CaptureStatus.PENDING;
     private Intent intent;
@@ -49,6 +51,9 @@ public class Capture {
 
     public UUID getCanonicalSourceId() { return canonicalSourceId; }
     public void setCanonicalSourceId(UUID canonicalSourceId) { this.canonicalSourceId = canonicalSourceId; }
+
+    public SourceType getSourceType() { return sourceType; }
+    public void setSourceType(SourceType sourceType) { this.sourceType = sourceType; }
 
     public ContentType getContentType() { return contentType; }
     public void setContentType(ContentType contentType) { this.contentType = contentType; }

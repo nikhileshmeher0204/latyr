@@ -13,6 +13,7 @@ class LocalCaptures extends Table {
   TextColumn get originalUrl => text().nullable()();
   TextColumn get contentType => text().withDefault(const Constant('URL'))();
   TextColumn get status => text().withDefault(const Constant('PENDING_SYNC'))();
+  TextColumn get sourceType => text().nullable()();
   TextColumn get intent => text().nullable()();
   TextColumn get category => text().nullable()();
   TextColumn get subCategory => text().nullable()();
@@ -38,7 +39,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -47,14 +48,27 @@ class AppDatabase extends _$AppDatabase {
         },
         onUpgrade: (Migrator m, int from, int to) async {
           if (from < 2) {
-            await m.addColumn(localCaptures, localCaptures.thumbnailUrl);
+            try {
+              await m.addColumn(localCaptures, localCaptures.thumbnailUrl);
+            } catch (_) {}
           }
           if (from < 3) {
-            await m.addColumn(localCaptures, localCaptures.title);
+            try {
+              await m.addColumn(localCaptures, localCaptures.title);
+            } catch (_) {}
           }
           if (from < 4) {
-            await m.addColumn(localCaptures, localCaptures.subCategory);
-            await m.addColumn(localCaptures, localCaptures.summary);
+            try {
+              await m.addColumn(localCaptures, localCaptures.subCategory);
+            } catch (_) {}
+            try {
+              await m.addColumn(localCaptures, localCaptures.summary);
+            } catch (_) {}
+          }
+          if (from < 5) {
+            try {
+              await m.addColumn(localCaptures, localCaptures.sourceType);
+            } catch (_) {}
           }
         },
       );

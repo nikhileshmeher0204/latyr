@@ -62,6 +62,17 @@ class $LocalCapturesTable extends LocalCaptures
     requiredDuringInsert: false,
     defaultValue: const Constant('PENDING_SYNC'),
   );
+  static const VerificationMeta _sourceTypeMeta = const VerificationMeta(
+    'sourceType',
+  );
+  @override
+  late final GeneratedColumn<String> sourceType = GeneratedColumn<String>(
+    'source_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _intentMeta = const VerificationMeta('intent');
   @override
   late final GeneratedColumn<String> intent = GeneratedColumn<String>(
@@ -210,6 +221,7 @@ class $LocalCapturesTable extends LocalCaptures
     originalUrl,
     contentType,
     status,
+    sourceType,
     intent,
     category,
     subCategory,
@@ -272,6 +284,12 @@ class $LocalCapturesTable extends LocalCaptures
       context.handle(
         _statusMeta,
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('source_type')) {
+      context.handle(
+        _sourceTypeMeta,
+        sourceType.isAcceptableOrUnknown(data['source_type']!, _sourceTypeMeta),
       );
     }
     if (data.containsKey('intent')) {
@@ -399,6 +417,10 @@ class $LocalCapturesTable extends LocalCaptures
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      sourceType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_type'],
+      ),
       intent: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}intent'],
@@ -466,6 +488,7 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
   final String? originalUrl;
   final String contentType;
   final String status;
+  final String? sourceType;
   final String? intent;
   final String? category;
   final String? subCategory;
@@ -485,6 +508,7 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     this.originalUrl,
     required this.contentType,
     required this.status,
+    this.sourceType,
     this.intent,
     this.category,
     this.subCategory,
@@ -511,6 +535,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     }
     map['content_type'] = Variable<String>(contentType);
     map['status'] = Variable<String>(status);
+    if (!nullToAbsent || sourceType != null) {
+      map['source_type'] = Variable<String>(sourceType);
+    }
     if (!nullToAbsent || intent != null) {
       map['intent'] = Variable<String>(intent);
     }
@@ -562,6 +589,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
           : Value(originalUrl),
       contentType: Value(contentType),
       status: Value(status),
+      sourceType: sourceType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceType),
       intent: intent == null && nullToAbsent
           ? const Value.absent()
           : Value(intent),
@@ -611,6 +641,7 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
       originalUrl: serializer.fromJson<String?>(json['originalUrl']),
       contentType: serializer.fromJson<String>(json['contentType']),
       status: serializer.fromJson<String>(json['status']),
+      sourceType: serializer.fromJson<String?>(json['sourceType']),
       intent: serializer.fromJson<String?>(json['intent']),
       category: serializer.fromJson<String?>(json['category']),
       subCategory: serializer.fromJson<String?>(json['subCategory']),
@@ -637,6 +668,7 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
       'originalUrl': serializer.toJson<String?>(originalUrl),
       'contentType': serializer.toJson<String>(contentType),
       'status': serializer.toJson<String>(status),
+      'sourceType': serializer.toJson<String?>(sourceType),
       'intent': serializer.toJson<String?>(intent),
       'category': serializer.toJson<String?>(category),
       'subCategory': serializer.toJson<String?>(subCategory),
@@ -661,6 +693,7 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     Value<String?> originalUrl = const Value.absent(),
     String? contentType,
     String? status,
+    Value<String?> sourceType = const Value.absent(),
     Value<String?> intent = const Value.absent(),
     Value<String?> category = const Value.absent(),
     Value<String?> subCategory = const Value.absent(),
@@ -682,6 +715,7 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     originalUrl: originalUrl.present ? originalUrl.value : this.originalUrl,
     contentType: contentType ?? this.contentType,
     status: status ?? this.status,
+    sourceType: sourceType.present ? sourceType.value : this.sourceType,
     intent: intent.present ? intent.value : this.intent,
     category: category.present ? category.value : this.category,
     subCategory: subCategory.present ? subCategory.value : this.subCategory,
@@ -715,6 +749,9 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
           ? data.contentType.value
           : this.contentType,
       status: data.status.present ? data.status.value : this.status,
+      sourceType: data.sourceType.present
+          ? data.sourceType.value
+          : this.sourceType,
       intent: data.intent.present ? data.intent.value : this.intent,
       category: data.category.present ? data.category.value : this.category,
       subCategory: data.subCategory.present
@@ -751,6 +788,7 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
           ..write('originalUrl: $originalUrl, ')
           ..write('contentType: $contentType, ')
           ..write('status: $status, ')
+          ..write('sourceType: $sourceType, ')
           ..write('intent: $intent, ')
           ..write('category: $category, ')
           ..write('subCategory: $subCategory, ')
@@ -775,6 +813,7 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
     originalUrl,
     contentType,
     status,
+    sourceType,
     intent,
     category,
     subCategory,
@@ -798,6 +837,7 @@ class LocalCapture extends DataClass implements Insertable<LocalCapture> {
           other.originalUrl == this.originalUrl &&
           other.contentType == this.contentType &&
           other.status == this.status &&
+          other.sourceType == this.sourceType &&
           other.intent == this.intent &&
           other.category == this.category &&
           other.subCategory == this.subCategory &&
@@ -819,6 +859,7 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
   final Value<String?> originalUrl;
   final Value<String> contentType;
   final Value<String> status;
+  final Value<String?> sourceType;
   final Value<String?> intent;
   final Value<String?> category;
   final Value<String?> subCategory;
@@ -839,6 +880,7 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     this.originalUrl = const Value.absent(),
     this.contentType = const Value.absent(),
     this.status = const Value.absent(),
+    this.sourceType = const Value.absent(),
     this.intent = const Value.absent(),
     this.category = const Value.absent(),
     this.subCategory = const Value.absent(),
@@ -860,6 +902,7 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     this.originalUrl = const Value.absent(),
     this.contentType = const Value.absent(),
     this.status = const Value.absent(),
+    this.sourceType = const Value.absent(),
     this.intent = const Value.absent(),
     this.category = const Value.absent(),
     this.subCategory = const Value.absent(),
@@ -881,6 +924,7 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     Expression<String>? originalUrl,
     Expression<String>? contentType,
     Expression<String>? status,
+    Expression<String>? sourceType,
     Expression<String>? intent,
     Expression<String>? category,
     Expression<String>? subCategory,
@@ -902,6 +946,7 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
       if (originalUrl != null) 'original_url': originalUrl,
       if (contentType != null) 'content_type': contentType,
       if (status != null) 'status': status,
+      if (sourceType != null) 'source_type': sourceType,
       if (intent != null) 'intent': intent,
       if (category != null) 'category': category,
       if (subCategory != null) 'sub_category': subCategory,
@@ -926,6 +971,7 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     Value<String?>? originalUrl,
     Value<String>? contentType,
     Value<String>? status,
+    Value<String?>? sourceType,
     Value<String?>? intent,
     Value<String?>? category,
     Value<String?>? subCategory,
@@ -947,6 +993,7 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
       originalUrl: originalUrl ?? this.originalUrl,
       contentType: contentType ?? this.contentType,
       status: status ?? this.status,
+      sourceType: sourceType ?? this.sourceType,
       intent: intent ?? this.intent,
       category: category ?? this.category,
       subCategory: subCategory ?? this.subCategory,
@@ -982,6 +1029,9 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
     }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
+    }
+    if (sourceType.present) {
+      map['source_type'] = Variable<String>(sourceType.value);
     }
     if (intent.present) {
       map['intent'] = Variable<String>(intent.value);
@@ -1038,6 +1088,7 @@ class LocalCapturesCompanion extends UpdateCompanion<LocalCapture> {
           ..write('originalUrl: $originalUrl, ')
           ..write('contentType: $contentType, ')
           ..write('status: $status, ')
+          ..write('sourceType: $sourceType, ')
           ..write('intent: $intent, ')
           ..write('category: $category, ')
           ..write('subCategory: $subCategory, ')
@@ -1075,6 +1126,7 @@ typedef $$LocalCapturesTableCreateCompanionBuilder =
       Value<String?> originalUrl,
       Value<String> contentType,
       Value<String> status,
+      Value<String?> sourceType,
       Value<String?> intent,
       Value<String?> category,
       Value<String?> subCategory,
@@ -1097,6 +1149,7 @@ typedef $$LocalCapturesTableUpdateCompanionBuilder =
       Value<String?> originalUrl,
       Value<String> contentType,
       Value<String> status,
+      Value<String?> sourceType,
       Value<String?> intent,
       Value<String?> category,
       Value<String?> subCategory,
@@ -1144,6 +1197,11 @@ class $$LocalCapturesTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1247,6 +1305,11 @@ class $$LocalCapturesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get intent => $composableBuilder(
     column: $table.intent,
     builder: (column) => ColumnOrderings(column),
@@ -1343,6 +1406,11 @@ class $$LocalCapturesTableAnnotationComposer
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
+  GeneratedColumn<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get intent =>
       $composableBuilder(column: $table.intent, builder: (column) => column);
 
@@ -1431,6 +1499,7 @@ class $$LocalCapturesTableTableManager
                 Value<String?> originalUrl = const Value.absent(),
                 Value<String> contentType = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> sourceType = const Value.absent(),
                 Value<String?> intent = const Value.absent(),
                 Value<String?> category = const Value.absent(),
                 Value<String?> subCategory = const Value.absent(),
@@ -1451,6 +1520,7 @@ class $$LocalCapturesTableTableManager
                 originalUrl: originalUrl,
                 contentType: contentType,
                 status: status,
+                sourceType: sourceType,
                 intent: intent,
                 category: category,
                 subCategory: subCategory,
@@ -1473,6 +1543,7 @@ class $$LocalCapturesTableTableManager
                 Value<String?> originalUrl = const Value.absent(),
                 Value<String> contentType = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> sourceType = const Value.absent(),
                 Value<String?> intent = const Value.absent(),
                 Value<String?> category = const Value.absent(),
                 Value<String?> subCategory = const Value.absent(),
@@ -1493,6 +1564,7 @@ class $$LocalCapturesTableTableManager
                 originalUrl: originalUrl,
                 contentType: contentType,
                 status: status,
+                sourceType: sourceType,
                 intent: intent,
                 category: category,
                 subCategory: subCategory,

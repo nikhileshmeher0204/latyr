@@ -10,6 +10,7 @@ import com.latyr.api.exception.ResourceNotFoundException;
 import com.latyr.api.mapper.CaptureMapper;
 import com.latyr.api.mapper.ExtractedEntityMapper;
 import com.latyr.api.mapper.IngestionJobMapper;
+import com.latyr.api.util.UrlSourceClassifier;
 import com.latyr.api.worker.IngestionQueueWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,14 +56,20 @@ public class CaptureService {
         // 1. Enforce monthly quota
         quotaService.verifyAndIncrementQuota(userId);
 
-        // 2. Canonicalize URL and compute SHA-256 hash
-        String canonicalHash = urlNormalizationService.getCanonicalUrlHash(request.url());
-        SourceType sourceType = determineSourceType(request.url());
+        // 2. Extract first URL if dirty share text & normalize URL
+        String rawUrl = request.url();
+        String extractedUrl = UrlSourceClassifier.extractFirstUrl(rawUrl);
+        String effectiveUrl = extractedUrl != null ? extractedUrl : (rawUrl != null ? rawUrl.trim() : "");
+        String normalizedUrl = UrlSourceClassifier.normalizeUrl(effectiveUrl);
+
+        // Canonicalize URL and compute SHA-256 hash
+        String canonicalHash = urlNormalizationService.getCanonicalUrlHash(normalizedUrl);
+        SourceType sourceType = UrlSourceClassifier.classify(effectiveUrl);
 
         // 2.5 Prevent duplicate spam from network retries or simultaneous shares
-        Optional<IngestionJob> activeJob = ingestionJobMapper.findActiveJobForUrl(userId, request.url());
+        Optional<IngestionJob> activeJob = ingestionJobMapper.findActiveJobForUrl(userId, effectiveUrl);
         if (activeJob.isPresent()) {
-            log.info("User {} already has an active processing job for URL: {}. Returning existing capture.", userId, request.url());
+            log.info("User {} already has an active processing job for URL: {}. Returning existing capture.", userId, effectiveUrl);
             Optional<Capture> existingCapture = captureMapper.findById(activeJob.get().getCaptureId());
             if (existingCapture.isPresent()) {
                 return CaptureResponse.fromModel(existingCapture.get(), "Capture is currently processing.");
@@ -92,12 +99,13 @@ public class CaptureService {
         }
 
         // CACHE MISS: Enqueue async ingestion job
-        CanonicalSource canonicalSource = deduplicationService.getOrCreateCanonicalSource(canonicalHash, sourceType, request.url());
+        CanonicalSource canonicalSource = deduplicationService.getOrCreateCanonicalSource(canonicalHash, sourceType, effectiveUrl);
 
         Capture capture = new Capture();
         capture.setId(UUID.randomUUID());
         capture.setUserId(userId);
         capture.setCanonicalSourceId(canonicalSource.getId());
+        capture.setSourceType(sourceType);
         capture.setContentType(ContentType.URL);
         capture.setStatus(CaptureStatus.PENDING);
         capture.setCreatedAt(Instant.now());
@@ -110,7 +118,7 @@ public class CaptureService {
         job.setUserId(userId);
         job.setSourceType(sourceType);
         Map<String, Object> payload = new HashMap<>();
-        payload.put("url", request.url());
+        payload.put("url", effectiveUrl);
         payload.put("canonical_hash", canonicalHash);
         if (request.caption() != null && !request.caption().isBlank()) {
             payload.put("caption", request.caption());
@@ -161,6 +169,7 @@ public class CaptureService {
         capture.setId(UUID.randomUUID());
         capture.setUserId(userId);
         capture.setCanonicalSourceId(canonicalSource.getId());
+        capture.setSourceType(SourceType.IMAGE);
         capture.setContentType(ContentType.IMAGE);
         capture.setStatus(CaptureStatus.PENDING);
         capture.setCreatedAt(Instant.now());
@@ -268,16 +277,6 @@ public class CaptureService {
         return ExtractedEntityResponse.fromModel(entity);
     }
 
-    private SourceType determineSourceType(String url) {
-        String lower = url.toLowerCase(Locale.ROOT);
-        if (lower.contains("instagram.com") || lower.contains("instagr.am")) {
-            return SourceType.INSTAGRAM_REEL;
-        } else if (lower.contains("youtube.com") || lower.contains("youtu.be")) {
-            return SourceType.YOUTUBE_SHORT;
-        }
-        return SourceType.WEB_URL;
-    }
-
     @SuppressWarnings("unchecked")
     private Capture buildCompletedCaptureFromCache(UUID userId, CanonicalSource cachedSource, ContentType contentType) {
         Map<String, Object> cache = cachedSource.getAiAnalysisCache();
@@ -286,6 +285,7 @@ public class CaptureService {
         capture.setId(UUID.randomUUID());
         capture.setUserId(userId);
         capture.setCanonicalSourceId(cachedSource.getId());
+        capture.setSourceType(cachedSource.getSourceType());
         capture.setContentType(contentType);
         capture.setStatus(CaptureStatus.COMPLETED);
 

@@ -3,6 +3,7 @@ package com.latyr.api.dto;
 import com.latyr.api.domain.enums.CaptureStatus;
 import com.latyr.api.domain.enums.ContentType;
 import com.latyr.api.domain.enums.Intent;
+import com.latyr.api.domain.enums.SourceType;
 import com.latyr.api.domain.model.Capture;
 
 import java.time.Instant;
@@ -12,6 +13,7 @@ public record CaptureResponse(
         UUID id,
         UUID userId,
         UUID canonicalSourceId,
+        SourceType sourceType,
         ContentType contentType,
         CaptureStatus status,
         Intent intent,
@@ -31,6 +33,7 @@ public record CaptureResponse(
                 capture.getId(),
                 capture.getUserId(),
                 capture.getCanonicalSourceId(),
+                capture.getSourceType(),
                 capture.getContentType(),
                 capture.getStatus(),
                 capture.getIntent(),
