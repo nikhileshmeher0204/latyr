@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:latyr_app/config/app_properties.dart';
 import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/core/design/latyr_typography.dart';
@@ -152,6 +153,8 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     final navTitle = capture.subCategory ?? capture.category ?? 'Moment';
     final title = _resolveTitle(capture);
     final hasImage = capture.thumbnailUrl != null && capture.thumbnailUrl!.isNotEmpty;
+    final source = CaptureSource.fromString(capture.sourceType) ??
+        CaptureSourceClassifier.classify(capture.originalUrl ?? capture.originalCaption);
 
     final topPadding = MediaQuery.of(context).padding.top;
     final navBarHeight = topPadding + 58.0;
@@ -214,98 +217,43 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                       const SizedBox(height: 10),
 
                       // Relative Time Pill
-                      Row(
-                        children: [
-                          // White (light mode) / Dynamic Dark (dark mode) Pill with Colored Time Icon
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white,
-                              borderRadius: BorderRadius.circular(100),
-                              border: Border.all(
-                                color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                                width: 1.5,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white,
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: CupertinoColors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              CupertinoIcons.clock_fill,
+                              size: 12,
+                              color: isDark ? const Color(0xFFFFB340) : const Color(0xFFFF8A00),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              _formatRelativeTime(capture.createdAt),
+                              style: LTypography.caption2.copyWith(
+                                color: textColor,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.35 : 0.06),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  CupertinoIcons.clock_fill,
-                                  size: 12,
-                                  color: isDark ? const Color(0xFFFFB340) : const Color(0xFFFF8A00),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  _formatRelativeTime(capture.createdAt),
-                                  style: LTypography.caption2.copyWith(
-                                    color: textColor,
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Source Attribution Pill (omitted cleanly if unknown)
-                          Builder(
-                            builder: (context) {
-                              final source = CaptureSource.fromString(capture.sourceType) ??
-                                  CaptureSourceClassifier.classify(capture.originalUrl ?? capture.originalCaption);
-                              if (source == null) return const SizedBox.shrink();
-
-                              return Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white,
-                                    borderRadius: BorderRadius.circular(100),
-                                    border: Border.all(
-                                      color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                                      width: 1.5,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: CupertinoColors.black.withValues(alpha: isDark ? 0.35 : 0.06),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      CaptureSourceIcon(
-                                        source: source,
-                                        size: 13,
-                                        color: textColor,
-                                      ),
-                                      const SizedBox(width: 5),
-                                      Text(
-                                        source.displayName,
-                                        style: LTypography.caption2.copyWith(
-                                          color: textColor,
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: 0.2,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 20),
 
@@ -318,10 +266,6 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                         ),
                         const SizedBox(height: 20),
                       ],
-
-                      // Candy Context Badges Row
-                      _buildBadgesRow(capture, entities.length, textColor, isDark, cardColor),
-                      const SizedBox(height: 24),
 
                       // Editorial Summary Card
                       if (capture.summary != null && capture.summary!.trim().isNotEmpty) ...[
@@ -530,33 +474,56 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () {
-                            // Share action placeholder
-                          },
-                          child: Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 3),
+                        if (source != null || (capture.originalUrl != null && capture.originalUrl!.isNotEmpty)) ...[
+                          const SizedBox(width: 8),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () => _openSourceUrl(capture.originalUrl),
+                            child: Container(
+                              height: 42,
+                              padding: const EdgeInsets.symmetric(horizontal: 11),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
+                                borderRadius: BorderRadius.circular(21),
+                                border: Border.all(
+                                  color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                                  width: 1.5,
                                 ),
-                              ],
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  if (source != null)
+                                    CaptureSourceIcon(
+                                      source: source,
+                                      size: 17,
+                                      color: textColor,
+                                    )
+                                  else
+                                    Icon(
+                                      CupertinoIcons.globe,
+                                      size: 17,
+                                      color: textColor,
+                                    ),
+                                  const SizedBox(width: 5),
+                                  Icon(
+                                    CupertinoIcons.arrow_up_right,
+                                    color: textColor.withValues(alpha: 0.8),
+                                    size: 13.5,
+                                  ),
+                                ],
+                              ),
                             ),
-                            child: Icon(CupertinoIcons.share, color: textColor, size: 20),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ],
@@ -567,6 +534,20 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _openSourceUrl(String? rawUrl) async {
+    if (rawUrl == null || rawUrl.trim().isEmpty) return;
+    final uri = Uri.tryParse(rawUrl.trim());
+    if (uri == null) return;
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+    } catch (e) {
+      debugPrint('Could not launch source URL: $e');
+    }
   }
 
   Widget _buildCuratedMediaCard({
@@ -595,48 +576,11 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(22.5),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            CachedNetworkImage(
-              imageUrl: capture.thumbnailUrl!,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(color: cardColor.withValues(alpha: 0.3)),
-              errorWidget: (context, url, error) => Container(color: cardColor.withValues(alpha: 0.3)),
-            ),
-            // Floating badge on the image
-            Positioned(
-              bottom: 12,
-              right: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: CupertinoColors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: CupertinoColors.white.withValues(alpha: 0.3), width: 1),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      capture.contentType == 'VIDEO' ? CupertinoIcons.play_arrow_solid : CupertinoIcons.photo,
-                      size: 11,
-                      color: CupertinoColors.white,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      capture.contentType == 'VIDEO' ? 'REEL' : 'PHOTO',
-                      style: LTypography.caption2.copyWith(
-                        color: CupertinoColors.white,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        child: CachedNetworkImage(
+          imageUrl: capture.thumbnailUrl!,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Container(color: cardColor.withValues(alpha: 0.3)),
+          errorWidget: (context, url, error) => Container(color: cardColor.withValues(alpha: 0.3)),
         ),
       ),
     );
@@ -900,67 +844,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     );
   }
 
-  Widget _buildBadgesRow(LocalCapture capture, int entityCount, Color textColor, bool isDark, Color cardColor) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        if (capture.category != null && capture.category!.isNotEmpty)
-          _buildPill(capture.category!, textColor, isDark, cardColor: cardColor),
-        if (capture.intent != null &&
-            capture.intent!.isNotEmpty &&
-            capture.intent!.toUpperCase() != capture.category?.toUpperCase())
-          _buildPill(capture.intent!, textColor, isDark, cardColor: cardColor),
-        if (entityCount > 0)
-          _buildPill('$entityCount INSIGHTS', textColor, isDark, icon: CupertinoIcons.doc_on_doc, cardColor: cardColor),
-        if (capture.status != 'COMPLETED')
-          _buildPill('ANALYZING', textColor, isDark, cardColor: cardColor),
-      ],
-    );
-  }
 
-  Widget _buildPill(String text, Color textColor, bool isDark, {IconData? icon, required Color cardColor}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 12, color: textColor),
-            const SizedBox(width: 5),
-          ],
-          Flexible(
-            child: Text(
-              text.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: LTypography.caption2.copyWith(
-                fontWeight: FontWeight.w800,
-                color: textColor,
-                letterSpacing: 0.6,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildEntitiesSection(List<ExtractedEntityModel> entities, Color textColor, bool isDark, Color cardColor) {
     if (entities.isEmpty) return const SizedBox.shrink();
