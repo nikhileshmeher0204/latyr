@@ -342,14 +342,10 @@ class _HandwrittenWavyText extends StatelessWidget {
   final TextStyle style;
   final Color waveColor;
 
-  // Wave geometry constants — tweak here to taste
-  static const double _amplitude  = 3.5;   // height of crest / trough in px
-  static const double _strokeWidth = 2.5;   // pen stroke thickness in px
+  // Wave geometry constants — bold handwritten look without expanding line height
+  static const double _amplitude  = 3.2;   // height of crest / trough in px
+  static const double _strokeWidth = 2.4;   // bold pen stroke thickness in px
   static const double _wavelength  = 18.0;  // px per full S-cycle (longer = fewer curves)
-  static const double _gap         = 4.0;   // breathing space below text glyphs
-
-  // Total extra height reserved below the text for the wave
-  static const double _bottomPad = _gap + _amplitude + _strokeWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -360,20 +356,16 @@ class _HandwrittenWavyText extends StatelessWidget {
         amplitude:   _amplitude,
         wavelength:  _wavelength,
       ),
-      // Bottom padding opens space so the painter can draw below the glyphs
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: _bottomPad),
-        child: Text(text, style: style),
-      ),
+      // No extra bottom padding: preserves natural paragraph line-height and eliminates line gap
+      child: Text(text, style: style),
     );
   }
 }
 
 /// Draws a handwritten-style wavy underline using cubic Bézier S-curves.
 ///
-/// Paints in the reserved bottom padding area just below the text glyphs,
-/// with an organic crest-trough shape that reads as hand-drawn rather than
-/// computer-generated.
+/// Draws snugly beneath the text baseline without inflating the layout box,
+/// keeping paragraph leading 100% uniform.
 class _HandwrittenWavePainter extends CustomPainter {
   const _HandwrittenWavePainter({
     required this.color,
@@ -396,8 +388,8 @@ class _HandwrittenWavePainter extends CustomPainter {
       ..strokeCap   = StrokeCap.round
       ..strokeJoin  = StrokeJoin.round;
 
-    // Wave centre sits in the reserved bottom-pad area
-    final double cy = size.height - amplitude - strokeWidth;
+    // Anchor wave center in the natural line descent area
+    final double cy = size.height - 1.0;
     final double w  = wavelength;
 
     final path = Path()..moveTo(0, cy);
