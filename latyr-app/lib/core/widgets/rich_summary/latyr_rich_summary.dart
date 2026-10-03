@@ -181,6 +181,7 @@ class _LatyrRichSummaryState extends State<LatyrRichSummary> {
                 backgroundColor: highlightBg,
                 color: highlightText,
                 fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
               ),
             ),
           );

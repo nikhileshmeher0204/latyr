@@ -80,6 +80,40 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     return '$month ${d.day} · $hour:$minute $period';
   }
 
+  String _formatRelativeTime(DateTime? date) {
+    if (date == null) return 'just now';
+    final now = DateTime.now();
+    final diff = now.difference(date);
+    final seconds = diff.inSeconds;
+
+    if (seconds < 60) {
+      final s = seconds <= 0 ? 1 : seconds;
+      return '${s}s ago';
+    }
+    final minutes = diff.inMinutes;
+    if (minutes < 60) {
+      return '${minutes}m ago';
+    }
+    final hours = diff.inHours;
+    if (hours < 24) {
+      return '${hours}h ago';
+    }
+    final days = diff.inDays;
+    if (days < 7) {
+      return '${days}d ago';
+    }
+    final weeks = (days / 7).floor();
+    if (weeks < 4) {
+      return '${weeks}w ago';
+    }
+    final months = (days / 30).floor();
+    if (months < 12) {
+      return '${months}m ago';
+    }
+    final years = (days / 365).floor();
+    return '${years}y ago';
+  }
+
   Color _deriveFunkyTitleColor(Color baseColor, bool isDark) {
     final hsv = HSVColor.fromColor(baseColor);
     if (isDark) {
@@ -189,11 +223,17 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                       ),
                       const SizedBox(height: 10),
 
-                      // Editorial Metadata Row
+                      // Editorial Metadata Row (History clock icon + relative time)
                       Row(
                         children: [
+                          Icon(
+                            CupertinoIcons.clock,
+                            size: 13,
+                            color: subtextColor.withValues(alpha: 0.85),
+                          ),
+                          const SizedBox(width: 4.5),
                           Text(
-                            _formatDate(capture.createdAt),
+                            _formatRelativeTime(capture.createdAt),
                             style: LTypography.caption1.copyWith(
                               color: subtextColor,
                               fontWeight: FontWeight.w500,
@@ -829,7 +869,8 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
           _buildPill(capture.intent!, textColor, isDark, cardColor: cardColor),
         if (entityCount > 0)
           _buildPill('$entityCount INSIGHTS', textColor, isDark, icon: CupertinoIcons.sparkles, cardColor: cardColor),
-        _buildPill(capture.status == 'COMPLETED' ? 'DONE' : 'ANALYZING', textColor, isDark, cardColor: cardColor),
+        if (capture.status != 'COMPLETED')
+          _buildPill('ANALYZING', textColor, isDark, cardColor: cardColor),
       ],
     );
   }

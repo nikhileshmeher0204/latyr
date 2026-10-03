@@ -326,32 +326,8 @@ class ProcessingCapturesSection extends ConsumerWidget {
       );
     }
 
-    // Completed
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: LSpacing.sm,
-        vertical: LSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: LColors.sageEmerald.withValues(alpha: 0.12),
-        borderRadius: LSpacing.brXS,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            CupertinoIcons.checkmark_circle_fill,
-            size: 12,
-            color: LColors.sageEmerald,
-          ),
-          const SizedBox(width: LSpacing.xs),
-          Text(
-            'Done',
-            style: LTypography.caption2Bold.copyWith(color: LColors.sageEmerald),
-          ),
-        ],
-      ),
-    );
+    // Completed: declutter and hide badge
+    return const SizedBox.shrink();
   }
 
   String _formatDate(DateTime dt) {
