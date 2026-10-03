@@ -223,23 +223,50 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                       ),
                       const SizedBox(height: 10),
 
-                      // Editorial Metadata Row (History clock icon + relative time)
+                      // Editorial Metadata Row (Time Pill + Content Type)
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Icon(
-                            CupertinoIcons.clock,
-                            size: 13,
-                            color: subtextColor.withValues(alpha: 0.85),
-                          ),
-                          const SizedBox(width: 4.5),
-                          Text(
-                            _formatRelativeTime(capture.createdAt),
-                            style: LTypography.caption1.copyWith(
-                              color: subtextColor,
-                              fontWeight: FontWeight.w500,
+                          // White (light mode) / Dynamic Dark (dark mode) Pill with Colored Time Icon
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white,
+                              borderRadius: BorderRadius.circular(100),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.clock_fill,
+                                  size: 12,
+                                  color: isDark ? const Color(0xFFFFB340) : const Color(0xFFFF8A00),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  _formatRelativeTime(capture.createdAt),
+                                  style: LTypography.caption2.copyWith(
+                                    color: textColor,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Container(
                             width: 3,
                             height: 3,
@@ -248,7 +275,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                               color: subtextColor.withValues(alpha: 0.6),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Flexible(
                             child: Text(
                               capture.contentType == 'VIDEO' ? 'Reel / Video' : 'Saved Capture',
