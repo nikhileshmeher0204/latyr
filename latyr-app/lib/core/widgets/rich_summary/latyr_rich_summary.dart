@@ -192,14 +192,16 @@ class _LatyrRichSummaryState extends State<LatyrRichSummary> {
               : CupertinoColors.systemRed;
 
           spans.add(
-            TextSpan(
-              text: token.text,
-              style: baseStyle.copyWith(
-                decoration: TextDecoration.underline,
-                decorationStyle: TextDecorationStyle.wavy,
-                decorationColor: underlineColor,
-                decorationThickness: 1.5,
-                fontWeight: FontWeight.w500,
+            WidgetSpan(
+              alignment: PlaceholderAlignment.baseline,
+              baseline: TextBaseline.alphabetic,
+              child: _HandwrittenWavyText(
+                text: token.text,
+                style: baseStyle.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: primaryTextColor,
+                ),
+                waveColor: underlineColor,
               ),
             ),
           );
@@ -323,4 +325,109 @@ class _LatyrRichSummaryState extends State<LatyrRichSummary> {
       style: baseStyle,
     );
   }
+}
+
+/// A text widget that renders the given [text] with a handwritten-style
+/// wavy underline drawn via [CustomPainter] — larger amplitude, low frequency
+/// cubic-Bézier S-curves with a breathing gap below the text baseline.
+class _HandwrittenWavyText extends StatelessWidget {
+  const _HandwrittenWavyText({
+    required this.text,
+    required this.style,
+    required this.waveColor,
+  });
+
+  final String text;
+  final TextStyle style;
+  final Color waveColor;
+
+  // Wave geometry constants — tweak here to taste
+  static const double _amplitude  = 3.5;   // height of crest / trough in px
+  static const double _strokeWidth = 2.5;   // pen stroke thickness in px
+  static const double _wavelength  = 18.0;  // px per full S-cycle (longer = fewer curves)
+  static const double _gap         = 4.0;   // breathing space below text glyphs
+
+  // Total extra height reserved below the text for the wave
+  static const double _bottomPad = _gap + _amplitude + _strokeWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      foregroundPainter: _HandwrittenWavePainter(
+        color:       waveColor,
+        strokeWidth: _strokeWidth,
+        amplitude:   _amplitude,
+        wavelength:  _wavelength,
+      ),
+      // Bottom padding opens space so the painter can draw below the glyphs
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: _bottomPad),
+        child: Text(text, style: style),
+      ),
+    );
+  }
+}
+
+/// Draws a handwritten-style wavy underline using cubic Bézier S-curves.
+///
+/// Paints in the reserved bottom padding area just below the text glyphs,
+/// with an organic crest-trough shape that reads as hand-drawn rather than
+/// computer-generated.
+class _HandwrittenWavePainter extends CustomPainter {
+  const _HandwrittenWavePainter({
+    required this.color,
+    required this.strokeWidth,
+    required this.amplitude,
+    required this.wavelength,
+  });
+
+  final Color  color;
+  final double strokeWidth;
+  final double amplitude;
+  final double wavelength;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color       = color
+      ..strokeWidth = strokeWidth
+      ..style       = PaintingStyle.stroke
+      ..strokeCap   = StrokeCap.round
+      ..strokeJoin  = StrokeJoin.round;
+
+    // Wave centre sits in the reserved bottom-pad area
+    final double cy = size.height - amplitude - strokeWidth;
+    final double w  = wavelength;
+
+    final path = Path()..moveTo(0, cy);
+
+    double x = 0;
+    while (x < size.width) {
+      final double end = (x + w).clamp(0.0, size.width);
+
+      // Crest half (x → x+w/2): bulge above centre
+      path.cubicTo(
+        x + w * 0.20, cy - amplitude,
+        x + w * 0.45, cy - amplitude,
+        x + w * 0.50, cy,
+      );
+      // Trough half (x+w/2 → x+w): dip below centre
+      path.cubicTo(
+        x + w * 0.55, cy + amplitude,
+        x + w * 0.80, cy + amplitude,
+        end,          cy,
+      );
+
+      x += w;
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_HandwrittenWavePainter old) =>
+      old.color       != color       ||
+      old.strokeWidth != strokeWidth ||
+      old.amplitude   != amplitude   ||
+      old.wavelength  != wavelength;
 }
