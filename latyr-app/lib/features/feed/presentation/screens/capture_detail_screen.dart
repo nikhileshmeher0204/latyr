@@ -283,9 +283,9 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                         const SizedBox(height: 20),
                       ],
 
-                      // Editorial Summary Card
+                      // 1. Editorial Summary Section
                       if (capture.summary != null && capture.summary!.trim().isNotEmpty) ...[
-                        _buildSummaryContainer(
+                        _buildSummarySection(
                           summary: capture.summary!.trim(),
                           textColor: textColor,
                           subtextColor: subtextColor,
@@ -294,17 +294,24 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                           cardColor: cardSurfaceColor,
                           accentColor: cardColor,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 28),
                       ],
 
-                      // Capture Intents (formerly Extracted Insights & Actions) - directly below Summary
+                      // 2. Capture Intents Section
                       if (entities.isNotEmpty) ...[
-                        _buildEntitiesSection(entities, textColor, titleColor, isDark, cardSurfaceColor),
-                        const SizedBox(height: 24),
+                        _buildCaptureIntentsSection(
+                          entities: entities,
+                          textColor: textColor,
+                          subtextColor: subtextColor,
+                          titleColor: titleColor,
+                          isDark: isDark,
+                          cardColor: cardSurfaceColor,
+                        ),
+                        const SizedBox(height: 28),
                       ],
 
-                      // Merged Caption & Audio Transcript Card with iOS style sliding pill
-                      _buildMediaTextCard(
+                      // 3. Merged Source Section (Caption & Audio Transcript)
+                      _buildMediaTextSection(
                         capture: capture,
                         title: title,
                         textColor: textColor,
@@ -313,7 +320,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                         isDark: isDark,
                         cardColor: cardSurfaceColor,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
 
                       // Processing State Banner
                       if (isProcessing) ...[
@@ -605,7 +612,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     );
   }
 
-  Widget _buildSummaryContainer({
+  Widget _buildSummarySection({
     required String summary,
     required Color textColor,
     required Color subtextColor,
@@ -614,54 +621,56 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     required Color cardColor,
     required Color accentColor,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: _buildCardDecoration(cardColor, isDark),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'SUMMARY',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.2,
-                  color: titleColor,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'SUMMARY',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+                color: titleColor,
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  onPressed: () {},
+                  child: Icon(
+                    CupertinoIcons.globe,
+                    size: 18,
+                    color: subtextColor,
+                  ),
                 ),
-              ),
-              Row(
-                children: [
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    onPressed: () {},
-                    child: Icon(
-                      CupertinoIcons.globe,
-                      size: 19,
-                      color: subtextColor,
-                    ),
+                const SizedBox(width: 14),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  onPressed: () {},
+                  child: Icon(
+                    CupertinoIcons.speaker_2,
+                    size: 18,
+                    color: subtextColor,
                   ),
-                  const SizedBox(width: 14),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    onPressed: () {},
-                    child: Icon(
-                      CupertinoIcons.speaker_2,
-                      size: 19,
-                      color: subtextColor,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          LatyrRichSummary(
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(22),
+          decoration: _buildCardDecoration(cardColor, isDark),
+          child: LatyrRichSummary(
             text: summary,
             textColor: textColor,
             cardAccentColor: accentColor,
@@ -669,12 +678,60 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
             fontSize: 15.5,
             lineHeight: 1.58,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildMediaTextCard({
+  Widget _buildCaptureIntentsSection({
+    required List<ExtractedEntityModel> entities,
+    required Color textColor,
+    required Color subtextColor,
+    required Color titleColor,
+    required bool isDark,
+    required Color cardColor,
+  }) {
+    if (entities.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'CAPTURE INTENTS',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+                color: titleColor,
+              ),
+            ),
+            Text(
+              '${entities.length} ${entities.length == 1 ? 'ITEM' : 'ITEMS'}',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: subtextColor.withValues(alpha: 0.8),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...entities.map(
+          (entity) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: EntityCardRouter(entity: entity, cardColor: cardColor),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMediaTextSection({
     required LocalCapture capture,
     required String title,
     required Color textColor,
@@ -705,41 +762,51 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
         ? '${currentText.substring(0, 320)}...'
         : currentText;
 
-    return Container(
-      width: double.infinity,
-      decoration: _buildCardDecoration(cardColor, isDark),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (showSegmentedControl)
-            Center(
-              child: CupertinoSlidingSegmentedControl<int>(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              hasCaption && hasTranscript
+                  ? 'SOURCE'
+                  : (hasCaption ? 'ORIGINAL CAPTION' : 'AUDIO TRANSCRIPT'),
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+                color: titleColor,
+              ),
+            ),
+            if (showSegmentedControl)
+              CupertinoSlidingSegmentedControl<int>(
                 groupValue: _selectedSourceTab,
                 backgroundColor: isDark ? const Color(0x33FFFFFF) : const Color(0x14000000),
                 thumbColor: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                padding: const EdgeInsets.all(3),
+                padding: const EdgeInsets.all(2.5),
                 children: {
                   0: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
                     child: Text(
                       'CAPTION',
                       style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 0.6,
+                        letterSpacing: 0.4,
                         color: _selectedSourceTab == 0 ? textColor : subtextColor,
                       ),
                     ),
                   ),
                   1: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
                     child: Text(
                       'TRANSCRIPT',
                       style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 0.6,
+                        letterSpacing: 0.4,
                         color: _selectedSourceTab == 1 ? textColor : subtextColor,
                       ),
                     ),
@@ -754,67 +821,67 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                   }
                 },
               ),
-            )
-          else
-            Text(
-              hasCaption ? 'ORIGINAL CAPTION' : 'AUDIO TRANSCRIPT',
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-                color: titleColor,
-              ),
-            ),
-          const SizedBox(height: 16),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
-            child: Text(
-              displayText,
-              key: ValueKey<String>('${_selectedSourceTab}_$_isSourceTextExpanded'),
-              style: TextStyle(
-                color: textColor.withValues(alpha: 0.88),
-                fontSize: 14,
-                height: 1.55,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-          if (isLongText) ...[
-            const SizedBox(height: 8),
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                setState(() {
-                  _isSourceTextExpanded = !_isSourceTextExpanded;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _isSourceTextExpanded ? 'Show less' : 'Show more',
-                      style: TextStyle(
-                        color: subtextColor,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 3),
-                    Icon(
-                      _isSourceTextExpanded ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down,
-                      size: 13,
-                      color: subtextColor,
-                    ),
-                  ],
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          decoration: _buildCardDecoration(cardColor, isDark),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+                child: Text(
+                  displayText,
+                  key: ValueKey<String>('${_selectedSourceTab}_$_isSourceTextExpanded'),
+                  style: TextStyle(
+                    color: textColor.withValues(alpha: 0.88),
+                    fontSize: 14,
+                    height: 1.55,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ],
-      ),
+              if (isLongText) ...[
+                const SizedBox(height: 8),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    setState(() {
+                      _isSourceTextExpanded = !_isSourceTextExpanded;
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _isSourceTextExpanded ? 'Show less' : 'Show more',
+                          style: TextStyle(
+                            color: subtextColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        Icon(
+                          _isSourceTextExpanded ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down,
+                          size: 13,
+                          color: subtextColor,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -852,38 +919,6 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildEntitiesSection(
-    List<ExtractedEntityModel> entities,
-    Color textColor,
-    Color titleColor,
-    bool isDark,
-    Color cardColor,
-  ) {
-    if (entities.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'CAPTURE INTENTS',
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
-            color: titleColor,
-          ),
-        ),
-        const SizedBox(height: 14),
-        ...entities.map(
-          (entity) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: EntityCardRouter(entity: entity, cardColor: cardColor),
-          ),
-        ),
-      ],
     );
   }
 }
