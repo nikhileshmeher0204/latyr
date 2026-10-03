@@ -913,7 +913,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
             capture.intent!.toUpperCase() != capture.category?.toUpperCase())
           _buildPill(capture.intent!, textColor, isDark, cardColor: cardColor),
         if (entityCount > 0)
-          _buildPill('$entityCount INSIGHTS', textColor, isDark, icon: CupertinoIcons.sparkles, cardColor: cardColor),
+          _buildPill('$entityCount INSIGHTS', textColor, isDark, icon: CupertinoIcons.doc_on_doc, cardColor: cardColor),
         if (capture.status != 'COMPLETED')
           _buildPill('ANALYZING', textColor, isDark, cardColor: cardColor),
       ],

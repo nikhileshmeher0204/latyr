@@ -197,29 +197,30 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
                         size: 19,
                         color: textColor.withValues(alpha: 0.85),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 9),
                     ],
-                    // Slot 2: Action Icon
+                    // Slot 2: Action Icon (optically balanced with brand glyph)
                     Icon(
                       source?.actionIcon ?? CupertinoIcons.arrow_up_right,
-                      size: 19,
+                      size: 21.5,
                       color: textColor.withValues(alpha: 0.85),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 9),
                     // Slot 3: Time since added
                     Row(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(
                           CupertinoIcons.clock,
-                          size: 13,
-                          color: textColor.withValues(alpha: 0.80),
+                          size: 15.5,
+                          color: textColor.withValues(alpha: 0.82),
                         ),
-                        const SizedBox(width: 3.5),
+                        const SizedBox(width: 4),
                         Text(
                           _formatCompactTime(widget.capture.createdAt),
                           style: TextStyle(
-                            fontSize: 11.5,
+                            fontSize: 13.0,
                             fontWeight: FontWeight.w600,
                             color: textColor.withValues(alpha: 0.85),
                             letterSpacing: -0.2,
@@ -227,21 +228,22 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
                         ),
                       ],
                     ),
-                    const SizedBox(width: 8),
-                    // Slot 4: Insights Counter with Sparkle
+                    const SizedBox(width: 9),
+                    // Slot 4: Insights Counter with Document List Copy Icon
                     Row(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(
-                          CupertinoIcons.sparkles,
-                          size: 13,
-                          color: textColor.withValues(alpha: 0.80),
+                          CupertinoIcons.doc_on_doc,
+                          size: 15.0,
+                          color: textColor.withValues(alpha: 0.82),
                         ),
-                        const SizedBox(width: 3.5),
+                        const SizedBox(width: 4),
                         Text(
                           '$insightsCount',
                           style: TextStyle(
-                            fontSize: 11.5,
+                            fontSize: 13.0,
                             fontWeight: FontWeight.w600,
                             color: textColor.withValues(alpha: 0.85),
                             letterSpacing: -0.2,
