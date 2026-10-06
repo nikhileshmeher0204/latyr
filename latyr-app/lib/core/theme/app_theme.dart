@@ -30,36 +30,34 @@ class AppTheme {
 
   // ─── Cupertino Theme ───────────────────────────────────────────────────────
 
-  static CupertinoThemeData cupertinoTheme({Brightness brightness = Brightness.light}) {
+  static CupertinoThemeData cupertinoTheme({Brightness? brightness}) {
     return CupertinoThemeData(
       brightness: brightness,
       primaryColor: LColors.brandAmber,
       primaryContrastingColor: LColors.staticWhite,
-      scaffoldBackgroundColor: brightness == Brightness.light
-          ? const Color(0xFFFAF9F6)
-          : const Color(0xFF0E0E10),
-      barBackgroundColor: brightness == Brightness.light
-          ? const Color(0xB3FAF9F6) // 70% alabaster frosted
-          : const Color(0xB30E0E10), // 70% obsidian frosted
+      scaffoldBackgroundColor: LColors.systemBackground,
+      barBackgroundColor: LColors.glassSurface,
       textTheme: CupertinoTextThemeData(
         primaryColor: LColors.brandAmber,
         textStyle: LTypography.body.copyWith(
-          color: brightness == Brightness.light
-              ? const Color(0xFF121316)
-              : const Color(0xFFF5F5F7),
+          fontFamily: 'Inter',
+          color: LColors.label,
         ),
         navTitleTextStyle: LTypography.headline.copyWith(
-          color: brightness == Brightness.light
-              ? const Color(0xFF121316)
-              : const Color(0xFFF5F5F7),
+          fontFamily: 'Inter',
+          color: LColors.label,
         ),
         navLargeTitleTextStyle: LTypography.largeTitle.copyWith(
-          color: brightness == Brightness.light
-              ? const Color(0xFF121316)
-              : const Color(0xFFF5F5F7),
+          fontFamily: 'Inter',
+          color: LColors.label,
         ),
-        actionTextStyle: LTypography.body.copyWith(color: LColors.brandAmber),
-        tabLabelTextStyle: LTypography.caption2Bold,
+        actionTextStyle: LTypography.body.copyWith(
+          fontFamily: 'Inter',
+          color: LColors.brandAmber,
+        ),
+        tabLabelTextStyle: LTypography.caption2Bold.copyWith(
+          fontFamily: 'Inter',
+        ),
       ),
     );
   }

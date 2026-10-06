@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:latyr_app/core/design/latyr_colors.dart';
+import 'package:latyr_app/core/theme/app_theme.dart';
 import 'package:latyr_app/features/collections/presentation/collections_screen.dart';
 import 'package:latyr_app/features/home/presentation/home_screen.dart';
 import 'package:latyr_app/features/search/presentation/search_screen.dart';
@@ -17,12 +18,10 @@ class LatyrApp extends StatelessWidget {
     return CupertinoApp(
       title: 'Latyr',
       debugShowCheckedModeBanner: false,
-      localizationsDelegates: [
+      localizationsDelegates: const [
         DefaultMaterialLocalizations.delegate,
       ],
-      theme: const CupertinoThemeData(
-        primaryColor: LColors.brandAmber,
-      ),
+      theme: AppTheme.cupertinoTheme(),
       home: const LatyrTabNavigationScreen(),
     );
   }
