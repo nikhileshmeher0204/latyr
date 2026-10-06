@@ -294,7 +294,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                           cardColor: cardSurfaceColor,
                           accentColor: cardColor,
                         ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 18),
                       ],
 
                       // 2. Capture Intents Section
@@ -307,7 +307,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                           isDark: isDark,
                           cardColor: cardSurfaceColor,
                         ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 18),
                       ],
 
                       // 3. Merged Source Section (Caption & Audio Transcript)
@@ -320,7 +320,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                         isDark: isDark,
                         cardColor: cardSurfaceColor,
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 18),
 
                       // Processing State Banner
                       if (isProcessing) ...[
@@ -621,56 +621,67 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     required Color cardColor,
     required Color accentColor,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              'SUMMARY',
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-                color: titleColor,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: _buildCardDecoration(cardColor, isDark),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    CupertinoIcons.sparkles,
+                    size: 14.5,
+                    color: titleColor,
+                  ),
+                  const SizedBox(width: 7),
+                  Text(
+                    'Summary',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.1,
+                      color: titleColor,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  onPressed: () {},
-                  child: Icon(
-                    CupertinoIcons.globe,
-                    size: 18,
-                    color: subtextColor,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    onPressed: () {},
+                    child: Icon(
+                      CupertinoIcons.globe,
+                      size: 16.5,
+                      color: subtextColor,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 14),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  onPressed: () {},
-                  child: Icon(
-                    CupertinoIcons.speaker_2,
-                    size: 18,
-                    color: subtextColor,
+                  const SizedBox(width: 14),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    onPressed: () {},
+                    child: Icon(
+                      CupertinoIcons.speaker_2,
+                      size: 16.5,
+                      color: subtextColor,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(22),
-          decoration: _buildCardDecoration(cardColor, isDark),
-          child: LatyrRichSummary(
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          LatyrRichSummary(
             text: summary,
             textColor: textColor,
             cardAccentColor: accentColor,
@@ -678,8 +689,8 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
             fontSize: 15.5,
             lineHeight: 1.58,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -693,41 +704,72 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
   }) {
     if (entities.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              'CAPTURE INTENTS',
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-                color: titleColor,
+    return Container(
+      width: double.infinity,
+      decoration: _buildCardDecoration(cardColor, isDark),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    CupertinoIcons.doc_on_doc,
+                    size: 13.5,
+                    color: titleColor,
+                  ),
+                  const SizedBox(width: 7),
+                  Text(
+                    'Capture Intents',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.1,
+                      color: titleColor,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            Text(
-              '${entities.length} ${entities.length == 1 ? 'ITEM' : 'ITEMS'}',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-                color: subtextColor.withValues(alpha: 0.8),
+              Text(
+                '${entities.length} ${entities.length == 1 ? 'item' : 'items'}',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: subtextColor,
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ...entities.map(
-          (entity) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: EntityCardRouter(entity: entity, cardColor: cardColor),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+          ...entities.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final entity = entry.value;
+            final isLast = idx == entities.length - 1;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                EntityCardRouter(
+                  entity: entity,
+                  isEmbedded: true,
+                ),
+                if (!isLast)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Container(
+                      height: 1,
+                      color: isDark ? const Color(0x1FFFFFFF) : const Color(0x12000000),
+                    ),
+                  ),
+              ],
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -762,126 +804,138 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
         ? '${currentText.substring(0, 320)}...'
         : currentText;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              hasCaption && hasTranscript
-                  ? 'SOURCE'
-                  : (hasCaption ? 'ORIGINAL CAPTION' : 'AUDIO TRANSCRIPT'),
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-                color: titleColor,
-              ),
-            ),
-            if (showSegmentedControl)
-              CupertinoSlidingSegmentedControl<int>(
-                groupValue: _selectedSourceTab,
-                backgroundColor: isDark ? const Color(0x33FFFFFF) : const Color(0x14000000),
-                thumbColor: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                padding: const EdgeInsets.all(2.5),
-                children: {
-                  0: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
-                    child: Text(
-                      'CAPTION',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.4,
-                        color: _selectedSourceTab == 0 ? textColor : subtextColor,
-                      ),
-                    ),
-                  ),
-                  1: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
-                    child: Text(
-                      'TRANSCRIPT',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.4,
-                        color: _selectedSourceTab == 1 ? textColor : subtextColor,
-                      ),
-                    ),
-                  ),
-                },
-                onValueChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _selectedSourceTab = val;
-                      _isSourceTextExpanded = false;
-                    });
-                  }
-                },
-              ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          decoration: _buildCardDecoration(cardColor, isDark),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final sectionTitle = hasCaption && hasTranscript
+        ? 'Source'
+        : (hasCaption ? 'Original Caption' : 'Audio Transcript');
+
+    final sectionIcon = hasCaption && hasTranscript
+        ? (_selectedSourceTab == 0 ? CupertinoIcons.text_quote : CupertinoIcons.waveform)
+        : (hasCaption ? CupertinoIcons.text_quote : CupertinoIcons.waveform);
+
+    return Container(
+      width: double.infinity,
+      decoration: _buildCardDecoration(cardColor, isDark),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
-                child: Text(
-                  displayText,
-                  key: ValueKey<String>('${_selectedSourceTab}_$_isSourceTextExpanded'),
-                  style: TextStyle(
-                    color: textColor.withValues(alpha: 0.88),
-                    fontSize: 14,
-                    height: 1.55,
-                    fontWeight: FontWeight.w400,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    sectionIcon,
+                    size: 14,
+                    color: titleColor,
                   ),
-                ),
-              ),
-              if (isLongText) ...[
-                const SizedBox(height: 8),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    setState(() {
-                      _isSourceTextExpanded = !_isSourceTextExpanded;
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _isSourceTextExpanded ? 'Show less' : 'Show more',
-                          style: TextStyle(
-                            color: subtextColor,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 3),
-                        Icon(
-                          _isSourceTextExpanded ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down,
-                          size: 13,
-                          color: subtextColor,
-                        ),
-                      ],
+                  const SizedBox(width: 7),
+                  Text(
+                    sectionTitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.1,
+                      color: titleColor,
                     ),
                   ),
+                ],
+              ),
+              if (showSegmentedControl)
+                CupertinoSlidingSegmentedControl<int>(
+                  groupValue: _selectedSourceTab,
+                  backgroundColor: isDark ? const Color(0x33FFFFFF) : const Color(0x14000000),
+                  thumbColor: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                  padding: const EdgeInsets.all(2.5),
+                  children: {
+                    0: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                      child: Text(
+                        'Caption',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                          color: _selectedSourceTab == 0 ? textColor : subtextColor,
+                        ),
+                      ),
+                    ),
+                    1: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                      child: Text(
+                        'Transcript',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                          color: _selectedSourceTab == 1 ? textColor : subtextColor,
+                        ),
+                      ),
+                    ),
+                  },
+                  onValueChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        _selectedSourceTab = val;
+                        _isSourceTextExpanded = false;
+                      });
+                    }
+                  },
                 ),
-              ],
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 14),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+            child: Text(
+              displayText,
+              key: ValueKey<String>('${_selectedSourceTab}_$_isSourceTextExpanded'),
+              style: TextStyle(
+                color: textColor.withValues(alpha: 0.88),
+                fontSize: 14,
+                height: 1.55,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          if (isLongText) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                setState(() {
+                  _isSourceTextExpanded = !_isSourceTextExpanded;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _isSourceTextExpanded ? 'Show less' : 'Show more',
+                      style: TextStyle(
+                        color: subtextColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    Icon(
+                      _isSourceTextExpanded ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down,
+                      size: 13,
+                      color: subtextColor,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 

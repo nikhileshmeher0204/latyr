@@ -7,21 +7,27 @@ import 'package:url_launcher/url_launcher.dart';
 class EntityCardRouter extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
+  final bool isEmbedded;
 
-  const EntityCardRouter({super.key, required this.entity, this.cardColor});
+  const EntityCardRouter({
+    super.key,
+    required this.entity,
+    this.cardColor,
+    this.isEmbedded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     switch (entity.entityType.toUpperCase()) {
       case 'MOVIE':
       case 'TV_SHOW':
-        return _MovieShowCard(entity: entity, cardColor: cardColor);
+        return _MovieShowCard(entity: entity, cardColor: cardColor, isEmbedded: isEmbedded);
       case 'GITHUB_REPO':
-        return _GitHubRepoCard(entity: entity, cardColor: cardColor);
+        return _GitHubRepoCard(entity: entity, cardColor: cardColor, isEmbedded: isEmbedded);
       case 'QUOTE':
-        return _QuoteCard(entity: entity, cardColor: cardColor);
+        return _QuoteCard(entity: entity, cardColor: cardColor, isEmbedded: isEmbedded);
       default:
-        return _GenericCard(entity: entity, cardColor: cardColor);
+        return _GenericCard(entity: entity, cardColor: cardColor, isEmbedded: isEmbedded);
     }
   }
 }
@@ -29,8 +35,13 @@ class EntityCardRouter extends StatelessWidget {
 class _MovieShowCard extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
+  final bool isEmbedded;
   
-  const _MovieShowCard({required this.entity, this.cardColor});
+  const _MovieShowCard({
+    required this.entity,
+    this.cardColor,
+    this.isEmbedded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +53,7 @@ class _MovieShowCard extends StatelessWidget {
 
     return _CardContainer(
       cardColor: cardColor,
+      isEmbedded: isEmbedded,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -144,8 +156,13 @@ class _MovieShowCard extends StatelessWidget {
 class _GitHubRepoCard extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
+  final bool isEmbedded;
   
-  const _GitHubRepoCard({required this.entity, this.cardColor});
+  const _GitHubRepoCard({
+    required this.entity,
+    this.cardColor,
+    this.isEmbedded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +173,7 @@ class _GitHubRepoCard extends StatelessWidget {
 
     return _CardContainer(
       cardColor: cardColor,
+      isEmbedded: isEmbedded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -248,8 +266,13 @@ class _GitHubRepoCard extends StatelessWidget {
 class _QuoteCard extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
+  final bool isEmbedded;
   
-  const _QuoteCard({required this.entity, this.cardColor});
+  const _QuoteCard({
+    required this.entity,
+    this.cardColor,
+    this.isEmbedded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -258,6 +281,7 @@ class _QuoteCard extends StatelessWidget {
 
     return _CardContainer(
       cardColor: cardColor,
+      isEmbedded: isEmbedded,
       borderColor: LColors.brandAmber.withOpacity(0.25),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,8 +331,13 @@ class _QuoteCard extends StatelessWidget {
 class _GenericCard extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
+  final bool isEmbedded;
   
-  const _GenericCard({required this.entity, this.cardColor});
+  const _GenericCard({
+    required this.entity,
+    this.cardColor,
+    this.isEmbedded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -318,6 +347,7 @@ class _GenericCard extends StatelessWidget {
 
     return _CardContainer(
       cardColor: cardColor,
+      isEmbedded: isEmbedded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -411,11 +441,20 @@ class _CardContainer extends StatelessWidget {
   final Widget child;
   final Color? borderColor;
   final Color? cardColor;
+  final bool isEmbedded;
 
-  const _CardContainer({required this.child, this.borderColor, this.cardColor});
+  const _CardContainer({
+    required this.child,
+    this.borderColor,
+    this.cardColor,
+    this.isEmbedded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (isEmbedded) {
+      return child;
+    }
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     
     // Fallback if no card color provided
