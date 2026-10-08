@@ -76,9 +76,8 @@ class LatyrProScreen extends ConsumerWidget {
                         const SizedBox(height: LSpacing.md),
                         Text(
                           'Unlock Latyr Pro',
-                          style: LTypography.title2.copyWith(
+                          style: LTypography.roundedTitle2.copyWith(
                             color: labelColor,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: LSpacing.xs),
@@ -105,7 +104,7 @@ class LatyrProScreen extends ConsumerWidget {
                   CupertinoListSection.insetGrouped(
                     header: Text(
                       'MONTHLY USAGE',
-                      style: LTypography.caption1.copyWith(color: secondaryLabelColor),
+                      style: LTypography.roundedEyebrow.copyWith(color: secondaryLabelColor),
                     ),
                     children: [
                       CupertinoListTile(
@@ -113,7 +112,7 @@ class LatyrProScreen extends ConsumerWidget {
                         title: Text('Captures Used', style: LTypography.body.copyWith(color: labelColor)),
                         trailing: Text(
                           '$completedCount / $totalLimit',
-                          style: LTypography.subhead.copyWith(
+                          style: LTypography.subhead.rounded.copyWith(
                             color: secondaryLabelColor,
                             fontWeight: FontWeight.w600,
                           ),
@@ -149,7 +148,7 @@ class LatyrProScreen extends ConsumerWidget {
                   CupertinoListSection.insetGrouped(
                     header: Text(
                       'PRO FEATURES INCLUDED',
-                      style: LTypography.caption1.copyWith(color: secondaryLabelColor),
+                      style: LTypography.roundedEyebrow.copyWith(color: secondaryLabelColor),
                     ),
                     children: [
                       CupertinoListTile(
@@ -174,7 +173,7 @@ class LatyrProScreen extends ConsumerWidget {
                   CupertinoListSection.insetGrouped(
                     header: Text(
                       'ABOUT',
-                      style: LTypography.caption1.copyWith(color: secondaryLabelColor),
+                      style: LTypography.roundedEyebrow.copyWith(color: secondaryLabelColor),
                     ),
                     children: [
                       CupertinoListTile(

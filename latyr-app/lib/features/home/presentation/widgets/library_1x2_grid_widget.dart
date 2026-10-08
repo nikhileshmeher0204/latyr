@@ -42,7 +42,7 @@ class Library1x2GridWidget extends StatelessWidget {
                 const SizedBox(height: LSpacing.md),
                 Text(
                   'Movies & Shows',
-                  style: LTypography.footnoteSemibold.copyWith(
+                  style: LTypography.footnoteSemibold.rounded.copyWith(
                     fontWeight: FontWeight.w700,
                     color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF121316),
                     letterSpacing: -0.15,
@@ -52,7 +52,7 @@ class Library1x2GridWidget extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '$moviesCount saved',
-                  style: LTypography.caption2.copyWith(
+                  style: LTypography.caption2.rounded.copyWith(
                     color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6D7A),
                     fontWeight: FontWeight.w500,
                   ),
@@ -81,7 +81,7 @@ class Library1x2GridWidget extends StatelessWidget {
                 const SizedBox(height: LSpacing.md),
                 Text(
                   'GitHub Repos',
-                  style: LTypography.footnoteSemibold.copyWith(
+                  style: LTypography.footnoteSemibold.rounded.copyWith(
                     fontWeight: FontWeight.w700,
                     color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF121316),
                     letterSpacing: -0.15,
@@ -91,7 +91,7 @@ class Library1x2GridWidget extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '$reposCount saved',
-                  style: LTypography.caption2.copyWith(
+                  style: LTypography.caption2.rounded.copyWith(
                     color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6D7A),
                     fontWeight: FontWeight.w500,
                   ),

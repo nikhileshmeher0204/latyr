@@ -72,7 +72,7 @@ class ForYouCardWidget extends StatelessWidget {
                 const SizedBox(height: LSpacing.xs),
                 Text(
                   title,
-                  style: LTypography.footnoteSemibold.copyWith(
+                  style: LTypography.footnoteSemibold.rounded.copyWith(
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.15,
                   ),

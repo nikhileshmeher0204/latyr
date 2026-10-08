@@ -151,10 +151,12 @@ class _LatyrRichSummaryState extends State<LatyrRichSummary> {
 
     final baseStyle = widget.style ??
         TextStyle(
+          fontFamily: 'Inter',
           color: primaryTextColor.withValues(alpha: 0.92),
           fontSize: widget.fontSize ?? 15.5,
           height: widget.lineHeight ?? 1.58,
           fontWeight: FontWeight.w400,
+          letterSpacing: -0.15,
         );
 
     final spans = <InlineSpan>[];

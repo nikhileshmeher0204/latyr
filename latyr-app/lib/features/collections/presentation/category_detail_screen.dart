@@ -26,7 +26,7 @@ class CategoryDetailScreen extends ConsumerWidget {
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGroupedBackground.resolveFrom(context),
       navigationBar: CupertinoNavigationBar(
-        middle: Text(collection.categoryName, style: LTypography.headline.copyWith(color: labelColor)),
+        middle: Text(collection.categoryName, style: LTypography.headline.rounded.copyWith(color: labelColor)),
         previousPageTitle: 'Collections',
       ),
       child: SafeArea(
@@ -48,9 +48,8 @@ class CategoryDetailScreen extends ConsumerWidget {
                       const SizedBox(height: LSpacing.base),
                       Text(
                         'Empty Collection',
-                        style: LTypography.title2.copyWith(
+                        style: LTypography.roundedTitle2.copyWith(
                           color: labelColor,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: LSpacing.xs),
@@ -74,7 +73,7 @@ class CategoryDetailScreen extends ConsumerWidget {
                       child: CupertinoListSection.insetGrouped(
                         header: Text(
                           'SUB-COLLECTIONS',
-                          style: LTypography.caption1.copyWith(color: secondaryColor),
+                          style: LTypography.roundedEyebrow.copyWith(color: secondaryColor),
                         ),
                         children: subCategories.map((subGroup) {
                           return CupertinoListTile.notched(
@@ -95,14 +94,14 @@ class CategoryDetailScreen extends ConsumerWidget {
                             ),
                             title: Text(
                               subGroup.subCategoryName,
-                              style: LTypography.body.copyWith(
+                              style: LTypography.body.rounded.copyWith(
                                 color: labelColor,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             additionalInfo: Text(
                               '${subGroup.captures.length}',
-                              style: LTypography.subhead.copyWith(
+                              style: LTypography.subhead.rounded.copyWith(
                                 color: secondaryColor,
                                 fontWeight: FontWeight.w600,
                               ),

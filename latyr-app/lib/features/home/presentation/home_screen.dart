@@ -12,6 +12,7 @@ import 'package:latyr_app/features/capture/presentation/capture_providers.dart';
 import 'package:latyr_app/features/home/presentation/home_providers.dart';
 import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/features/feed/presentation/screens/capture_detail_screen.dart';
+import 'package:latyr_app/features/feed/presentation/capture_feed_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -140,31 +141,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: btnBg,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            Navigator.of(context).push(
+              CupertinoPageRoute(
+                builder: (_) => const CaptureFeedScreen(),
               ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Icon(CupertinoIcons.book, size: 16, color: iconColor),
-              const SizedBox(width: 6),
-              Text(
-                'All Captures',
-                style: LTypography.caption1.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: textColor,
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: btnBg,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
-              ),
-            ],
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(CupertinoIcons.book, size: 16, color: iconColor),
+                const SizedBox(width: 6),
+                Text(
+                  'All Captures',
+                  style: LTypography.roundedPill.copyWith(
+                    color: textColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         Row(
@@ -202,7 +212,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.04),
+            color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -244,7 +254,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(width: 8),
                 Text(
                   _getWeekday(now.weekday),
-                  style: LTypography.caption1.copyWith(
+                  style: LTypography.caption1.rounded.copyWith(
                     fontWeight: FontWeight.w600,
                     color: CupertinoColors.systemGrey,
                   ),
@@ -278,7 +288,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(width: 4),
                   Text(
                     "${weather.temperature.toStringAsFixed(0)}°",
-                    style: LTypography.footnote.copyWith(
+                    style: LTypography.footnote.rounded.copyWith(
                       fontWeight: FontWeight.w600,
                       color: textColor,
                     ),
@@ -434,16 +444,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 Text(
                   value,
-                  style: LTypography.headline.copyWith(
-                    fontWeight: FontWeight.bold,
+                  style: LTypography.roundedNumber.copyWith(
                     color: counterColor,
-                    height: 1.1,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   label,
-                  style: LTypography.caption2.copyWith(
+                  style: LTypography.caption2.rounded.copyWith(
                     color: labelColor,
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -561,7 +569,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.2),
+              color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.2),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -584,7 +592,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(width: 8),
                 Text(
                   'Create a Latyr',
-                  style: LTypography.buttonLabel.copyWith(
+                  style: LTypography.buttonLabel.rounded.copyWith(
                     color: isDark
                         ? CupertinoColors.black
                         : CupertinoColors.white,
@@ -808,7 +816,7 @@ class _StackedFeedCarouselState extends State<StackedFeedCarousel> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.black.withOpacity(isDark ? 0.4 : 0.1),
+            color: CupertinoColors.black.withValues(alpha: isDark ? 0.4 : 0.1),
             blurRadius: 15,
             spreadRadius: 2,
           ),

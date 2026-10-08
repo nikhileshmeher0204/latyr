@@ -162,10 +162,8 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
                     Flexible(
                       child: Text(
                         (widget.capture.subCategory ?? widget.capture.category ?? 'Moment').toUpperCase(),
-                        style: LTypography.caption2.copyWith(
+                        style: LTypography.roundedEyebrow.copyWith(
                           fontSize: 9.5,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
                           color: textColor.withValues(alpha: 0.85),
                         ),
                         maxLines: 1,
@@ -219,11 +217,13 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
                         const SizedBox(width: 4),
                         Text(
                           _formatCompactTime(widget.capture.createdAt),
-                          style: TextStyle(
+                          style: const TextStyle(
+                            fontFamily: LTypography.roundedFontFamily,
                             fontSize: 13.0,
                             fontWeight: FontWeight.w600,
-                            color: textColor.withValues(alpha: 0.85),
                             letterSpacing: -0.2,
+                          ).copyWith(
+                            color: textColor.withValues(alpha: 0.85),
                           ),
                         ),
                       ],
@@ -242,11 +242,13 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
                         const SizedBox(width: 4),
                         Text(
                           '$insightsCount',
-                          style: TextStyle(
+                          style: const TextStyle(
+                            fontFamily: LTypography.roundedFontFamily,
                             fontSize: 13.0,
                             fontWeight: FontWeight.w600,
-                            color: textColor.withValues(alpha: 0.85),
                             letterSpacing: -0.2,
+                          ).copyWith(
+                            color: textColor.withValues(alpha: 0.85),
                           ),
                         ),
                       ],
@@ -256,29 +258,31 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
               },
             ),
             const SizedBox(height: 14),
-            // Title (3 lines)
+            // Title (3 lines) - Apple SF Pro Rounded Title Flavor
             Text(
               widget.capture.title ?? 'Untitled',
               style: TextStyle(
+                fontFamily: LTypography.roundedFontFamily,
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
                 color: textColor,
                 height: 1.2,
-                letterSpacing: -0.2,
+                letterSpacing: -0.35,
               ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 10),
-            // Summary
+            // Summary - Standard Inter Reading Flavor
             Flexible(
               child: Text(
                 _cleanPreviewSummary(widget.capture.summary ?? 'A captured moment in time.'),
                 style: TextStyle(
-                  fontSize: 12,
+                  fontFamily: LTypography.fontFamily,
+                  fontSize: 12.5,
                   color: textColor.withValues(alpha: isDark ? 0.75 : 0.70),
                   height: 1.4,
-                  letterSpacing: -0.1,
+                  letterSpacing: -0.15,
                 ),
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,

@@ -7,6 +7,9 @@ import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:latyr_app/features/feed/presentation/screens/capture_detail_screen.dart';
 import 'package:soft_edge_blur/soft_edge_blur.dart';
 
+const String _fontFamily = 'Inter';
+const String _roundedFontFamily = 'InterRounded';
+
 enum MediaBadgeType {
   reel,
   video,
@@ -233,6 +236,7 @@ class _CaptureCardWidgetState extends State<CaptureCardWidget> {
                     Text(
                       title,
                       style: TextStyle(
+                        fontFamily: _roundedFontFamily,
                         color: titleColor,
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
@@ -315,6 +319,7 @@ class _CaptureCardWidgetState extends State<CaptureCardWidget> {
                     Text(
                       title,
                       style: TextStyle(
+                        fontFamily: _roundedFontFamily,
                         color: titleColor,
                         fontSize: 14.5,
                         fontWeight: FontWeight.w600,
@@ -543,6 +548,7 @@ class _CaptureCardWidgetState extends State<CaptureCardWidget> {
               Text(
                 'Analyzing…',
                 style: TextStyle(
+                  fontFamily: _roundedFontFamily,
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
@@ -562,6 +568,7 @@ class _CaptureCardWidgetState extends State<CaptureCardWidget> {
           child: const Text(
             'Failed',
             style: TextStyle(
+              fontFamily: _roundedFontFamily,
               color: Colors.white,
               fontSize: 10,
               fontWeight: FontWeight.w600,
@@ -597,6 +604,7 @@ class _CaptureCardWidgetState extends State<CaptureCardWidget> {
           TextSpan(
             text: '  •  ',
             style: TextStyle(
+              fontFamily: _fontFamily,
               color: separatorColor,
               fontSize: fontSize,
               fontWeight: FontWeight.w600,
@@ -613,6 +621,7 @@ class _CaptureCardWidgetState extends State<CaptureCardWidget> {
         TextSpan(
           text: category.toUpperCase(),
           style: TextStyle(
+            fontFamily: _fontFamily,
             color: subtitleColor,
             fontSize: fontSize,
             fontWeight: FontWeight.w600,
@@ -632,6 +641,7 @@ class _CaptureCardWidgetState extends State<CaptureCardWidget> {
         TextSpan(
           text: intent.toUpperCase(),
           style: TextStyle(
+            fontFamily: _fontFamily,
             color: subtitleColor.withValues(alpha: 0.80),
             fontSize: fontSize,
             fontWeight: FontWeight.w500,
@@ -649,6 +659,7 @@ class _CaptureCardWidgetState extends State<CaptureCardWidget> {
         TextSpan(
           text: 'CC',
           style: TextStyle(
+            fontFamily: _fontFamily,
             color: subtitleColor.withValues(alpha: 0.80),
             fontSize: fontSize,
             fontWeight: FontWeight.w600,
@@ -682,9 +693,10 @@ class _CaptureCardWidgetState extends State<CaptureCardWidget> {
         TextSpan(
           text: '$entityCount',
           style: TextStyle(
+            fontFamily: _roundedFontFamily,
             color: subtitleColor.withValues(alpha: 0.80),
             fontSize: fontSize,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             shadows: _textShadows,
           ),
         ),

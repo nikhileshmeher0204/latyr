@@ -53,7 +53,7 @@ class CollectionsScreen extends ConsumerWidget {
                   child: CupertinoListSection.insetGrouped(
                     header: Text(
                       'SMART COLLECTIONS',
-                      style: LTypography.caption1.copyWith(color: secondaryColor),
+                      style: LTypography.roundedEyebrow.copyWith(color: secondaryColor),
                     ),
                     children: collections.map((col) {
                       final count = col.captures.length;
@@ -75,14 +75,14 @@ class CollectionsScreen extends ConsumerWidget {
                         ),
                         title: Text(
                           col.categoryName,
-                          style: LTypography.body.copyWith(
+                          style: LTypography.body.rounded.copyWith(
                             color: labelColor,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         additionalInfo: Text(
                           '$count',
-                          style: LTypography.subhead.copyWith(
+                          style: LTypography.subhead.rounded.copyWith(
                             color: secondaryColor,
                             fontWeight: FontWeight.w600,
                           ),

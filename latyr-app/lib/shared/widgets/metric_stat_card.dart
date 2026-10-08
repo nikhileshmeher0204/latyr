@@ -34,16 +34,16 @@ class MetricStatCard extends StatelessWidget {
           children: [
             Text(
               value,
-              style: LTypography.largeNumber.copyWith(
+              style: LTypography.roundedNumber.copyWith(
                 color: valueColor ?? defaultValueColor,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               label,
-              style: LTypography.caption2.copyWith(
+              style: LTypography.caption2.rounded.copyWith(
                 color: labelColor,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],

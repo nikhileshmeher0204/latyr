@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:latyr_app/core/design/latyr_colors.dart';
 import 'package:latyr_app/core/theme/app_theme.dart';
 import 'package:latyr_app/features/collections/presentation/collections_screen.dart';
 import 'package:latyr_app/features/home/presentation/home_screen.dart';
@@ -22,6 +21,16 @@ class LatyrApp extends StatelessWidget {
         DefaultMaterialLocalizations.delegate,
       ],
       theme: AppTheme.cupertinoTheme(),
+      builder: (context, child) {
+        return DefaultTextStyle.merge(
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            letterSpacing: -0.15,
+            decoration: TextDecoration.none,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       home: const LatyrTabNavigationScreen(),
     );
   }
@@ -211,7 +220,7 @@ class _LatyrTabNavigationScreenState extends State<LatyrTabNavigationScreen> {
                 label,
                 style: TextStyle(
                   fontSize: 10,
-                  fontFamily: 'Inter',
+                  fontFamily: 'InterRounded',
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: isSelected ? textColor : inactiveTextColor,
                   letterSpacing: 0.1,

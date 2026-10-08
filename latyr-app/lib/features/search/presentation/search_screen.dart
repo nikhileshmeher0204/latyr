@@ -129,7 +129,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             child: Center(
                               child: Text(
                                 scope,
-                                style: LTypography.caption1.copyWith(
+                                style: LTypography.caption1.rounded.copyWith(
                                   color: isSelected ? CupertinoColors.white : secondaryColor,
                                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                                 ),
@@ -164,7 +164,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       const SizedBox(height: LSpacing.md),
                       Text(
                         _query.isEmpty ? 'No items in this scope' : 'No results found for "$_query"',
-                        style: LTypography.headline.copyWith(
+                        style: LTypography.headline.rounded.copyWith(
                           color: labelColor,
                           fontWeight: FontWeight.w600,
                         ),
@@ -255,7 +255,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         children: [
           Text(
             entity.title,
-            style: LTypography.body.copyWith(
+            style: LTypography.body.rounded.copyWith(
               color: labelColor,
               fontWeight: FontWeight.w600,
             ),

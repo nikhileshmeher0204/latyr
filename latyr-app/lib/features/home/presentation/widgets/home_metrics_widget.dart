@@ -62,16 +62,16 @@ class HomeMetricsWidget extends StatelessWidget {
                     children: [
                       Text(
                         '$processedCount',
-                        style: LTypography.largeNumber.copyWith(
+                        style: LTypography.roundedNumber.copyWith(
                           color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF121316),
                         ),
                       ),
                       const SizedBox(height: 1),
                       Text(
                         'Processed',
-                        style: LTypography.caption2.copyWith(
+                        style: LTypography.caption2.rounded.copyWith(
                           color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6D7A),
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -134,7 +134,7 @@ class HomeMetricsWidget extends StatelessWidget {
                         isActivelyProcessing
                             ? '$processingCount / $totalInQueue'
                             : '0',
-                        style: LTypography.largeNumber.copyWith(
+                        style: LTypography.roundedNumber.copyWith(
                           color: isActivelyProcessing
                               ? LColors.brandAmberDark
                               : (isDark
@@ -145,13 +145,13 @@ class HomeMetricsWidget extends StatelessWidget {
                       const SizedBox(height: 1),
                       Text(
                         isActivelyProcessing ? 'In queue' : 'Idle queue',
-                        style: LTypography.caption2.copyWith(
+                        style: LTypography.caption2.rounded.copyWith(
                           color: isActivelyProcessing
                               ? LColors.brandAmberDark
                               : (isDark
                                   ? const Color(0xFF8E8E93)
                                   : const Color(0xFF6E6D7A)),
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

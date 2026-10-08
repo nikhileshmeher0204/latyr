@@ -40,23 +40,35 @@ class AppTheme {
       textTheme: CupertinoTextThemeData(
         primaryColor: LColors.brandAmber,
         textStyle: LTypography.body.copyWith(
-          fontFamily: 'Inter',
+          fontFamily: LTypography.fontFamily,
           color: LColors.label,
         ),
         navTitleTextStyle: LTypography.headline.copyWith(
-          fontFamily: 'Inter',
+          fontFamily: LTypography.fontFamily,
           color: LColors.label,
         ),
         navLargeTitleTextStyle: LTypography.largeTitle.copyWith(
-          fontFamily: 'Inter',
+          fontFamily: LTypography.fontFamily,
           color: LColors.label,
         ),
+        navActionTextStyle: LTypography.body.copyWith(
+          fontFamily: LTypography.fontFamily,
+          color: LColors.brandAmber,
+        ),
         actionTextStyle: LTypography.body.copyWith(
-          fontFamily: 'Inter',
+          fontFamily: LTypography.fontFamily,
           color: LColors.brandAmber,
         ),
         tabLabelTextStyle: LTypography.caption2Bold.copyWith(
-          fontFamily: 'Inter',
+          fontFamily: LTypography.fontFamily,
+        ),
+        pickerTextStyle: LTypography.title3.copyWith(
+          fontFamily: LTypography.fontFamily,
+          color: LColors.label,
+        ),
+        dateTimePickerTextStyle: LTypography.title3.copyWith(
+          fontFamily: LTypography.fontFamily,
+          color: LColors.label,
         ),
       ),
     );

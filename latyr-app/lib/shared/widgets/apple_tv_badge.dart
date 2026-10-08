@@ -65,6 +65,7 @@ class AppleTvBadge extends StatelessWidget {
           Text(
             label.toUpperCase(),
             style: TextStyle(
+              fontFamily: 'InterRounded',
               color: isSolid ? Colors.black87 : Colors.white.withValues(alpha: 0.9),
               fontSize: fontSize,
               fontWeight: FontWeight.w700,

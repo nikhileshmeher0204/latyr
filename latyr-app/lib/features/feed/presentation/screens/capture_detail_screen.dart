@@ -644,9 +644,10 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                   Text(
                     'Summary',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontFamily: LTypography.roundedFontFamily,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: -0.1,
+                      letterSpacing: -0.3,
                       color: titleColor,
                     ),
                   ),
@@ -727,9 +728,10 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                   Text(
                     'Capture Intents',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontFamily: LTypography.roundedFontFamily,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: -0.1,
+                      letterSpacing: -0.3,
                       color: titleColor,
                     ),
                   ),
@@ -738,8 +740,10 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
               Text(
                 '${entities.length} ${entities.length == 1 ? 'item' : 'items'}',
                 style: TextStyle(
+                  fontFamily: LTypography.roundedFontFamily,
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
+                  letterSpacing: -0.1,
                   color: subtextColor,
                 ),
               ),
@@ -835,9 +839,10 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                   Text(
                     sectionTitle,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontFamily: LTypography.roundedFontFamily,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: -0.1,
+                      letterSpacing: -0.3,
                       color: titleColor,
                     ),
                   ),
@@ -855,9 +860,10 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                       child: Text(
                         'Caption',
                         style: TextStyle(
+                          fontFamily: 'Inter',
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          letterSpacing: 0.2,
+                          letterSpacing: -0.1,
                           color: _selectedSourceTab == 0 ? textColor : subtextColor,
                         ),
                       ),
@@ -867,9 +873,10 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                       child: Text(
                         'Transcript',
                         style: TextStyle(
+                          fontFamily: 'Inter',
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          letterSpacing: 0.2,
+                          letterSpacing: -0.1,
                           color: _selectedSourceTab == 1 ? textColor : subtextColor,
                         ),
                       ),
@@ -894,10 +901,12 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
               displayText,
               key: ValueKey<String>('${_selectedSourceTab}_$_isSourceTextExpanded'),
               style: TextStyle(
+                fontFamily: 'Inter',
                 color: textColor.withValues(alpha: 0.88),
                 fontSize: 14,
                 height: 1.55,
                 fontWeight: FontWeight.w400,
+                letterSpacing: -0.15,
               ),
             ),
           ),
@@ -918,9 +927,11 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                     Text(
                       _isSourceTextExpanded ? 'Show less' : 'Show more',
                       style: TextStyle(
+                        fontFamily: 'Inter',
                         color: subtextColor,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
+                        letterSpacing: -0.1,
                       ),
                     ),
                     const SizedBox(width: 3),
@@ -954,18 +965,22 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                 Text(
                   'AI Analysis in Progress',
                   style: TextStyle(
+                    fontFamily: 'Inter',
                     color: textColor,
                     fontWeight: FontWeight.w800,
                     fontSize: 15,
+                    letterSpacing: -0.3,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Extracting transcription, tools, repos & highlights...',
                   style: TextStyle(
+                    fontFamily: 'Inter',
                     color: textColor.withValues(alpha: 0.75),
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
+                    letterSpacing: -0.1,
                   ),
                 ),
               ],

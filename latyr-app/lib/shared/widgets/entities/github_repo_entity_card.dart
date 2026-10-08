@@ -76,7 +76,7 @@ class GitHubRepoEntityCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: LTypography.footnoteSemibold.copyWith(
+                  style: LTypography.footnoteSemibold.rounded.copyWith(
                     color: isDark ? const Color(0xFFF5F5F7) : const Color(0xFF121316),
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.2,
@@ -90,7 +90,7 @@ class GitHubRepoEntityCard extends StatelessWidget {
                     if (language != null) ...[
                       Text(
                         language!,
-                        style: LTypography.caption2Bold.copyWith(
+                        style: LTypography.caption2Bold.rounded.copyWith(
                           color: LColors.royalIndigo,
                         ),
                       ),
@@ -103,7 +103,7 @@ class GitHubRepoEntityCard extends StatelessWidget {
                     ],
                     Text(
                       stars != null ? '★ $stars' : 'GitHub Repo',
-                      style: LTypography.caption2.copyWith(
+                      style: LTypography.caption2.rounded.copyWith(
                         color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6D7A),
                       ),
                     ),

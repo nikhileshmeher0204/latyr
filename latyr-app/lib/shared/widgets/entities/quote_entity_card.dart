@@ -56,7 +56,7 @@ class QuoteEntityCard extends StatelessWidget {
             const SizedBox(height: LSpacing.md - 2),
             Text(
               authorOrAttribution!,
-              style: LTypography.caption2Bold.copyWith(
+              style: LTypography.caption2Bold.rounded.copyWith(
                 color: LColors.brandAmberLight.withValues(alpha: 0.85),
               ),
             ),

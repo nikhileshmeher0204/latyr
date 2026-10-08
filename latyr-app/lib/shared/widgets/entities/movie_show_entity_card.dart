@@ -80,7 +80,7 @@ class MovieShowEntityCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: LTypography.subheadlineMedium.copyWith(
+                  style: LTypography.subheadlineMedium.rounded.copyWith(
                     color: LColors.staticWhite,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.2,
@@ -94,7 +94,7 @@ class MovieShowEntityCard extends StatelessWidget {
                     if (rating != null) ...[
                       Text(
                         '${rating!.toStringAsFixed(1)} ★',
-                        style: LTypography.caption1Bold.copyWith(
+                        style: LTypography.caption1Bold.rounded.copyWith(
                           color: LColors.brandAmberLight,
                         ),
                       ),

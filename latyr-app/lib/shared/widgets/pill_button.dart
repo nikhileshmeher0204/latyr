@@ -123,7 +123,7 @@ class _PillButtonState extends State<PillButton> with SingleTickerProviderStateM
               ],
               Text(
                 widget.text,
-                style: LTypography.pillLabel.copyWith(color: textColor),
+                style: LTypography.pillLabel.rounded.copyWith(color: textColor),
               ),
             ],
           ),

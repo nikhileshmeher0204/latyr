@@ -25,7 +25,7 @@ class SubCategoryDetailScreen extends ConsumerWidget {
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           subCategoryGroup.subCategoryName,
-          style: LTypography.headline.copyWith(color: labelColor),
+          style: LTypography.headline.rounded.copyWith(color: labelColor),
         ),
         previousPageTitle: 'Back',
       ),
@@ -40,7 +40,7 @@ class SubCategoryDetailScreen extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(LSpacing.lg),
                         decoration: BoxDecoration(
-                          color: parentCategoryColor.withOpacity(0.15),
+                          color: parentCategoryColor.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(CupertinoIcons.folder_open, size: 40, color: parentCategoryColor),
@@ -48,9 +48,8 @@ class SubCategoryDetailScreen extends ConsumerWidget {
                       const SizedBox(height: LSpacing.base),
                       Text(
                         'Empty Sub-Collection',
-                        style: LTypography.title2.copyWith(
+                        style: LTypography.roundedTitle2.copyWith(
                           color: labelColor,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],

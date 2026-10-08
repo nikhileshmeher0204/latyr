@@ -75,7 +75,7 @@ class PillBadge extends StatelessWidget {
           ],
           Text(
             label,
-            style: LTypography.caption2Bold.copyWith(color: textColor),
+            style: LTypography.caption2Bold.rounded.copyWith(color: textColor),
           ),
         ],
       ),

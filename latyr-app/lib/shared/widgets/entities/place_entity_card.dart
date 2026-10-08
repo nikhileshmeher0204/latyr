@@ -51,7 +51,7 @@ class PlaceEntityCard extends StatelessWidget {
                   Flexible(
                     child: Text(
                       location,
-                      style: LTypography.caption1Bold.copyWith(
+                      style: LTypography.caption1Bold.rounded.copyWith(
                         color: LColors.staticWhite,
                       ),
                       maxLines: 1,
@@ -65,7 +65,7 @@ class PlaceEntityCard extends StatelessWidget {
           const SizedBox(height: LSpacing.md - 2),
           Text(
             name,
-            style: LTypography.footnoteSemibold.copyWith(
+            style: LTypography.footnoteSemibold.rounded.copyWith(
               color: LColors.staticWhite,
               fontWeight: FontWeight.w700,
             ),

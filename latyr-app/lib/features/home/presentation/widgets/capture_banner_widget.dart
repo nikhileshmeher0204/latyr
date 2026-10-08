@@ -24,7 +24,7 @@ class CaptureBannerWidget extends StatelessWidget {
               children: [
                 Text(
                   'Share anything. Forget nothing.',
-                  style: LTypography.headline.copyWith(
+                  style: LTypography.headline.rounded.copyWith(
                     color: LColors.staticWhite,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.2,

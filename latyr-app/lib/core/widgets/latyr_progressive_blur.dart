@@ -48,6 +48,8 @@
 
 library;
 
+// ignore_for_file: prefer_initializing_formals
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -201,7 +203,6 @@ class _ShaderProgressiveBlur extends SingleChildRenderObjectWidget {
 }
 
 class _RenderShaderProgressiveBlur extends RenderProxyBox {
-  // ignore: prefer_initializing_formals
   _RenderShaderProgressiveBlur({
     required ui.FragmentProgram program,
     required double sigmaStart,

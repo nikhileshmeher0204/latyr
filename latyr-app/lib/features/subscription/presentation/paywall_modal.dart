@@ -69,7 +69,7 @@ class PaywallModal extends StatelessWidget {
                 ),
                 child: Text(
                   'LATYR PRO',
-                  style: LTypography.caption2Bold.copyWith(
+                  style: LTypography.caption2Bold.rounded.copyWith(
                     color: LColors.staticWhite,
                     letterSpacing: 1.4,
                     fontWeight: FontWeight.w900,
@@ -83,7 +83,7 @@ class PaywallModal extends StatelessWidget {
             Text(
               'Unlock Unlimited Knowledge',
               textAlign: TextAlign.center,
-              style: LTypography.title2.copyWith(
+              style: LTypography.roundedTitle2.copyWith(
                 color: LColors.staticWhite,
                 fontWeight: FontWeight.w800,
               ),
@@ -121,7 +121,7 @@ class PaywallModal extends StatelessWidget {
                       ),
                       Text(
                         '$usedCaptures / $quotaLimit captures',
-                        style: LTypography.caption1Bold.copyWith(
+                        style: LTypography.caption1Bold.rounded.copyWith(
                           color: LColors.staticWhite,
                         ),
                       ),
@@ -193,7 +193,7 @@ class PaywallModal extends StatelessWidget {
               },
               child: Text(
                 'Upgrade to Pro — \$4.99 / month',
-                style: LTypography.buttonLabel.copyWith(
+                style: LTypography.buttonLabel.rounded.copyWith(
                   color: LColors.staticWhite,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.2,
@@ -238,7 +238,7 @@ class PaywallModal extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: LTypography.footnoteSemibold.copyWith(
+                  style: LTypography.footnoteSemibold.rounded.copyWith(
                     color: LColors.staticWhite,
                     fontWeight: FontWeight.w700,
                   ),
@@ -265,7 +265,7 @@ class PaywallModal extends StatelessWidget {
       builder: (_) => CupertinoAlertDialog(
         title: Text(
           'Upgraded to PRO!',
-          style: LTypography.headline.copyWith(fontWeight: FontWeight.w700),
+          style: LTypography.headline.rounded.copyWith(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'RevenueCat Sandbox: Upgraded to Latyr PRO tier.',

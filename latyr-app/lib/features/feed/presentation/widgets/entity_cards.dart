@@ -4,6 +4,9 @@ import 'package:latyr_app/core/design/latyr_colors.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+const String _fontFamily = 'Inter';
+const String _roundedFontFamily = 'InterRounded';
+
 class EntityCardRouter extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
@@ -81,10 +84,11 @@ class _MovieShowCard extends StatelessWidget {
                       child: Text(
                         entity.title,
                         style: TextStyle(
+                          fontFamily: _roundedFontFamily,
                           color: textColor,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          letterSpacing: -0.2,
+                          letterSpacing: -0.25,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -101,9 +105,11 @@ class _MovieShowCard extends StatelessWidget {
                   Text(
                     releaseYear,
                     style: TextStyle(
-                      color: textColor.withOpacity(0.5),
+                      fontFamily: _fontFamily,
+                      color: textColor.withValues(alpha: 0.5),
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
+                      letterSpacing: -0.1,
                     ),
                   ),
                 ],
@@ -112,9 +118,11 @@ class _MovieShowCard extends StatelessWidget {
                   Text(
                     entity.description!,
                     style: TextStyle(
-                      color: textColor.withOpacity(0.72),
+                      fontFamily: _fontFamily,
+                      color: textColor.withValues(alpha: 0.72),
                       fontSize: 12,
                       height: 1.35,
+                      letterSpacing: -0.1,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -182,7 +190,7 @@ class _GitHubRepoCard extends StatelessWidget {
               _buildIconSquare(
                 icon: CupertinoIcons.chevron_left_slash_chevron_right,
                 iconColor: const Color(0xFF64D2FF),
-                bgColor: const Color(0xFF64D2FF).withOpacity(0.15),
+                bgColor: const Color(0xFF64D2FF).withValues(alpha: 0.15),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -192,10 +200,11 @@ class _GitHubRepoCard extends StatelessWidget {
                     Text(
                       entity.title,
                       style: TextStyle(
+                        fontFamily: _roundedFontFamily,
                         color: textColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: -0.2,
+                        letterSpacing: -0.25,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -204,11 +213,16 @@ class _GitHubRepoCard extends StatelessWidget {
                     Row(
                       children: [
                         if (stars != null) ...[
-                          Icon(CupertinoIcons.star_fill, size: 10, color: textColor.withOpacity(0.5)),
+                          Icon(CupertinoIcons.star_fill, size: 10, color: textColor.withValues(alpha: 0.5)),
                           const SizedBox(width: 4),
                           Text(
                             stars,
-                            style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 11),
+                            style: TextStyle(
+                              fontFamily: _fontFamily,
+                              color: textColor.withValues(alpha: 0.5),
+                              fontSize: 11,
+                              letterSpacing: -0.1,
+                            ),
                           ),
                           const SizedBox(width: 10),
                         ],
@@ -224,7 +238,12 @@ class _GitHubRepoCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             language,
-                            style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 11),
+                            style: TextStyle(
+                              fontFamily: _fontFamily,
+                              color: textColor.withValues(alpha: 0.5),
+                              fontSize: 11,
+                              letterSpacing: -0.1,
+                            ),
                           ),
                         ],
                       ],
@@ -239,9 +258,11 @@ class _GitHubRepoCard extends StatelessWidget {
             Text(
               entity.description!,
               style: TextStyle(
-                color: textColor.withOpacity(0.72),
+                fontFamily: _fontFamily,
+                color: textColor.withValues(alpha: 0.72),
                 fontSize: 12,
                 height: 1.35,
+                letterSpacing: -0.1,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -282,7 +303,7 @@ class _QuoteCard extends StatelessWidget {
     return _CardContainer(
       cardColor: cardColor,
       isEmbedded: isEmbedded,
-      borderColor: LColors.brandAmber.withOpacity(0.25),
+      borderColor: LColors.brandAmber.withValues(alpha: 0.25),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -292,17 +313,19 @@ class _QuoteCard extends StatelessWidget {
               _buildIconSquare(
                 icon: CupertinoIcons.quote_bubble_fill,
                 iconColor: LColors.brandAmber,
-                bgColor: LColors.brandAmber.withOpacity(0.15),
+                bgColor: LColors.brandAmber.withValues(alpha: 0.15),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   '\u201C${entity.title}\u201D',
                   style: TextStyle(
+                    fontFamily: _fontFamily,
                     color: textColor,
                     fontSize: 13,
                     fontStyle: FontStyle.italic,
                     height: 1.4,
+                    letterSpacing: -0.1,
                   ),
                 ),
               ),
@@ -315,9 +338,11 @@ class _QuoteCard extends StatelessWidget {
               child: Text(
                 '\u2014 ${entity.description}',
                 style: TextStyle(
-                  color: textColor.withOpacity(0.6),
+                  fontFamily: _fontFamily,
+                  color: textColor.withValues(alpha: 0.6),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
+                  letterSpacing: -0.1,
                 ),
               ),
             ),
@@ -357,7 +382,7 @@ class _GenericCard extends StatelessWidget {
               _buildIconSquare(
                 icon: typeInfo.icon,
                 iconColor: typeInfo.color,
-                bgColor: typeInfo.color.withOpacity(0.15),
+                bgColor: typeInfo.color.withValues(alpha: 0.15),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -367,10 +392,11 @@ class _GenericCard extends StatelessWidget {
                     Text(
                       entity.title,
                       style: TextStyle(
+                        fontFamily: _roundedFontFamily,
                         color: textColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: -0.2,
+                        letterSpacing: -0.25,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -380,10 +406,11 @@ class _GenericCard extends StatelessWidget {
                       Text(
                         entity.entityType,
                         style: TextStyle(
-                          color: typeInfo.color.withOpacity(0.8),
+                          fontFamily: _fontFamily,
+                          color: typeInfo.color.withValues(alpha: 0.8),
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
+                          letterSpacing: 0.4,
                         ),
                       ),
                     ],
@@ -397,9 +424,11 @@ class _GenericCard extends StatelessWidget {
             Text(
               entity.description!,
               style: TextStyle(
-                color: textColor.withOpacity(0.72),
+                fontFamily: _fontFamily,
+                color: textColor.withValues(alpha: 0.72),
                 fontSize: 12,
                 height: 1.35,
+                letterSpacing: -0.1,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -458,13 +487,13 @@ class _CardContainer extends StatelessWidget {
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     
     // Fallback if no card color provided
-    final fallbackColor = isDark ? const Color(0x1A000000) : CupertinoColors.white.withOpacity(0.4);
+    final fallbackColor = isDark ? const Color(0x1A000000) : CupertinoColors.white.withValues(alpha: 0.4);
     
     // We apply border style matching home UI if cardColor is provided
     final hasCardColor = cardColor != null;
     final bColor = hasCardColor 
         ? (isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white)
-        : (borderColor ?? (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)));
+        : (borderColor ?? (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)));
     
     return Container(
       padding: const EdgeInsets.all(16),
@@ -477,7 +506,7 @@ class _CardContainer extends StatelessWidget {
         ),
         boxShadow: hasCardColor ? [
           BoxShadow(
-            color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.1),
+            color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.1),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -517,7 +546,7 @@ class _CtaButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.05),
+          color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -526,10 +555,11 @@ class _CtaButton extends StatelessWidget {
             Text(
               ctaText,
               style: TextStyle(
+                fontFamily: _fontFamily,
                 color: textColor,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
+                letterSpacing: 0.3,
               ),
             ),
             const SizedBox(width: 4),
@@ -554,20 +584,22 @@ class _PillBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
+        color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 10)),
+          Text(emoji, style: const TextStyle(fontFamily: _fontFamily, fontSize: 10)),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
+              fontFamily: _fontFamily,
               color: textColor,
               fontSize: 10,
               fontWeight: FontWeight.w800,
+              letterSpacing: 0.2,
             ),
           ),
         ],

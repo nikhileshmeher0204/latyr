@@ -149,7 +149,7 @@ class _FilterPillState extends State<_FilterPill> with SingleTickerProviderState
               ],
               Text(
                 widget.item.label,
-                style: LTypography.footnoteSemibold.copyWith(color: textColor),
+                style: LTypography.footnoteSemibold.rounded.copyWith(color: textColor),
               ),
             ],
           ),

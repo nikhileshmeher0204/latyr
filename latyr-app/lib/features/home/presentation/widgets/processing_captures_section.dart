@@ -40,7 +40,7 @@ class ProcessingCapturesSection extends ConsumerWidget {
               children: [
                 Text(
                   'Captures status',
-                  style: LTypography.headline.copyWith(
+                  style: LTypography.headline.rounded.copyWith(
                     color: labelColor,
                     fontWeight: FontWeight.w700,
                   ),
@@ -75,7 +75,7 @@ class ProcessingCapturesSection extends ConsumerWidget {
                         const SizedBox(width: LSpacing.xs),
                         Text(
                           '${activeCaptures.length} active',
-                          style: LTypography.caption2Bold.copyWith(
+                          style: LTypography.caption2Bold.rounded.copyWith(
                             color: LColors.brandAmberDark,
                           ),
                         ),
@@ -189,7 +189,7 @@ class ProcessingCapturesSection extends ConsumerWidget {
                   item.originalCaption?.isNotEmpty == true
                       ? item.originalCaption!
                       : (item.originalUrl ?? 'Capture item'),
-                  style: LTypography.footnote.copyWith(
+                  style: LTypography.footnote.rounded.copyWith(
                     color: labelColor,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.15,

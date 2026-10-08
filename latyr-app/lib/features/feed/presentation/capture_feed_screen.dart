@@ -71,9 +71,8 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
                     children: [
                       Text(
                         'New Capture',
-                        style: LTypography.title2.copyWith(
+                        style: LTypography.roundedTitle2.copyWith(
                           color: labelColor,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       CupertinoButton(
@@ -243,7 +242,7 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
                             children: [
                               Text(
                                 'AI Extracting ${inProgress.length} ${inProgress.length == 1 ? 'item' : 'items'}…',
-                                style: LTypography.subhead.copyWith(
+                                style: LTypography.subhead.rounded.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: labelColor,
                                 ),
@@ -356,9 +355,8 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
             const SizedBox(height: LSpacing.base),
             Text(
               'No Captures Yet',
-              style: LTypography.title2.copyWith(
+              style: LTypography.roundedTitle2.copyWith(
                 color: labelColor,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: LSpacing.xs),
@@ -533,7 +531,7 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
           Expanded(
             child: Text(
               title,
-              style: LTypography.title1.copyWith(
+              style: LTypography.title1.rounded.copyWith(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,
@@ -549,7 +547,7 @@ class _CaptureFeedScreenState extends ConsumerState<CaptureFeedScreen> {
             ),
             child: Text(
               '$count ${count == 1 ? 'item' : 'items'}',
-              style: LTypography.caption1.copyWith(
+              style: LTypography.caption1.rounded.copyWith(
                 fontWeight: FontWeight.w600,
                 color: secondaryColor,
               ),
@@ -679,7 +677,7 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
                         const SizedBox(width: 4),
                         Text(
                           catName,
-                          style: LTypography.subhead.copyWith(
+                          style: LTypography.subhead.rounded.copyWith(
                             color: isSelected ? LColors.staticWhite : secondaryColor,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                           ),

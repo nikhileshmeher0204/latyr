@@ -182,7 +182,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         children: [
           Text(
             entity.title,
-            style: LTypography.footnoteSemibold.copyWith(
+            style: LTypography.footnoteSemibold.rounded.copyWith(
               color: labelColor,
               fontWeight: FontWeight.w700,
             ),
@@ -215,7 +215,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             Text(
               'No items in this section.',
               textAlign: TextAlign.center,
-              style: LTypography.subheadlineMedium.copyWith(
+              style: LTypography.subheadlineMedium.rounded.copyWith(
                 color: labelColor,
                 fontWeight: FontWeight.w600,
               ),
