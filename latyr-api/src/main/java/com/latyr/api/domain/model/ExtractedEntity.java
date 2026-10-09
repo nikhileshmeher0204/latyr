@@ -17,6 +17,10 @@ public class ExtractedEntity {
     private String externalUrl;
     private ActionCTA actionCta;
     private Map<String, Object> metadata = new HashMap<>();
+    private String enrichmentStatus = "PENDING";
+    private int retryCount = 0;
+    private Instant nextRetryAt = Instant.now();
+    private String enrichmentError;
     private Instant createdAt = Instant.now();
 
     public ExtractedEntity() {}
@@ -50,6 +54,18 @@ public class ExtractedEntity {
 
     public Map<String, Object> getMetadata() { return metadata; }
     public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
+
+    public String getEnrichmentStatus() { return enrichmentStatus; }
+    public void setEnrichmentStatus(String enrichmentStatus) { this.enrichmentStatus = enrichmentStatus; }
+
+    public int getRetryCount() { return retryCount; }
+    public void setRetryCount(int retryCount) { this.retryCount = retryCount; }
+
+    public Instant getNextRetryAt() { return nextRetryAt; }
+    public void setNextRetryAt(Instant nextRetryAt) { this.nextRetryAt = nextRetryAt; }
+
+    public String getEnrichmentError() { return enrichmentError; }
+    public void setEnrichmentError(String enrichmentError) { this.enrichmentError = enrichmentError; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

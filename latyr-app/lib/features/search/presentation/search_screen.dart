@@ -214,13 +214,26 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         externalUrl: entity.externalUrl,
       );
     } else if (type == 'MOVIE' || type == 'TV_SHOW') {
+      final meta = entity.metadata;
+      final isTv = (meta['media_type']?.toString().toLowerCase() == 'tv' || type == 'TV_SHOW');
+      final mediaTypeLabel = isTv ? 'Series' : 'Movie';
+      final year = meta['release_year']?.toString();
+      final durationOrSeasons = isTv
+          ? meta['seasons_formatted']?.toString()
+          : meta['runtime_formatted']?.toString();
+      final subtitleParts = [
+        mediaTypeLabel,
+        if (year != null && year.isNotEmpty) year,
+        if (durationOrSeasons != null && durationOrSeasons.isNotEmpty) durationOrSeasons,
+      ].join(' · ');
+
       return MovieShowEntityCard(
         title: entity.title,
-        description: entity.description,
-        rating: double.tryParse(entity.metadata['rating']?.toString() ?? ''),
-        releaseYearOrSeasons: entity.metadata['release_year']?.toString(),
+        description: entity.description ?? meta['tagline']?.toString(),
+        rating: double.tryParse(meta['rating']?.toString() ?? ''),
+        releaseYearOrSeasons: subtitleParts.isNotEmpty ? subtitleParts : null,
         externalUrl: entity.externalUrl,
-        posterUrl: entity.metadata['poster_url']?.toString(),
+        posterUrl: meta['poster_url']?.toString(),
       );
     } else if (type == 'QUOTE') {
       return QuoteEntityCard(

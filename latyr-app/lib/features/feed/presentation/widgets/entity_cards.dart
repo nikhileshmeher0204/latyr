@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:latyr_app/core/design/latyr_colors.dart';
@@ -39,7 +40,7 @@ class _MovieShowCard extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
   final bool isEmbedded;
-  
+
   const _MovieShowCard({
     required this.entity,
     this.cardColor,
@@ -51,105 +52,143 @@ class _MovieShowCard extends StatelessWidget {
     final posterUrl = entity.metadata['poster_url']?.toString();
     final rating = entity.metadata['rating']?.toString();
     final releaseYear = entity.metadata['release_year']?.toString();
+    final runtime = entity.metadata['runtime_formatted']?.toString();
+    final seasons = entity.metadata['seasons_formatted']?.toString();
+    final tagline = entity.metadata['tagline']?.toString();
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
 
-    return _CardContainer(
-      cardColor: cardColor,
-      isEmbedded: isEmbedded,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (posterUrl != null && posterUrl.isNotEmpty)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                posterUrl,
-                width: 54,
-                height: 76,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stack) => _buildPlaceholderPoster(isDark),
-              ),
-            )
-          else
-            _buildPlaceholderPoster(isDark),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        entity.title,
-                        style: TextStyle(
-                          fontFamily: _roundedFontFamily,
-                          color: textColor,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.25,
+    final isTv = (entity.metadata['media_type']?.toString().toLowerCase() == 'tv' ||
+        entity.entityType.toUpperCase() == 'TV_SHOW');
+    final formatLabel = isTv ? 'Series' : 'Movie';
+    final durationOrSeasons = isTv ? seasons : runtime;
+
+    final subtitleParts = [
+      formatLabel,
+      if (releaseYear != null && releaseYear.isNotEmpty) releaseYear,
+      if (durationOrSeasons != null && durationOrSeasons.isNotEmpty) durationOrSeasons,
+    ].join(' · ');
+
+    final descriptionText = (entity.description != null && entity.description!.isNotEmpty)
+        ? entity.description!
+        : (tagline != null && tagline.isNotEmpty ? tagline : null);
+
+    return RepaintBoundary(
+      child: _CardContainer(
+        cardColor: cardColor,
+        isEmbedded: isEmbedded,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (posterUrl != null && posterUrl.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: CachedNetworkImage(
+                  imageUrl: posterUrl,
+                  width: 56,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  fadeInDuration: const Duration(milliseconds: 150),
+                  fadeOutDuration: const Duration(milliseconds: 100),
+                  memCacheWidth: 200,
+                  placeholder: (context, url) => Container(
+                    width: 56,
+                    height: 80,
+                    color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
+                    child: const Center(
+                      child: CupertinoActivityIndicator(radius: 8),
+                    ),
+                  ),
+                  errorWidget: (context, error, stack) => _buildPlaceholderPoster(isDark),
+                ),
+              )
+            else
+              _buildPlaceholderPoster(isDark),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          entity.title,
+                          style: TextStyle(
+                            fontFamily: _roundedFontFamily,
+                            color: textColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.25,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    if (rating != null) ...[
-                      const SizedBox(width: 6),
-                      _PillBadge(label: rating, emoji: '\u2605', textColor: textColor, isDark: isDark),
+                      if (rating != null && rating.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        _PillBadge(
+                          label: rating,
+                          emoji: '★',
+                          textColor: isDark ? const Color(0xFFFFD60A) : const Color(0xFFD97706),
+                          isDark: isDark,
+                        ),
+                      ],
                     ],
+                  ),
+                  if (subtitleParts.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitleParts,
+                      style: TextStyle(
+                        fontFamily: _fontFamily,
+                        color: textColor.withValues(alpha: 0.55),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.1,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
-                ),
-                if (releaseYear != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    releaseYear,
-                    style: TextStyle(
-                      fontFamily: _fontFamily,
-                      color: textColor.withValues(alpha: 0.5),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: -0.1,
+                  if (descriptionText != null && descriptionText.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      descriptionText,
+                      style: TextStyle(
+                        fontFamily: _fontFamily,
+                        color: textColor.withValues(alpha: 0.72),
+                        fontSize: 12,
+                        height: 1.35,
+                        letterSpacing: -0.1,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: _CtaButton(
+                      ctaText: 'WATCH',
+                      url: entity.externalUrl,
+                      icon: CupertinoIcons.play_arrow_solid,
+                      isDark: isDark,
                     ),
                   ),
                 ],
-                if (entity.description != null && entity.description!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    entity.description!,
-                    style: TextStyle(
-                      fontFamily: _fontFamily,
-                      color: textColor.withValues(alpha: 0.72),
-                      fontSize: 12,
-                      height: 1.35,
-                      letterSpacing: -0.1,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-                const SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: _CtaButton(
-                    ctaText: 'WATCH',
-                    url: entity.externalUrl,
-                    icon: CupertinoIcons.play_arrow_solid,
-                    isDark: isDark,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildPlaceholderPoster(bool isDark) {
     return Container(
-      width: 54,
-      height: 76,
+      width: 56,
+      height: 80,
       decoration: BoxDecoration(
         color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
         borderRadius: BorderRadius.circular(8),

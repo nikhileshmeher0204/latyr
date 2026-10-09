@@ -197,6 +197,16 @@ public class IngestionPipelineService {
                 entity.setEntityType(ae.entityType());
                 entity.setActionCta(ae.actionCta());
                 entity.setMetadata(ae.metadata() != null ? ae.metadata() : Map.of());
+
+                boolean isEntertainment = ae.entityType() == EntityType.MOVIE || ae.entityType() == EntityType.TV_SHOW;
+                boolean hasTmdbData = ae.metadata() != null && ae.metadata().containsKey("tmdb_id");
+                if (isEntertainment && !hasTmdbData) {
+                    entity.setEnrichmentStatus("PENDING");
+                    entity.setNextRetryAt(Instant.now().plusSeconds(120));
+                } else {
+                    entity.setEnrichmentStatus("ENRICHED");
+                }
+
                 entity.setCreatedAt(Instant.now());
                 extractedEntityMapper.insert(entity);
             }

@@ -98,7 +98,6 @@ flutter:
   # Assets
   assets:
     - assets/icons/3d/
-    - assets/fonts/
 
   # Fonts
   fonts:

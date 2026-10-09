@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:latyr_app/core/design/latyr_colors.dart';
 import 'package:latyr_app/core/design/latyr_spacing.dart';
@@ -41,96 +42,107 @@ class MovieShowEntityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard.obsidian(
-      borderRadius: LSpacing.radiusLG + 2,
-      padding: const EdgeInsets.all(LSpacing.md),
-      onTap: onTap ?? _handleAction,
-      child: Row(
-        children: [
-          // Poster Thumbnail / Fallback
-          ClipRRect(
-            borderRadius: LSpacing.brSM,
-            child: Container(
-              width: 50,
-              height: 68,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [LColors.terracottaDark, Color(0xFF32080D)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                border: Border.all(color: LColors.staticWhite12),
-              ),
-              child: posterUrl != null && posterUrl!.isNotEmpty
-                  ? Image.network(
-                      posterUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildFallbackPoster(),
-                    )
-                  : _buildFallbackPoster(),
-            ),
-          ),
-          const SizedBox(width: LSpacing.md),
-
-          // Title & Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: LTypography.subheadlineMedium.rounded.copyWith(
-                    color: LColors.staticWhite,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
+    return RepaintBoundary(
+      child: GlassCard.obsidian(
+        borderRadius: LSpacing.radiusLG + 2,
+        padding: const EdgeInsets.all(LSpacing.md),
+        onTap: onTap ?? _handleAction,
+        child: Row(
+          children: [
+            // Poster Thumbnail / Fallback
+            ClipRRect(
+              borderRadius: LSpacing.brSM,
+              child: Container(
+                width: 52,
+                height: 72,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [LColors.terracottaDark, Color(0xFF32080D)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  border: Border.all(color: LColors.staticWhite12),
                 ),
-                const SizedBox(height: LSpacing.xs),
-                Row(
-                  children: [
-                    if (rating != null) ...[
-                      Text(
-                        '${rating!.toStringAsFixed(1)} ★',
-                        style: LTypography.caption1Bold.rounded.copyWith(
-                          color: LColors.brandAmberLight,
+                child: posterUrl != null && posterUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: posterUrl!,
+                        fit: BoxFit.cover,
+                        fadeInDuration: const Duration(milliseconds: 150),
+                        fadeOutDuration: const Duration(milliseconds: 100),
+                        memCacheWidth: 200,
+                        placeholder: (context, url) => Container(
+                          color: const Color(0x33000000),
+                          child: const Center(
+                            child: CupertinoActivityIndicator(radius: 8),
+                          ),
+                        ),
+                        errorWidget: (context, error, stackTrace) => _buildFallbackPoster(),
+                      )
+                    : _buildFallbackPoster(),
+              ),
+            ),
+            const SizedBox(width: LSpacing.md),
+
+            // Title & Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: LTypography.subheadlineMedium.rounded.copyWith(
+                      color: LColors.staticWhite,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: LSpacing.xs),
+                  Row(
+                    children: [
+                      if (rating != null) ...[
+                        Text(
+                          '${rating!.toStringAsFixed(1)} ★',
+                          style: LTypography.caption1Bold.rounded.copyWith(
+                            color: LColors.brandAmberLight,
+                          ),
+                        ),
+                        Text(
+                          ' · ',
+                          style: LTypography.caption1.copyWith(color: LColors.staticWhite40),
+                        ),
+                      ],
+                      Flexible(
+                        child: Text(
+                          releaseYearOrSeasons ?? platform,
+                          style: LTypography.caption1.copyWith(color: LColors.staticWhite70),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Text(
-                        ' · ',
-                        style: LTypography.caption1.copyWith(color: LColors.staticWhite40),
-                      ),
                     ],
-                    Flexible(
-                      child: Text(
-                        releaseYearOrSeasons ?? platform,
-                        style: LTypography.caption1.copyWith(color: LColors.staticWhite70),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          // Watch CTA
-          PillButton(
-            text: 'Watch',
-            height: 32,
-            variant: PillButtonVariant.solidAmber,
-            onPressed: _handleAction,
-          ),
-        ],
+            // Watch CTA
+            PillButton(
+              text: 'Watch',
+              height: 32,
+              variant: PillButtonVariant.solidAmber,
+              onPressed: _handleAction,
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildFallbackPoster() {
-    return Center(
+    return const Center(
       child: Icon(
         CupertinoIcons.play_fill,
         size: 22,

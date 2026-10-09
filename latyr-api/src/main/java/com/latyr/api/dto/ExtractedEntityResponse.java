@@ -17,6 +17,7 @@ public record ExtractedEntityResponse(
         String externalUrl,
         ActionCTA actionCta,
         Map<String, Object> metadata,
+        String enrichmentStatus,
         Instant createdAt
 ) {
     public static ExtractedEntityResponse fromModel(ExtractedEntity entity) {
@@ -29,6 +30,7 @@ public record ExtractedEntityResponse(
                 entity.getExternalUrl(),
                 entity.getActionCta(),
                 entity.getMetadata(),
+                entity.getEnrichmentStatus(),
                 entity.getCreatedAt()
         );
     }
