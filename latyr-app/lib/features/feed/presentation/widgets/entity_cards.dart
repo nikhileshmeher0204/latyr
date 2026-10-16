@@ -5,6 +5,8 @@ import 'package:latyr_app/core/design/latyr_colors.dart';
 import 'package:latyr_app/core/widgets/latyr_expandable_text.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:latyr_app/features/feed/presentation/screens/entity_detail_screen.dart';
+import 'package:latyr_app/features/feed/presentation/screens/github_repo_detail_screen.dart';
+import 'package:latyr_app/features/feed/presentation/widgets/github_language_colors.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/streaming_branding.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -453,112 +455,168 @@ class _GitHubRepoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stars = entity.metadata['stars']?.toString();
+    final stars = entity.metadata['stars'];
+    final forks = entity.metadata['forks'];
     final language = entity.metadata['language']?.toString();
+    final avatarUrl = entity.metadata['owner_avatar_url']?.toString();
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
+    final borderColor = isDark ? const Color(0xFF30363D) : const Color(0xFFD0D7DE);
 
-    return _CardContainer(
-      cardColor: cardColor,
-      isEmbedded: isEmbedded,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _buildIconSquare(
-                icon: CupertinoIcons.chevron_left_slash_chevron_right,
-                iconColor: const Color(0xFF64D2FF),
-                bgColor: const Color(0xFF64D2FF).withValues(alpha: 0.15),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      entity.title,
-                      style: TextStyle(
-                        fontFamily: _roundedFontFamily,
-                        color: textColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.25,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        Navigator.of(context).push(
+          CupertinoPageRoute(
+            builder: (_) => GitHubRepoDetailScreen(entity: entity),
+          ),
+        );
+      },
+      child: _CardContainer(
+        cardColor: cardColor,
+        isEmbedded: isEmbedded,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (avatarUrl != null && avatarUrl.isNotEmpty) ...[
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF21262D) : const Color(0xFFEAEEF2),
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(color: borderColor, width: 0.8),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: CachedNetworkImage(
+                      imageUrl: avatarUrl,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, _, _) => _buildDefaultSquare(),
+                    ),
+                  ),
+                ] else ...[
+                  _buildDefaultSquare(),
+                ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        entity.title,
+                        style: TextStyle(
+                          fontFamily: _roundedFontFamily,
+                          color: textColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.25,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        if (stars != null) ...[
-                          Icon(CupertinoIcons.star_fill, size: 10, color: textColor.withValues(alpha: 0.5)),
-                          const SizedBox(width: 4),
-                          Text(
-                            stars,
-                            style: TextStyle(
-                              fontFamily: _fontFamily,
-                              color: textColor.withValues(alpha: 0.5),
-                              fontSize: 11,
-                              letterSpacing: -0.1,
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          if (language != null && language.isNotEmpty) ...[
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: GitHubLanguageColors.resolve(language),
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
+                            const SizedBox(width: 4),
+                            Text(
+                              language,
+                              style: TextStyle(
+                                fontFamily: _fontFamily,
+                                color: textColor.withValues(alpha: 0.6),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.1,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          if (stars != null) ...[
+                            const Icon(CupertinoIcons.star_fill, size: 10, color: Color(0xFFE3B341)),
+                            const SizedBox(width: 3),
+                            Text(
+                              GitHubLanguageColors.formatCount(stars),
+                              style: TextStyle(
+                                fontFamily: _fontFamily,
+                                color: textColor.withValues(alpha: 0.7),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.1,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          if (forks != null) ...[
+                            Icon(CupertinoIcons.arrow_branch, size: 10, color: textColor.withValues(alpha: 0.45)),
+                            const SizedBox(width: 3),
+                            Text(
+                              GitHubLanguageColors.formatCount(forks),
+                              style: TextStyle(
+                                fontFamily: _fontFamily,
+                                color: textColor.withValues(alpha: 0.5),
+                                fontSize: 11,
+                                letterSpacing: -0.1,
+                              ),
+                            ),
+                          ],
                         ],
-                        if (language != null) ...[
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFFFD60A),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            language,
-                            style: TextStyle(
-                              fontFamily: _fontFamily,
-                              color: textColor.withValues(alpha: 0.5),
-                              fontSize: 11,
-                              letterSpacing: -0.1,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  CupertinoIcons.chevron_right,
+                  size: 14,
+                  color: textColor.withValues(alpha: 0.35),
+                ),
+              ],
+            ),
+            if (entity.description != null && entity.description!.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              LatyrExpandableText(
+                text: entity.description!,
+                maxLines: 2,
+                style: TextStyle(
+                  fontFamily: _fontFamily,
+                  color: textColor.withValues(alpha: 0.72),
+                  fontSize: 12,
+                  height: 1.35,
+                  letterSpacing: -0.1,
                 ),
               ),
             ],
-          ),
-          if (entity.description != null && entity.description!.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(
-              entity.description!,
-              style: TextStyle(
-                fontFamily: _fontFamily,
-                color: textColor.withValues(alpha: 0.72),
-                fontSize: 12,
-                height: 1.35,
-                letterSpacing: -0.1,
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: _CtaButton(
+                ctaText: 'OPEN REPO',
+                url: entity.externalUrl,
+                icon: CupertinoIcons.arrow_up_right,
+                isDark: isDark,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: _CtaButton(
-              ctaText: 'VIEW REPO',
-              url: entity.externalUrl,
-              icon: CupertinoIcons.arrow_up_right,
-              isDark: isDark,
-            ),
-          ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildDefaultSquare() {
+    return _buildIconSquare(
+      icon: CupertinoIcons.chevron_left_slash_chevron_right,
+      iconColor: const Color(0xFF64D2FF),
+      bgColor: const Color(0xFF64D2FF).withValues(alpha: 0.15),
     );
   }
 }

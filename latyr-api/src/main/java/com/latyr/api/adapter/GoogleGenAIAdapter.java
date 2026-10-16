@@ -170,7 +170,9 @@ public class GoogleGenAIAdapter implements AIProvider {
                     "director": "Director name if known/mentioned",
                     "lead_cast": ["Lead actor 1", "Lead actor 2"],
                     "original_language": "2-letter ISO code if known (e.g. 'en', 'ko', 'ja', 'es')",
-                    "streaming_platform": "Streaming platform mentioned (e.g. 'Netflix', 'Apple TV+', 'HBO')"
+                    "streaming_platform": "Streaming platform mentioned (e.g. 'Netflix', 'Apple TV+', 'HBO')",
+                    "predicted_owner_and_repo": "Predicted 'owner/repo' if known for GITHUB_REPO (e.g. 'excalidraw/excalidraw', 'supabase/supabase', 'shadcn-ui/ui')",
+                    "search_query_keywords": "Clean search query for GITHUB_REPO (e.g. 'excalidraw whiteboard')"
                   }
                 }
               ]
@@ -178,6 +180,7 @@ public class GoogleGenAIAdapter implements AIProvider {
             CRITICAL EXTRACTION RULES:
             1. If the content presents a list of multiple movies, series, books, repos, or places (e.g. 'Top 5 Mind-Bending Thrillers', '3 Must-Try Tools'), you MUST extract EACH mentioned item as an individual entity in the 'entities' array. Never merge them into one.
             2. For each MOVIE or TV_SHOW entity, ensure 'title' is strictly the clean title (do NOT include '1. ', 'Number 3: ', or quotes).
+            3. For GITHUB_REPO entities: ONLY tag as GITHUB_REPO if the spoken content refers to an open-source library, tool, or code project. If the tool is a proprietary SaaS product (e.g. Notion, Figma, Linear, Arc, Cursor), tag it as TOOL. Normalize speech-to-text misspellings to canonical names (e.g. 'super base' -> 'supabase', 'chad cn' -> 'shadcn') and provide 'predicted_owner_and_repo' if known.
             Do NOT wrap the JSON in Markdown code fences (no ```json ... ```). Return raw, valid JSON only. However, the string inside "summary" MUST use the requested Latyr semantic tags (==highlight==, ~wavy~, etc.).
             """.formatted(
                 isImage ? "image/screenshot" : "audio track and caption",
