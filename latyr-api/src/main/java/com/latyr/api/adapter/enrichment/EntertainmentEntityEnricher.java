@@ -3,9 +3,12 @@ package com.latyr.api.adapter.enrichment;
 import com.latyr.api.adapter.AIProvider;
 import com.latyr.api.domain.enums.ActionCTA;
 import com.latyr.api.domain.enums.EntityType;
+import com.latyr.api.domain.enums.StreamingPlatform;
+import com.latyr.api.integration.OmdbClient;
 import com.latyr.api.integration.TmdbClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +19,8 @@ import java.util.regex.Pattern;
 
 /**
  * Production-grade Entertainment Entity Enricher for Movies & TV Series.
- * Implements Multi-Signal Disambiguation and fetches authentic high-res CDN posters from TMDB.
+ * Implements Multi-Signal Disambiguation, fetches authentic high-res CDN posters from TMDB,
+ * and enriches real IMDb scores, Rotten Tomatoes, and critical metadata via OMDb.
  */
 @Component
 @Order(10)
@@ -26,6 +30,7 @@ public class EntertainmentEntityEnricher implements EntityEnricher {
 
     private static final String TMDB_POSTER_BASE_W500 = "https://image.tmdb.org/t/p/w500";
     private static final String TMDB_BACKDROP_BASE_W780 = "https://image.tmdb.org/t/p/w780";
+    private static final String TMDB_LOGO_BASE_W92 = "https://image.tmdb.org/t/p/w92";
     private static final String FALLBACK_POSTER = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&q=80";
 
     private static final Pattern CLEAN_TITLE_PATTERN = Pattern.compile(
@@ -34,9 +39,16 @@ public class EntertainmentEntityEnricher implements EntityEnricher {
     );
 
     private final TmdbClient tmdbClient;
+    private final OmdbClient omdbClient;
+
+    @Autowired
+    public EntertainmentEntityEnricher(TmdbClient tmdbClient, OmdbClient omdbClient) {
+        this.tmdbClient = tmdbClient;
+        this.omdbClient = omdbClient;
+    }
 
     public EntertainmentEntityEnricher(TmdbClient tmdbClient) {
-        this.tmdbClient = tmdbClient;
+        this(tmdbClient, null);
     }
 
     @Override
@@ -204,6 +216,14 @@ public class EntertainmentEntityEnricher implements EntityEnricher {
             enrichedMeta.put("release_year", String.valueOf(releaseYear));
         }
 
+        // Compliant Rating Source Attribution
+        enrichedMeta.put("rating_source", "TMDB");
+
+        // Preserve / populate overview from TMDB
+        if (match.overview != null && !match.overview.isBlank() && !enrichedMeta.containsKey("overview")) {
+            enrichedMeta.put("overview", match.overview);
+        }
+
         String externalUrl = raw.externalUrl();
 
         if ("movie".equals(mediaType)) {
@@ -217,6 +237,9 @@ public class EntertainmentEntityEnricher implements EntityEnricher {
                 if (details.tagline != null && !details.tagline.isBlank()) {
                     enrichedMeta.put("tagline", details.tagline);
                 }
+                if (details.overview != null && !details.overview.isBlank()) {
+                    enrichedMeta.put("overview", details.overview);
+                }
                 if (details.externalIds != null && details.externalIds.imdbId != null) {
                     enrichedMeta.put("imdb_id", details.externalIds.imdbId);
                     if (externalUrl == null || externalUrl.isBlank()) {
@@ -225,6 +248,25 @@ public class EntertainmentEntityEnricher implements EntityEnricher {
                 }
                 if (details.genres != null && !details.genres.isEmpty()) {
                     enrichedMeta.put("genres", details.genres.stream().map(g -> g.name).toList());
+                }
+                if (details.credits != null) {
+                    if (details.credits.crew != null) {
+                        details.credits.crew.stream()
+                                .filter(c -> "Director".equalsIgnoreCase(c.job))
+                                .map(c -> c.name)
+                                .findFirst()
+                                .ifPresent(dir -> enrichedMeta.put("director", dir));
+                    }
+                    if (details.credits.cast != null && !details.credits.cast.isEmpty()) {
+                        List<String> cast = details.credits.cast.stream()
+                                .map(c -> c.name)
+                                .limit(5)
+                                .toList();
+                        enrichedMeta.put("lead_cast", cast);
+                    }
+                }
+                if (details.watchProviders != null && details.watchProviders.results != null) {
+                    attachWatchProviders(enrichedMeta, details.watchProviders.results);
                 }
             }
         } else {
@@ -244,6 +286,9 @@ public class EntertainmentEntityEnricher implements EntityEnricher {
                 if (tvDetails.tagline != null && !tvDetails.tagline.isBlank()) {
                     enrichedMeta.put("tagline", tvDetails.tagline);
                 }
+                if (tvDetails.overview != null && !tvDetails.overview.isBlank()) {
+                    enrichedMeta.put("overview", tvDetails.overview);
+                }
                 if (tvDetails.externalIds != null && tvDetails.externalIds.imdbId != null) {
                     enrichedMeta.put("imdb_id", tvDetails.externalIds.imdbId);
                     if (externalUrl == null || externalUrl.isBlank()) {
@@ -256,8 +301,46 @@ public class EntertainmentEntityEnricher implements EntityEnricher {
                 if (tvDetails.networks != null && !tvDetails.networks.isEmpty()) {
                     enrichedMeta.put("networks", tvDetails.networks.stream().map(n -> n.name).toList());
                 }
+                if (tvDetails.credits != null && tvDetails.credits.cast != null && !tvDetails.credits.cast.isEmpty()) {
+                    List<String> cast = tvDetails.credits.cast.stream()
+                            .map(c -> c.name)
+                            .limit(5)
+                            .toList();
+                    enrichedMeta.put("lead_cast", cast);
+                }
+                if (tvDetails.watchProviders != null && tvDetails.watchProviders.results != null) {
+                    attachWatchProviders(enrichedMeta, tvDetails.watchProviders.results);
+                }
             }
         }
+
+        // Step 3b: Enrich with authentic IMDb ratings, Rotten Tomatoes, and deep metadata from OMDb
+        Object imdbIdObj = enrichedMeta.get("imdb_id");
+        if (imdbIdObj != null && !imdbIdObj.toString().isBlank()) {
+            enrichFromOmdb(enrichedMeta, imdbIdObj.toString());
+        } else {
+            enrichFromOmdbByTitle(enrichedMeta, match.getDisplayTitle(), releaseYear);
+        }
+
+        if (enrichedMeta.containsKey("imdb_id") && enrichedMeta.get("imdb_id") != null) {
+            String resolvedImdbId = enrichedMeta.get("imdb_id").toString();
+            if (externalUrl == null || externalUrl.isBlank() || externalUrl.contains("themoviedb.org")) {
+                externalUrl = "https://www.imdb.com/title/" + resolvedImdbId + "/";
+            }
+        }
+
+        // Resolve Streaming Platform and create deep search link
+        String platformHint = extractStringHint(rawMeta, "streaming_platform", "platform", "provider");
+        if (enrichedMeta.containsKey("streaming_platform") && enrichedMeta.get("streaming_platform") != null) {
+            platformHint = enrichedMeta.get("streaming_platform").toString();
+        }
+        StreamingPlatform platform = StreamingPlatform.parse(platformHint);
+        enrichedMeta.put("streaming_platform", platform.getDisplayName());
+        enrichedMeta.put("streaming_color", platform.getBrandColorHex());
+        if (!enrichedMeta.containsKey("provider_logo_url") && platform.getIconUrl() != null) {
+            enrichedMeta.put("streaming_icon", platform.getIconUrl());
+        }
+        enrichedMeta.put("streaming_deep_link", platform.generateSearchUrl(match.getDisplayTitle()));
 
         if (externalUrl == null || externalUrl.isBlank()) {
             externalUrl = "https://www.themoviedb.org/" + mediaType + "/" + match.id;
@@ -374,4 +457,140 @@ public class EntertainmentEntityEnricher implements EntityEnricher {
         }
         return sLabel;
     }
+
+    private void enrichFromOmdb(Map<String, Object> enrichedMeta, String imdbId) {
+        if (omdbClient == null || !omdbClient.isConfigured() || imdbId == null || imdbId.isBlank()) return;
+
+        try {
+            Optional<OmdbClient.OmdbMovieResponse> omdbOpt = omdbClient.getByImdbId(imdbId);
+            if (omdbOpt.isPresent()) {
+                applyOmdbMetadata(enrichedMeta, omdbOpt.get());
+            }
+        } catch (Exception e) {
+            log.warn("OMDb enrichment by IMDb ID '{}' failed: {}", imdbId, e.getMessage());
+        }
+    }
+
+    private void enrichFromOmdbByTitle(Map<String, Object> enrichedMeta, String title, Integer year) {
+        if (omdbClient == null || !omdbClient.isConfigured() || title == null || title.isBlank()) return;
+
+        try {
+            Optional<OmdbClient.OmdbMovieResponse> omdbOpt = omdbClient.getByTitle(title, year);
+            if (omdbOpt.isPresent()) {
+                applyOmdbMetadata(enrichedMeta, omdbOpt.get());
+            }
+        } catch (Exception e) {
+            log.warn("OMDb enrichment by title '{}' failed: {}", title, e.getMessage());
+        }
+    }
+
+    private void applyOmdbMetadata(Map<String, Object> enrichedMeta, OmdbClient.OmdbMovieResponse omdb) {
+        // 1. Authentic IMDb User Rating & Votes
+        Double imdbRating = omdb.getParsedImdbRating();
+        if (imdbRating != null) {
+            enrichedMeta.put("rating", imdbRating);
+            enrichedMeta.put("rating_source", "IMDb");
+        }
+        if (omdb.hasValue(omdb.imdbVotes)) {
+            enrichedMeta.put("imdb_votes", omdb.imdbVotes.trim());
+        }
+
+        // 2. Critic Ratings (Rotten Tomatoes & Metacritic)
+        String rt = omdb.getRottenTomatoesRating();
+        if (rt != null) {
+            enrichedMeta.put("rotten_tomatoes_rating", rt);
+        }
+        String mc = omdb.getMetacriticRating();
+        if (mc != null) {
+            enrichedMeta.put("metascore_rating", mc);
+        }
+
+        // 3. Content Maturity Rating (e.g. TV-MA, R, PG-13)
+        if (omdb.hasValue(omdb.rated)) {
+            enrichedMeta.put("content_rating", omdb.rated.trim());
+        }
+
+        // 4. Awards & Accolades
+        if (omdb.hasValue(omdb.awards)) {
+            enrichedMeta.put("awards", omdb.awards.trim());
+        }
+
+        // 5. Director & Writers
+        if (omdb.hasValue(omdb.director)) {
+            enrichedMeta.put("director", omdb.director.trim());
+        }
+        if (omdb.hasValue(omdb.writer)) {
+            enrichedMeta.put("writers", omdb.writer.trim());
+        }
+
+        // 6. Lead Cast
+        List<String> omdbActors = omdb.getActorList();
+        if (!omdbActors.isEmpty()) {
+            enrichedMeta.put("lead_cast", omdbActors);
+        }
+
+        // 7. Box Office
+        if (omdb.hasValue(omdb.boxOffice)) {
+            enrichedMeta.put("box_office", omdb.boxOffice.trim());
+        }
+
+        // 8. Country, Language & Release Date
+        if (omdb.hasValue(omdb.country)) {
+            enrichedMeta.put("country", omdb.country.trim());
+        }
+        if (omdb.hasValue(omdb.language)) {
+            enrichedMeta.put("language", omdb.language.trim());
+        }
+        if (omdb.hasValue(omdb.released)) {
+            enrichedMeta.put("released_date", omdb.released.trim());
+        }
+
+        // 9. Preserve IMDb ID if not already present
+        if (omdb.hasValue(omdb.imdbId) && !enrichedMeta.containsKey("imdb_id")) {
+            enrichedMeta.put("imdb_id", omdb.imdbId.trim());
+        }
+    }
+
+    private void attachWatchProviders(Map<String, Object> enrichedMeta, Map<String, TmdbClient.TmdbCountryWatchProviders> results) {
+        if (results == null || results.isEmpty()) return;
+
+        // Preference: IN (India) -> US -> First available country with flatrate streaming
+        TmdbClient.TmdbCountryWatchProviders country = results.get("IN");
+        if (country == null || country.flatrate == null || country.flatrate.isEmpty()) {
+            country = results.get("US");
+        }
+        if (country == null || country.flatrate == null || country.flatrate.isEmpty()) {
+            for (TmdbClient.TmdbCountryWatchProviders c : results.values()) {
+                if (c.flatrate != null && !c.flatrate.isEmpty()) {
+                    country = c;
+                    break;
+                }
+            }
+        }
+
+        if (country != null && country.flatrate != null && !country.flatrate.isEmpty()) {
+            TmdbClient.TmdbProviderInfo top = country.flatrate.get(0);
+            enrichedMeta.put("streaming_platform", top.providerName);
+            if (top.logoPath != null && !top.logoPath.isBlank()) {
+                String fullLogoUrl = TMDB_LOGO_BASE_W92 + top.logoPath;
+                enrichedMeta.put("provider_logo_url", fullLogoUrl);
+                enrichedMeta.put("streaming_icon", fullLogoUrl);
+            }
+            if (country.link != null) {
+                enrichedMeta.put("watch_link", country.link);
+            }
+            List<Map<String, Object>> providersList = new ArrayList<>();
+            for (TmdbClient.TmdbProviderInfo p : country.flatrate) {
+                Map<String, Object> pMap = new HashMap<>();
+                pMap.put("provider_id", p.providerId);
+                pMap.put("provider_name", p.providerName);
+                if (p.logoPath != null) {
+                    pMap.put("logo_url", TMDB_LOGO_BASE_W92 + p.logoPath);
+                }
+                providersList.add(pMap);
+            }
+            enrichedMeta.put("watch_providers", providersList);
+        }
+    }
 }
+

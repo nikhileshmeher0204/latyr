@@ -115,7 +115,7 @@ public class TmdbClient {
     public Optional<TmdbMovieDetails> getMovieDetails(int movieId) {
         if (!isConfigured()) return Optional.empty();
 
-        String url = baseUrl + "/movie/" + movieId + "?append_to_response=credits,external_ids";
+        String url = baseUrl + "/movie/" + movieId + "?append_to_response=credits,external_ids,watch/providers";
         try {
             String json = executeGet(url);
             if (json == null) return Optional.empty();
@@ -132,7 +132,7 @@ public class TmdbClient {
     public Optional<TmdbTvDetails> getTvDetails(int tvId) {
         if (!isConfigured()) return Optional.empty();
 
-        String url = baseUrl + "/tv/" + tvId + "?append_to_response=credits,external_ids";
+        String url = baseUrl + "/tv/" + tvId + "?append_to_response=credits,external_ids,watch/providers";
         try {
             String json = executeGet(url);
             if (json == null) return Optional.empty();
@@ -254,6 +254,7 @@ public class TmdbClient {
         public List<TmdbGenre> genres = new ArrayList<>();
         public TmdbCredits credits;
         @JsonProperty("external_ids") public TmdbExternalIds externalIds;
+        @JsonProperty("watch/providers") public TmdbWatchProvidersResponse watchProviders;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -274,6 +275,29 @@ public class TmdbClient {
         public List<TmdbNetwork> networks = new ArrayList<>();
         public TmdbCredits credits;
         @JsonProperty("external_ids") public TmdbExternalIds externalIds;
+        @JsonProperty("watch/providers") public TmdbWatchProvidersResponse watchProviders;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TmdbWatchProvidersResponse {
+        public int id;
+        public Map<String, TmdbCountryWatchProviders> results = new HashMap<>();
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TmdbCountryWatchProviders {
+        public String link;
+        public List<TmdbProviderInfo> flatrate = new ArrayList<>();
+        public List<TmdbProviderInfo> rent = new ArrayList<>();
+        public List<TmdbProviderInfo> buy = new ArrayList<>();
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TmdbProviderInfo {
+        @JsonProperty("logo_path") public String logoPath;
+        @JsonProperty("provider_id") public int providerId;
+        @JsonProperty("provider_name") public String providerName;
+        @JsonProperty("display_priority") public int displayPriority;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

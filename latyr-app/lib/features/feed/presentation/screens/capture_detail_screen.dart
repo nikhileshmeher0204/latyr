@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:latyr_app/config/app_properties.dart';
 import 'package:latyr_app/core/database/app_database.dart';
@@ -11,22 +14,24 @@ import 'package:latyr_app/core/widgets/capture_source_icon.dart';
 import 'package:latyr_app/core/widgets/latyr_progressive_blur.dart';
 import 'package:latyr_app/core/widgets/rich_summary/latyr_rich_summary.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
+import 'package:latyr_app/features/capture/presentation/capture_providers.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/entity_cards.dart';
 
-class CaptureDetailScreen extends StatefulWidget {
+class CaptureDetailScreen extends ConsumerStatefulWidget {
   final LocalCapture capture;
 
   const CaptureDetailScreen({super.key, required this.capture});
 
   @override
-  State<CaptureDetailScreen> createState() => _CaptureDetailScreenState();
+  ConsumerState<CaptureDetailScreen> createState() => _CaptureDetailScreenState();
 }
 
-class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
+class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
   int _selectedSourceTab = 0;
   bool _isSourceTextExpanded = false;
   bool _isFavorited = false;
   Color? _extractedCardColor;
+  List<ExtractedEntityModel>? _freshEntities;
 
   @override
   void initState() {
@@ -41,6 +46,36 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     if (!hasCaption && hasTranscript) {
       _selectedSourceTab = 1;
     }
+
+    _refreshEntitiesFromServer();
+  }
+
+  void _refreshEntitiesFromServer() {
+    final serverId = widget.capture.serverCaptureId ?? widget.capture.id;
+    if (serverId.isEmpty) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(apiClientProvider).getCaptureDetail(serverId).then((resp) {
+        final data = resp.data;
+        if (data != null && data['entities'] != null && mounted) {
+          final entitiesList = (data['entities'] as List)
+              .map((e) => ExtractedEntityModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+          setState(() {
+            _freshEntities = entitiesList;
+          });
+          ref.read(appDatabaseProvider).updateCapture(
+            LocalCapturesCompanion(
+              id: drift.Value(widget.capture.id),
+              entitiesJson: drift.Value(jsonEncode(data['entities'])),
+              updatedAt: drift.Value(DateTime.now()),
+            ),
+          );
+        }
+      }).catchError((e) {
+        debugPrint('[CaptureDetailScreen] Error refreshing entities: $e');
+      });
+    });
   }
 
   @override
@@ -161,7 +196,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
     final subtextColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF8A8A8E);
     final titleColor = _deriveFunkyTitleColor(cardColor, isDark);
 
-    final entities = ExtractedEntityModel.parseListFromJsonString(capture.entitiesJson);
+    final entities = _freshEntities ?? ExtractedEntityModel.parseListFromJsonString(capture.entitiesJson);
     final isProcessing = capture.status == 'PROCESSING' ||
         capture.status == 'PENDING' ||
         capture.status == 'PENDING_SYNC';

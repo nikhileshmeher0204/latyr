@@ -15,10 +15,18 @@ class EnvironmentConfig {
 
   /// Resolves the API URL based on platform (e.g. converting `localhost` to `10.0.2.2` for Android Emulator).
   static String get apiUrl {
-    if (!kIsWeb && Platform.isAndroid && _rawApiUrl.contains('localhost')) {
-      return _rawApiUrl.replaceAll('localhost', '10.0.2.2');
+    var url = _rawApiUrl;
+    if (!kIsWeb && Platform.isAndroid && url.contains('localhost')) {
+      url = url.replaceAll('localhost', '10.0.2.2');
     }
-    return _rawApiUrl;
+    if (url.endsWith('/api')) {
+      url = url.substring(0, url.length - 4);
+    } else if (url.endsWith('/api/')) {
+      url = url.substring(0, url.length - 5);
+    } else if (url.endsWith('/')) {
+      url = url.substring(0, url.length - 1);
+    }
+    return url;
   }
 
   static bool get isLocal => environment == 'local';

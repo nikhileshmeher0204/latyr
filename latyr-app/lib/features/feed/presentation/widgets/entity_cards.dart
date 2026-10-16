@@ -2,7 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:latyr_app/core/design/latyr_colors.dart';
+import 'package:latyr_app/core/widgets/latyr_expandable_text.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
+import 'package:latyr_app/features/feed/presentation/screens/entity_detail_screen.dart';
+import 'package:latyr_app/features/feed/presentation/widgets/streaming_branding.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const String _fontFamily = 'Inter';
@@ -51,10 +54,16 @@ class _MovieShowCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final posterUrl = entity.metadata['poster_url']?.toString();
     final rating = entity.metadata['rating']?.toString();
+    final ratingSource = entity.metadata['rating_source']?.toString() ?? 'IMDb';
+    final imdbVotes = entity.metadata['imdb_votes']?.toString();
+    final rottenTomatoes = entity.metadata['rotten_tomatoes_rating']?.toString();
+    final contentRating = entity.metadata['content_rating']?.toString();
     final releaseYear = entity.metadata['release_year']?.toString();
     final runtime = entity.metadata['runtime_formatted']?.toString();
     final seasons = entity.metadata['seasons_formatted']?.toString();
     final tagline = entity.metadata['tagline']?.toString();
+    final streamingPlatform = entity.metadata['streaming_platform']?.toString();
+    final streamingDeepLink = entity.metadata['streaming_deep_link']?.toString();
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
 
@@ -67,116 +76,242 @@ class _MovieShowCard extends StatelessWidget {
       formatLabel,
       if (releaseYear != null && releaseYear.isNotEmpty) releaseYear,
       if (durationOrSeasons != null && durationOrSeasons.isNotEmpty) durationOrSeasons,
+      if (contentRating != null && contentRating.isNotEmpty && contentRating != 'N/A') contentRating,
     ].join(' · ');
 
     final descriptionText = (entity.description != null && entity.description!.isNotEmpty)
         ? entity.description!
         : (tagline != null && tagline.isNotEmpty ? tagline : null);
 
+    final providerLogoUrl = entity.metadata['provider_logo_url']?.toString() ??
+        entity.metadata['streaming_icon']?.toString();
+
+    final streamingBrand = StreamingBrand.resolve(
+      streamingPlatform,
+      mediaType: isTv ? 'tv' : 'movie',
+      logoUrl: providerLogoUrl,
+    );
+
     return RepaintBoundary(
-      child: _CardContainer(
-        cardColor: cardColor,
-        isEmbedded: isEmbedded,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (posterUrl != null && posterUrl.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: CachedNetworkImage(
-                  imageUrl: posterUrl,
-                  width: 56,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  fadeInDuration: const Duration(milliseconds: 150),
-                  fadeOutDuration: const Duration(milliseconds: 100),
-                  memCacheWidth: 200,
-                  placeholder: (context, url) => Container(
-                    width: 56,
-                    height: 80,
-                    color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-                    child: const Center(
-                      child: CupertinoActivityIndicator(radius: 8),
-                    ),
-                  ),
-                  errorWidget: (context, error, stack) => _buildPlaceholderPoster(isDark),
-                ),
-              )
-            else
-              _buildPlaceholderPoster(isDark),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          entity.title,
-                          style: TextStyle(
-                            fontFamily: _roundedFontFamily,
-                            color: textColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.25,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          Navigator.of(context).push(
+            CupertinoPageRoute(
+              builder: (context) => EntityDetailScreen(entity: entity),
+            ),
+          );
+        },
+        child: _CardContainer(
+          cardColor: cardColor,
+          isEmbedded: isEmbedded,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 2:3 Magazine Sized Poster
+              Hero(
+                tag: 'entity_poster_${entity.id ?? entity.title}',
+                child: Container(
+                  width: 90,
+                  height: 135,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: CupertinoColors.black.withValues(alpha: isDark ? 0.45 : 0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
-                      if (rating != null && rating.isNotEmpty) ...[
-                        const SizedBox(width: 6),
-                        _PillBadge(
-                          label: rating,
-                          emoji: '★',
-                          textColor: isDark ? const Color(0xFFFFD60A) : const Color(0xFFD97706),
-                          isDark: isDark,
-                        ),
-                      ],
                     ],
                   ),
-                  if (subtitleParts.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitleParts,
-                      style: TextStyle(
-                        fontFamily: _fontFamily,
-                        color: textColor.withValues(alpha: 0.55),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.1,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  if (descriptionText != null && descriptionText.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      descriptionText,
-                      style: TextStyle(
-                        fontFamily: _fontFamily,
-                        color: textColor.withValues(alpha: 0.72),
-                        fontSize: 12,
-                        height: 1.35,
-                        letterSpacing: -0.1,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  const SizedBox(height: 10),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: _CtaButton(
-                      ctaText: 'WATCH',
-                      url: entity.externalUrl,
-                      icon: CupertinoIcons.play_arrow_solid,
-                      isDark: isDark,
-                    ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: (posterUrl != null && posterUrl.isNotEmpty)
+                        ? CachedNetworkImage(
+                            imageUrl: posterUrl,
+                            width: 90,
+                            height: 135,
+                            fit: BoxFit.cover,
+                            fadeInDuration: const Duration(milliseconds: 150),
+                            fadeOutDuration: const Duration(milliseconds: 100),
+                            memCacheWidth: 270,
+                            placeholder: (context, url) => Container(
+                              width: 90,
+                              height: 135,
+                              color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
+                              child: const Center(
+                                child: CupertinoActivityIndicator(radius: 10),
+                              ),
+                            ),
+                            errorWidget: (context, error, stack) => _buildPlaceholderPoster(isDark),
+                          )
+                        : _buildPlaceholderPoster(isDark),
                   ),
-                ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            entity.title,
+                            style: TextStyle(
+                              fontFamily: _roundedFontFamily,
+                              color: textColor,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              height: 1.2,
+                              letterSpacing: -0.25,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (rating != null && rating.isNotEmpty) ...[
+                          const SizedBox(width: 6),
+                          _RatingSourceBadge(
+                            rating: rating,
+                            source: ratingSource,
+                            votes: imdbVotes,
+                            rottenTomatoes: rottenTomatoes,
+                            title: entity.title,
+                            isDark: isDark,
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (subtitleParts.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitleParts,
+                        style: TextStyle(
+                          fontFamily: _fontFamily,
+                          color: textColor.withValues(alpha: 0.55),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.1,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    if (descriptionText != null && descriptionText.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      LatyrExpandableText(
+                        text: descriptionText,
+                        maxLines: 2,
+                        style: TextStyle(
+                          fontFamily: _fontFamily,
+                          color: textColor.withValues(alpha: 0.75),
+                          fontSize: 12,
+                          height: 1.35,
+                          letterSpacing: -0.1,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: _FlavoredStreamingCtaButton(
+                        brand: streamingBrand,
+                        title: entity.title,
+                        url: streamingDeepLink ?? entity.externalUrl,
+                        platform: streamingPlatform,
+                        isDark: isDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderPoster(bool isDark) {
+    return Container(
+      width: 90,
+      height: 135,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: const Center(
+        child: Icon(CupertinoIcons.film, color: Color(0xFFBF5AF2), size: 30),
+      ),
+    );
+  }
+}
+
+class _RatingSourceBadge extends StatelessWidget {
+  final String rating;
+  final String source;
+  final String? votes;
+  final String? rottenTomatoes;
+  final String? title;
+  final bool isDark;
+
+  const _RatingSourceBadge({
+    required this.rating,
+    required this.source,
+    this.votes,
+    this.rottenTomatoes,
+    this.title,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isImdb = source.toUpperCase() == 'IMDB';
+    final accentColor = isImdb ? const Color(0xFFF5C518) : const Color(0xFF01B4E4);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (title != null) {
+          _showRatingSheet(context, accentColor);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+        decoration: BoxDecoration(
+          color: accentColor.withValues(alpha: isDark ? 0.22 : 0.15),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: accentColor.withValues(alpha: isDark ? 0.55 : 0.38),
+            width: 0.8,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('★', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 10.5)),
+            const SizedBox(width: 3),
+            Text(
+              rating,
+              style: TextStyle(
+                fontFamily: _fontFamily,
+                color: isDark ? Colors.white : Colors.black,
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(width: 3),
+            Text(
+              source,
+              style: TextStyle(
+                fontFamily: _fontFamily,
+                color: accentColor,
+                fontSize: 8.5,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.3,
               ),
             ),
           ],
@@ -185,16 +320,121 @@ class _MovieShowCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholderPoster(bool isDark) {
-    return Container(
-      width: 56,
-      height: 80,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-        borderRadius: BorderRadius.circular(8),
+  void _showRatingSheet(BuildContext context, Color accentColor) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: Text(
+          title ?? 'Rating & Verification',
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+        ),
+        message: Column(
+          children: [
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('★', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 20)),
+                const SizedBox(width: 6),
+                Text(
+                  '$rating / 10 ($source)',
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                ),
+              ],
+            ),
+            if (votes != null && votes!.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                '$votes global user ratings on IMDb',
+                style: const TextStyle(fontSize: 12.5),
+              ),
+            ],
+            if (rottenTomatoes != null && rottenTomatoes!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                '🍅 Rotten Tomatoes: $rottenTomatoes Tomatometer',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ],
+            const SizedBox(height: 12),
+            const Text(
+              'Attribution: IMDb is a registered trademark of IMDb.com, Inc. Ratings are sourced from public entertainment databases under nominative fair use for identification.',
+              style: TextStyle(fontSize: 10.5, color: CupertinoColors.systemGrey),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('Close'),
+        ),
       ),
-      child: const Center(
-        child: Icon(CupertinoIcons.film, color: Color(0xFFBF5AF2), size: 24),
+    );
+  }
+}
+
+
+class _FlavoredStreamingCtaButton extends StatelessWidget {
+  final StreamingBrand brand;
+  final String title;
+  final String? url;
+  final String? platform;
+  final bool isDark;
+
+  const _FlavoredStreamingCtaButton({
+    required this.brand,
+    required this.title,
+    required this.url,
+    required this.platform,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = isDark ? Colors.white : Colors.black;
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: () {
+        StreamingBrand.launchStreamingOrSearch(
+          url: url,
+          title: title,
+          platform: platform,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: brand.brandColor.withValues(alpha: isDark ? 0.25 : 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: brand.brandColor.withValues(alpha: isDark ? 0.65 : 0.4),
+            width: 0.9,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            brand.icon,
+            const SizedBox(width: 5),
+            Text(
+              brand.actionLabel,
+              style: TextStyle(
+                fontFamily: _fontFamily,
+                color: textColor,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              CupertinoIcons.play_arrow_solid,
+              size: 9,
+              color: textColor.withValues(alpha: 0.75),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -610,42 +850,6 @@ class _CtaButton extends StatelessWidget {
   }
 }
 
-class _PillBadge extends StatelessWidget {
-  final String label;
-  final String emoji;
-  final Color textColor;
-  final bool isDark;
-
-  const _PillBadge({required this.label, required this.emoji, required this.textColor, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(emoji, style: const TextStyle(fontFamily: _fontFamily, fontSize: 10)),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: _fontFamily,
-              color: textColor,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _TypeInfo {
   final IconData icon;

@@ -43,6 +43,22 @@ This document defines the core architecture principles, coding standards, and de
 - **Never commit secrets, tokens, credentials, or private config files** (`.env`, `*.key`, `*.keystore`, `google-services.json`, `local.properties`).
 - Security filters must validate tokens statelessly and inject standard `AuthenticatedUser` principals into Spring's `SecurityContextHolder`.
 
+### 6. External Adapter Facades & Zero-Coupling Rule
+- All external third-party integrations (GitHub, TMDB, OMDb, Apple Music, Apify, Firebase) **MUST** be abstracted behind an interface/facade in `com.latyr.api.client` or `adapter/`.
+- Services and entity enrichers depend **ONLY** on the facade interface, never directly on concrete HTTP clients, raw vendor JSON schemas, or external SDKs.
+- External payloads must be mapped immediately to clean, immutable internal DTO records. Swapping an external provider (e.g. switching GitHub REST to GraphQL or a self-hosted mirror) must require zero modifications to business or orchestration code.
+
+### 7. Resolution Strategy & Audit Trail Tracking
+- Multi-strategy enrichment pipelines (e.g. Direct Lookup vs. Search Fallback) **MUST** track and persist full resolution provenance and audit telemetry in the entity's JSONB `metadata`:
+  - `resolution_strategy`: (e.g. `DIRECT_LOOKUP_SUCCESS`, `SEARCH_FALLBACK_SUCCESS`, `DOWNGRADED_TO_TOOL`, `CACHED`)
+  - `resolution_source`: (e.g. `GITHUB_REST_V3`, `TMDB_OMDB_HYBRID`)
+  - `predicted_target`: what AI suggested before validation
+  - `resolved_target`: actual canonical identifier resolved
+  - `fallback_reason`: why the primary strategy fell back (if applicable)
+  - `resolution_latency_ms`: execution duration for performance benchmarking
+  - `resolved_at`: ISO-8601 timestamp
+
+
 ---
 
 ## 🎨 Design Language & UI Philosophy

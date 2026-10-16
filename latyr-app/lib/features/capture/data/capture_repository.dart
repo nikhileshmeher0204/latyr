@@ -143,6 +143,29 @@ class CaptureRepository {
           );
           debugPrint('[CaptureRepo] Inserted new capture $captureId to COMPLETED via SSE');
         }
+      } else if (event.eventType == 'ENTITY_ENRICHED') {
+        final captureId = event.data['capture_id']?.toString();
+        if (captureId != null) {
+          final existing = await db.getCaptureByServerId(captureId);
+          if (existing != null) {
+            try {
+              final detailResp = await apiClient.getCaptureDetail(captureId);
+              final detailData = detailResp.data;
+              if (detailData != null && detailData['entities'] != null) {
+                await db.updateCapture(
+                  LocalCapturesCompanion(
+                    id: Value(existing.id),
+                    entitiesJson: Value(jsonEncode(detailData['entities'])),
+                    updatedAt: Value(DateTime.now()),
+                  ),
+                );
+                debugPrint('[CaptureRepo] Updated capture ${existing.id} entities via ENTITY_ENRICHED SSE');
+              }
+            } catch (e) {
+              debugPrint('[CaptureRepo] Failed to refresh entities on ENTITY_ENRICHED: $e');
+            }
+          }
+        }
       } else if (event.eventType == 'CAPTURE_FAILED') {
         final existing = await db.getCaptureByServerId(captureId);
         if (existing != null) {
@@ -294,9 +317,17 @@ class CaptureRepository {
               }
               final id = existing?.id ?? _uuid.v4();
 
-              // If existing item lacks entities, fetch detail
+              final serverUpdatedAt = raw['updated_at'] != null
+                  ? DateTime.tryParse(raw['updated_at'].toString())
+                  : null;
+
+              // If existing item lacks entities or has newer updates on server, fetch detail
               String? entitiesJson = existing?.entitiesJson;
-              if (entitiesJson == null || entitiesJson.isEmpty) {
+              final bool needsEntityRefresh = entitiesJson == null ||
+                  entitiesJson.isEmpty ||
+                  (serverUpdatedAt != null && (existing?.updatedAt == null || serverUpdatedAt.isAfter(existing!.updatedAt)));
+
+              if (needsEntityRefresh) {
                 try {
                   final detailResp = await apiClient.getCaptureDetail(serverId);
                   final detailData = detailResp.data;
@@ -316,9 +347,6 @@ class CaptureRepository {
               final rawThumbnail = raw['thumbnail_url']?.toString();
               final serverCreatedAt = raw['created_at'] != null
                   ? DateTime.tryParse(raw['created_at'].toString())
-                  : null;
-              final serverUpdatedAt = raw['updated_at'] != null
-                  ? DateTime.tryParse(raw['updated_at'].toString())
                   : null;
 
               if (existing != null) {

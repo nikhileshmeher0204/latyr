@@ -77,14 +77,14 @@ class _LatyrTabNavigationScreenState extends State<LatyrTabNavigationScreen> {
   Widget build(BuildContext context) {
     final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
 
-    SystemChrome.setSystemUIOverlayStyle(
-      (isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark).copyWith(
-        statusBarColor: const Color(0x00000000), // Ensure transparent status bar
-      ),
+    final overlayStyle = (isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark).copyWith(
+      statusBarColor: const Color(0x00000000), // Ensure transparent status bar
     );
 
-    return Stack(
-      children: [
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: Stack(
+        children: [
         PageView(
           controller: _pageController,
           physics: const NeverScrollableScrollPhysics(), // Disable swipe-to-scroll to match tab bar behavior
@@ -104,8 +104,9 @@ class _LatyrTabNavigationScreenState extends State<LatyrTabNavigationScreen> {
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildFloatingNavBar(bool isDark) {
     // Semi-transparent colors for frosted glass
