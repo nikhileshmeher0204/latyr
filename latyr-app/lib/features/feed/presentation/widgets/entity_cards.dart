@@ -463,15 +463,16 @@ class _GitHubRepoCard extends StatelessWidget {
     final textColor = isDark ? Colors.white : Colors.black;
     final borderColor = isDark ? const Color(0xFF30363D) : const Color(0xFFD0D7DE);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        Navigator.of(context).push(
-          CupertinoPageRoute(
-            builder: (_) => GitHubRepoDetailScreen(entity: entity),
-          ),
-        );
-      },
+    return RepaintBoundary(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          Navigator.of(context).push(
+            CupertinoPageRoute(
+              builder: (_) => GitHubRepoDetailScreen(entity: entity),
+            ),
+          );
+        },
       child: _CardContainer(
         cardColor: cardColor,
         isEmbedded: isEmbedded,
@@ -609,8 +610,9 @@ class _GitHubRepoCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDefaultSquare() {
     return _buildIconSquare(
