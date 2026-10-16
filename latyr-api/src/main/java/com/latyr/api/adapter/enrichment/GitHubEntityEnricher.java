@@ -39,6 +39,38 @@ public class GitHubEntityEnricher implements EntityEnricher {
     }
 
     @Override
+    public boolean supports(AIProvider.AIEntity entity) {
+        if (entity == null) return false;
+        if (entity.entityType() == EntityType.GITHUB_REPO) {
+            return true;
+        }
+        // Safety Net: If AI classified as generic TOOL, check for strong GitHub/open-source signals
+        if (entity.entityType() == EntityType.TOOL) {
+            Map<String, Object> meta = entity.metadata();
+            if (meta != null) {
+                if (meta.containsKey("predicted_owner_and_repo") && meta.get("predicted_owner_and_repo") != null) {
+                    return true;
+                }
+                if (meta.containsKey("search_query_keywords") && meta.get("search_query_keywords") != null) {
+                    String kw = meta.get("search_query_keywords").toString().toLowerCase(Locale.ROOT);
+                    if (kw.contains("github") || kw.contains("repo") || kw.contains("open source") || kw.contains("open-source")) {
+                        return true;
+                    }
+                }
+            }
+            String desc = entity.description() != null ? entity.description().toLowerCase(Locale.ROOT) : "";
+            if (desc.contains("github") || desc.contains("open-source") || desc.contains("open source") || desc.contains("starred")) {
+                return true;
+            }
+            String url = entity.externalUrl() != null ? entity.externalUrl().toLowerCase(Locale.ROOT) : "";
+            if (url.contains("github.com")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public AIProvider.AIEntity enrich(AIProvider.AIEntity entity) {
         long startTime = System.currentTimeMillis();
         Map<String, Object> metadata = new HashMap<>(entity.metadata() != null ? entity.metadata() : Map.of());
@@ -82,30 +114,42 @@ public class GitHubEntityEnricher implements EntityEnricher {
 
         // 2. Star-Ranked Search Fallback Strategy (30 req/min bucket)
         if (resolvedDetails == null) {
-            String searchTerm = extractSearchTerm(entity, metadata);
-            if (searchTerm != null && !searchTerm.isBlank()) {
-                searchQueryUsed = searchTerm + " in:name";
+            String cleanTitle = cleanSearchTerm(entity.title());
+            String keywordQuery = extractKeywordSearchTerm(metadata);
+
+            // 2a. Precision Search: clean title with in:name (e.g. "MiroFish in:name")
+            if (!cleanTitle.isBlank()) {
+                searchQueryUsed = cleanTitle + " in:name";
                 List<GitHubSearchResultDTO.ItemDTO> searchResults = gitHubClient.searchRepositories(searchQueryUsed, 3);
-
-                // If in:name yielded nothing, try broader keyword search
-                if (searchResults.isEmpty()) {
-                    searchQueryUsed = searchTerm;
-                    searchResults = gitHubClient.searchRepositories(searchQueryUsed, 3);
+                resolvedDetails = evaluateTopMatch(searchResults);
+                if (resolvedDetails != null) {
+                    resolvedTarget = resolvedDetails.fullName();
+                    strategyApplied = "SEARCH_FALLBACK_SUCCESS";
+                    log.info("Search fallback (in:name) succeeded for '{}' -> '{}' (★ {})", cleanTitle, resolvedTarget, resolvedDetails.stars());
                 }
+            }
 
-                if (!searchResults.isEmpty()) {
-                    GitHubSearchResultDTO.ItemDTO topMatch = searchResults.get(0);
-                    if (topMatch.stars() >= MIN_SEARCH_STARS && topMatch.owner() != null) {
-                        Optional<GitHubRepoDetailsDTO> fullDetailsOpt = gitHubClient.getRepository(topMatch.owner().login(), topMatch.name());
-                        if (fullDetailsOpt.isPresent()) {
-                            resolvedDetails = fullDetailsOpt.get();
-                            resolvedTarget = resolvedDetails.fullName();
-                            strategyApplied = "SEARCH_FALLBACK_SUCCESS";
-                            log.info("Search fallback succeeded for query '{}' -> '{}' (★ {})", searchTerm, resolvedTarget, resolvedDetails.stars());
-                        }
-                    } else {
-                        log.debug("Top search result '{}' had insufficient stars (★ {} < {})", topMatch.fullName(), topMatch.stars(), MIN_SEARCH_STARS);
-                    }
+            // 2b. Broader Search: clean title across name, description, and topics (e.g. "MiroFish")
+            if (resolvedDetails == null && !cleanTitle.isBlank()) {
+                searchQueryUsed = cleanTitle;
+                List<GitHubSearchResultDTO.ItemDTO> searchResults = gitHubClient.searchRepositories(searchQueryUsed, 3);
+                resolvedDetails = evaluateTopMatch(searchResults);
+                if (resolvedDetails != null) {
+                    resolvedTarget = resolvedDetails.fullName();
+                    strategyApplied = "SEARCH_FALLBACK_SUCCESS";
+                    log.info("Search fallback (broad title) succeeded for '{}' -> '{}' (★ {})", cleanTitle, resolvedTarget, resolvedDetails.stars());
+                }
+            }
+
+            // 2c. Keyword Search: search_query_keywords if title search didn't resolve
+            if (resolvedDetails == null && keywordQuery != null && !keywordQuery.isBlank() && !keywordQuery.equalsIgnoreCase(cleanTitle)) {
+                searchQueryUsed = keywordQuery;
+                List<GitHubSearchResultDTO.ItemDTO> searchResults = gitHubClient.searchRepositories(searchQueryUsed, 3);
+                resolvedDetails = evaluateTopMatch(searchResults);
+                if (resolvedDetails != null) {
+                    resolvedTarget = resolvedDetails.fullName();
+                    strategyApplied = "SEARCH_FALLBACK_SUCCESS";
+                    log.info("Search fallback (keywords) succeeded for '{}' -> '{}' (★ {})", keywordQuery, resolvedTarget, resolvedDetails.stars());
                 }
             }
         }
@@ -213,16 +257,32 @@ public class GitHubEntityEnricher implements EntityEnricher {
         return null;
     }
 
-    private String extractSearchTerm(AIProvider.AIEntity entity, Map<String, Object> metadata) {
-        if (metadata.containsKey("search_query_keywords") && metadata.get("search_query_keywords") != null) {
+    private GitHubRepoDetailsDTO evaluateTopMatch(List<GitHubSearchResultDTO.ItemDTO> searchResults) {
+        if (searchResults == null || searchResults.isEmpty()) {
+            return null;
+        }
+        GitHubSearchResultDTO.ItemDTO topMatch = searchResults.get(0);
+        if (topMatch.stars() >= MIN_SEARCH_STARS && topMatch.owner() != null) {
+            Optional<GitHubRepoDetailsDTO> fullDetailsOpt = gitHubClient.getRepository(topMatch.owner().login(), topMatch.name());
+            return fullDetailsOpt.orElse(null);
+        } else {
+            log.debug("Top search result '{}' had insufficient stars (★ {} < {})", topMatch.fullName(), topMatch.stars(), MIN_SEARCH_STARS);
+            return null;
+        }
+    }
+
+    private String cleanSearchTerm(String title) {
+        if (title == null) return "";
+        return title.replaceAll("[^a-zA-Z0-9_-]", " ").trim();
+    }
+
+    private String extractKeywordSearchTerm(Map<String, Object> metadata) {
+        if (metadata != null && metadata.containsKey("search_query_keywords") && metadata.get("search_query_keywords") != null) {
             String keywords = metadata.get("search_query_keywords").toString().trim();
             if (!keywords.isEmpty()) {
                 return keywords;
             }
         }
-
-        String title = entity.title();
-        if (title == null) return "";
-        return title.replaceAll("[^a-zA-Z0-9\\s]", "").trim();
+        return null;
     }
 }

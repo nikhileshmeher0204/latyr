@@ -188,4 +188,70 @@ class GitHubEntityEnricherTest {
         assertEquals("DOWNGRADED_TO_TOOL", audit.get("strategy_applied"));
         assertNull(audit.get("resolved_target"));
     }
+
+    @Test
+    @DisplayName("Promotes TOOL entity to GITHUB_REPO when GitHub signals are present and repo resolves")
+    void testPromotesToolWithGitHubSignalsToGitHubRepo() {
+        GitHubSearchResultDTO.ItemDTO searchItem = new GitHubSearchResultDTO.ItemDTO(
+                1104332987,
+                "MiroFish",
+                "666ghj/MiroFish",
+                "https://github.com/666ghj/MiroFish",
+                "Universal Swarm Intelligence Engine",
+                79000,
+                12000,
+                "Python",
+                false,
+                new GitHubRepoDetailsDTO.OwnerDTO("666ghj", "https://avatars.githubusercontent.com/u/110395318", "User")
+        );
+
+        when(gitHubClient.searchRepositories(contains("in:name"), eq(3)))
+                .thenReturn(List.of(searchItem));
+
+        GitHubRepoDetailsDTO fullDetailsMock = new GitHubRepoDetailsDTO(
+                "MiroFish",
+                "666ghj/MiroFish",
+                "A Simple and Universal Swarm Intelligence Engine",
+                "https://github.com/666ghj/MiroFish",
+                "https://mirofish.ai",
+                79000,
+                12000,
+                148,
+                79000,
+                "Python",
+                new GitHubRepoDetailsDTO.OwnerDTO("666ghj", "https://avatars.githubusercontent.com/u/110395318", "User"),
+                new GitHubRepoDetailsDTO.LicenseDTO("agpl-3.0", "AGPL-3.0", "AGPL-3.0", ""),
+                List.of("swarm"),
+                "main",
+                "2026-10-16T12:00:00Z",
+                false,
+                false
+        );
+
+        when(gitHubClient.getRepository("666ghj", "MiroFish")).thenReturn(Optional.of(fullDetailsMock));
+
+        AIProvider.AIEntity rawToolEntity = new AIProvider.AIEntity(
+                EntityType.TOOL,
+                "MiroFish",
+                "An open-source AI tool that simulates market reactions",
+                null,
+                ActionCTA.EXPLORE,
+                Map.of(
+                        "predicted_owner_and_repo", "MiroFish/MiroFish",
+                        "search_query_keywords", "MiroFish AI market simulation"
+                )
+        );
+
+        assertTrue(enricher.supports(rawToolEntity));
+
+        AIProvider.AIEntity enriched = enricher.enrich(rawToolEntity);
+
+        assertNotNull(enriched);
+        assertEquals(EntityType.GITHUB_REPO, enriched.entityType());
+        assertEquals("666ghj/MiroFish", enriched.title());
+        assertEquals("https://github.com/666ghj/MiroFish", enriched.externalUrl());
+        assertEquals(ActionCTA.OPEN_GITHUB, enriched.actionCta());
+        assertEquals(79000, enriched.metadata().get("stars"));
+        assertEquals("Python", enriched.metadata().get("language"));
+    }
 }

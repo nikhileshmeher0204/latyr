@@ -78,6 +78,7 @@ public class EntityEnrichmentRetryWorker {
             if (!enrichedList.isEmpty()) {
                 AIProvider.AIEntity enriched = enrichedList.get(0);
 
+                entity.setEntityType(enriched.entityType());
                 entity.setTitle(enriched.title());
                 entity.setExternalUrl(enriched.externalUrl());
                 entity.setActionCta(enriched.actionCta());

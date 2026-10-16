@@ -60,7 +60,7 @@ public class CompositeEntityEnricher implements EntityEnrichmentProvider {
         if (rawEntity == null) return null;
 
         for (EntityEnricher enricher : enrichers) {
-            if (enricher.supports(rawEntity.entityType())) {
+            if (enricher.supports(rawEntity)) {
                 try {
                     return enricher.enrich(rawEntity);
                 } catch (Exception e) {
