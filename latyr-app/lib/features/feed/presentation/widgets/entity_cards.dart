@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latyr_app/core/design/latyr_colors.dart';
-import 'package:latyr_app/core/widgets/latyr_expandable_text.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:latyr_app/features/feed/presentation/screens/entity_detail_screen.dart';
 import 'package:latyr_app/features/feed/presentation/screens/github_repo_detail_screen.dart';
@@ -73,12 +72,15 @@ class _MovieShowCard extends StatelessWidget {
     final formatLabel = isTv ? 'Series' : 'Movie';
     final durationOrSeasons = isTv ? seasons : runtime;
 
-    final subtitleParts = [
-      formatLabel,
+    final metadataElements = [
       if (releaseYear != null && releaseYear.isNotEmpty) releaseYear,
       if (durationOrSeasons != null && durationOrSeasons.isNotEmpty) durationOrSeasons,
       if (contentRating != null && contentRating.isNotEmpty && contentRating != 'N/A') contentRating,
-    ].join(' · ');
+    ];
+    if (metadataElements.isEmpty) {
+      metadataElements.add(formatLabel);
+    }
+    final subtitleParts = metadataElements.join(' · ');
 
     final descriptionText = (entity.description != null && entity.description!.isNotEmpty)
         ? entity.description!
@@ -168,12 +170,36 @@ class _MovieShowCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (subtitleParts.isNotEmpty || (rating != null && rating.isNotEmpty)) ...[
+                    if ((rating != null && rating.isNotEmpty) ||
+                        subtitleParts.isNotEmpty ||
+                        (streamingPlatform != null && streamingPlatform.isNotEmpty)) ...[
                       const SizedBox(height: 4),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          if (subtitleParts.isNotEmpty)
+                          if (rating != null && rating.isNotEmpty) ...[
+                            _RatingSourceBadge(
+                              rating: rating,
+                              source: ratingSource,
+                              votes: imdbVotes,
+                              rottenTomatoes: rottenTomatoes,
+                              title: entity.title,
+                              isDark: isDark,
+                            ),
+                          ],
+                          if (subtitleParts.isNotEmpty) ...[
+                            if (rating != null && rating.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 5),
+                                child: Text(
+                                  '·',
+                                  style: TextStyle(
+                                    color: textColor.withValues(alpha: 0.40),
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
                             Flexible(
                               child: Text(
                                 subtitleParts,
@@ -188,68 +214,52 @@ class _MovieShowCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          if (rating != null && rating.isNotEmpty) ...[
-                            if (subtitleParts.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 5),
-                                child: Text(
-                                  '·',
-                                  style: TextStyle(
-                                    color: textColor.withValues(alpha: 0.40),
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          ],
+                          if (streamingPlatform != null && streamingPlatform.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 5),
+                              child: Text(
+                                '·',
+                                style: TextStyle(
+                                  color: textColor.withValues(alpha: 0.40),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            _RatingSourceBadge(
-                              rating: rating,
-                              source: ratingSource,
-                              votes: imdbVotes,
-                              rottenTomatoes: rottenTomatoes,
-                              title: entity.title,
-                              isDark: isDark,
                             ),
+                            streamingBrand.icon,
                           ],
                         ],
                       ),
                     ],
                     if (descriptionText != null && descriptionText.isNotEmpty) ...[
                       const SizedBox(height: 6),
-                      LatyrExpandableText(
-                        text: descriptionText,
+                      Text(
+                        descriptionText,
                         maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontFamily: _fontFamily,
-                          color: textColor.withValues(alpha: 0.75),
+                          color: textColor.withValues(alpha: 0.72),
                           fontSize: 12,
                           height: 1.35,
                           letterSpacing: -0.1,
                         ),
                       ),
                     ],
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        if (streamingPlatform != null && streamingPlatform.isNotEmpty)
-                          _StreamingPlatformBadge(
-                            brand: streamingBrand,
-                            isDark: isDark,
-                          )
-                        else
-                          const SizedBox.shrink(),
-                        _OpenIntentButton(
-                          isDark: isDark,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              CupertinoPageRoute(
-                                builder: (context) => EntityDetailScreen(entity: entity),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: _OpenIntentButton(
+                        isDark: isDark,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            CupertinoPageRoute(
+                              builder: (context) => EntityDetailScreen(entity: entity),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -418,39 +428,6 @@ class _RatingSourceBadge extends StatelessWidget {
   }
 }
 
-class _StreamingPlatformBadge extends StatelessWidget {
-  final StreamingBrand brand;
-  final bool isDark;
-
-  const _StreamingPlatformBadge({
-    required this.brand,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textColor = isDark ? Colors.white : Colors.black;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        brand.icon,
-        const SizedBox(width: 5.5),
-        Text(
-          brand.name,
-          style: TextStyle(
-            fontFamily: _fontFamily,
-            color: textColor.withValues(alpha: 0.60),
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.1,
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class _OpenIntentButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -672,10 +649,11 @@ class _GitHubRepoCard extends StatelessWidget {
               ],
             ),
             if (entity.description != null && entity.description!.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              LatyrExpandableText(
-                text: entity.description!,
+              const SizedBox(height: 6),
+              Text(
+                entity.description!,
                 maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontFamily: _fontFamily,
                   color: textColor.withValues(alpha: 0.72),
@@ -685,48 +663,19 @@ class _GitHubRepoCard extends StatelessWidget {
                 ),
               ),
             ],
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icons/github_mark.svg',
-                      width: 12,
-                      height: 12,
-                      colorFilter: ColorFilter.mode(
-                        textColor.withValues(alpha: 0.55),
-                        BlendMode.srcIn,
-                      ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: _OpenIntentButton(
+                isDark: isDark,
+                onTap: () {
+                  Navigator.of(context).push(
+                    CupertinoPageRoute(
+                      builder: (_) => GitHubRepoDetailScreen(entity: entity),
                     ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'GitHub',
-                      style: TextStyle(
-                        fontFamily: _fontFamily,
-                        color: textColor.withValues(alpha: 0.55),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.1,
-                      ),
-                    ),
-                  ],
-                ),
-                _OpenIntentButton(
-                  isDark: isDark,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      CupertinoPageRoute(
-                        builder: (_) => GitHubRepoDetailScreen(entity: entity),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                  );
+                },
+              ),
             ),
           ],
         ),
