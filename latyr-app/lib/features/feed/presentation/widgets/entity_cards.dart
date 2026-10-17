@@ -127,141 +127,146 @@ class _MovieShowCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: (posterUrl != null && posterUrl.isNotEmpty)
-                        ? CachedNetworkImage(
-                            imageUrl: posterUrl,
-                            width: 90,
-                            height: 135,
-                            fit: BoxFit.cover,
-                            fadeInDuration: const Duration(milliseconds: 150),
-                            fadeOutDuration: const Duration(milliseconds: 100),
-                            memCacheWidth: 270,
-                            placeholder: (context, url) => Container(
-                              width: 90,
-                              height: 135,
-                              color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-                              child: const Center(
-                                child: CupertinoActivityIndicator(radius: 10),
-                              ),
-                            ),
-                            errorWidget: (context, error, stack) => _buildPlaceholderPoster(isDark),
-                          )
-                        : _buildPlaceholderPoster(isDark),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: (posterUrl != null && posterUrl.isNotEmpty)
+                              ? CachedNetworkImage(
+                                  imageUrl: posterUrl,
+                                  width: 90,
+                                  height: 135,
+                                  fit: BoxFit.cover,
+                                  fadeInDuration: const Duration(milliseconds: 150),
+                                  fadeOutDuration: const Duration(milliseconds: 100),
+                                  memCacheWidth: 270,
+                                  placeholder: (context, url) => Container(
+                                    width: 90,
+                                    height: 135,
+                                    color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
+                                    child: const Center(
+                                      child: CupertinoActivityIndicator(radius: 10),
+                                    ),
+                                  ),
+                                  errorWidget: (context, error, stack) => _buildPlaceholderPoster(isDark),
+                                )
+                              : _buildPlaceholderPoster(isDark),
+                        ),
+                      ),
+                      if (streamingPlatform != null && streamingPlatform.isNotEmpty)
+                        Positioned(
+                          top: 6,
+                          right: 6,
+                          child: _PosterStreamingBadge(brand: streamingBrand),
+                        ),
+                    ],
                   ),
                 ),
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      entity.title,
-                      style: TextStyle(
-                        fontFamily: _roundedFontFamily,
-                        color: textColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        height: 1.2,
-                        letterSpacing: -0.25,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if ((rating != null && rating.isNotEmpty) ||
-                        subtitleParts.isNotEmpty ||
-                        (streamingPlatform != null && streamingPlatform.isNotEmpty)) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 135),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (rating != null && rating.isNotEmpty) ...[
-                            _RatingSourceBadge(
-                              rating: rating,
-                              source: ratingSource,
-                              votes: imdbVotes,
-                              rottenTomatoes: rottenTomatoes,
-                              title: entity.title,
-                              isDark: isDark,
+                          Text(
+                            entity.title,
+                            style: TextStyle(
+                              fontFamily: _roundedFontFamily,
+                              color: textColor,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              height: 1.2,
+                              letterSpacing: -0.25,
                             ),
-                          ],
-                          if (subtitleParts.isNotEmpty) ...[
-                            if (rating != null && rating.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 5),
-                                child: Text(
-                                  '·',
-                                  style: TextStyle(
-                                    color: textColor.withValues(alpha: 0.40),
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w600,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if ((rating != null && rating.isNotEmpty) || subtitleParts.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                if (rating != null && rating.isNotEmpty) ...[
+                                  _RatingSourceBadge(
+                                    rating: rating,
+                                    source: ratingSource,
+                                    votes: imdbVotes,
+                                    rottenTomatoes: rottenTomatoes,
+                                    title: entity.title,
+                                    isDark: isDark,
                                   ),
-                                ),
-                              ),
-                            Flexible(
-                              child: Text(
-                                subtitleParts,
-                                style: TextStyle(
-                                  fontFamily: _fontFamily,
-                                  color: textColor.withValues(alpha: 0.55),
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: -0.1,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                                ],
+                                if (subtitleParts.isNotEmpty) ...[
+                                  if (rating != null && rating.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                                      child: Text(
+                                        '·',
+                                        style: TextStyle(
+                                          color: textColor.withValues(alpha: 0.40),
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  Flexible(
+                                    child: Text(
+                                      subtitleParts,
+                                      style: TextStyle(
+                                        fontFamily: _fontFamily,
+                                        color: textColor.withValues(alpha: 0.55),
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: -0.1,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
-                          if (streamingPlatform != null && streamingPlatform.isNotEmpty) ...[
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 5),
-                              child: Text(
-                                '·',
-                                style: TextStyle(
-                                  color: textColor.withValues(alpha: 0.40),
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                          if (descriptionText != null && descriptionText.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              descriptionText,
+                              maxLines: 4,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: _fontFamily,
+                                color: textColor.withValues(alpha: 0.72),
+                                fontSize: 12,
+                                height: 1.35,
+                                letterSpacing: -0.1,
                               ),
                             ),
-                            streamingBrand.icon,
                           ],
                         ],
                       ),
-                    ],
-                    if (descriptionText != null && descriptionText.isNotEmpty) ...[
                       const SizedBox(height: 6),
-                      Text(
-                        descriptionText,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: _fontFamily,
-                          color: textColor.withValues(alpha: 0.72),
-                          fontSize: 12,
-                          height: 1.35,
-                          letterSpacing: -0.1,
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: _OpenIntentButton(
+                          isDark: isDark,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              CupertinoPageRoute(
+                                builder: (context) => EntityDetailScreen(entity: entity),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: _OpenIntentButton(
-                        isDark: isDark,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            CupertinoPageRoute(
-                              builder: (context) => EntityDetailScreen(entity: entity),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -428,6 +433,36 @@ class _RatingSourceBadge extends StatelessWidget {
   }
 }
 
+class _PosterStreamingBadge extends StatelessWidget {
+  final StreamingBrand brand;
+
+  const _PosterStreamingBadge({
+    required this.brand,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(3.5),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.20),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 4,
+            offset: const Offset(0, 1.5),
+          ),
+        ],
+      ),
+      child: brand.icon,
+    );
+  }
+}
 
 class _OpenIntentButton extends StatelessWidget {
   final VoidCallback onTap;
