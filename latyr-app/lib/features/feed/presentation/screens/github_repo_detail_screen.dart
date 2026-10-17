@@ -653,9 +653,19 @@ class GitHubRepoDetailScreen extends StatelessWidget {
   }
 
   void _launchExternalUrl(String url) async {
+    debugPrint('[GitHubRepoDetail] _launchExternalUrl called with: $url');
     final uri = Uri.tryParse(url);
     if (uri != null) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      try {
+        final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+        debugPrint('[GitHubRepoDetail] launchUrl externalApplication result: $launched');
+        if (!launched) {
+          await launchUrl(uri, mode: LaunchMode.platformDefault);
+        }
+      } catch (e) {
+        debugPrint('[GitHubRepoDetail] launchUrl error: $e');
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
     }
   }
 

@@ -160,23 +160,58 @@ class StreamingBrand {
     required String title,
     String? platform,
   }) async {
-    String? target = url;
-    if (target == null || target.isEmpty) {
-      final p = (platform ?? '').toLowerCase();
-      final encoded = Uri.encodeComponent(title);
-      if (p.contains('netflix')) {
-        target = 'https://www.netflix.com/search?q=$encoded';
-      } else if (p.contains('prime')) {
-        target = 'https://www.amazon.com/s?k=$encoded&i=instant-video';
-      } else if (p.contains('apple')) {
-        target = 'https://tv.apple.com/search?term=$encoded';
+    final p = (platform ?? '').trim().toLowerCase();
+    final encoded = Uri.encodeComponent(title);
+    
+    // Determine the target URL:
+    // If the URL already targets the platform domain, use it directly.
+    // If url is null, empty, or an external non-platform URL (e.g. imdb.com or themoviedb.org) while
+    // the user is tapping a platform-branded button (e.g. "Watch on Netflix"), construct the platform deep link.
+    String target;
+    if (p.contains('netflix')) {
+      if (url != null && url.contains('netflix.com')) {
+        target = url;
       } else {
-        target = 'https://www.google.com/search?q=watch+$encoded';
+        target = 'https://www.netflix.com/search?q=$encoded';
       }
+    } else if (p.contains('prime') || p.contains('amazon')) {
+      if (url != null && (url.contains('amazon.com') || url.contains('primevideo.com'))) {
+        target = url;
+      } else {
+        target = 'https://www.amazon.com/s?k=$encoded&i=instant-video';
+      }
+    } else if (p.contains('apple')) {
+      if (url != null && url.contains('apple.com')) {
+        target = url;
+      } else {
+        target = 'https://tv.apple.com/search?term=$encoded';
+      }
+    } else if (p.contains('hotstar') || p.contains('disney')) {
+      if (url != null && url.contains('hotstar.com')) {
+        target = url;
+      } else {
+        target = 'https://www.hotstar.com/in/explore?search_query=$encoded';
+      }
+    } else {
+      target = (url != null && url.isNotEmpty)
+          ? url
+          : 'https://www.google.com/search?q=watch+$encoded';
     }
+
+    debugPrint('[StreamingBranding] Launching streaming target: $target (platform: $platform, title: $title)');
     final uri = Uri.tryParse(target);
-    if (uri != null && await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (uri != null) {
+      try {
+        final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+        debugPrint('[StreamingBranding] launchUrl externalApplication result: $launched for $uri');
+        if (!launched) {
+          final fallbackLaunched = await launchUrl(uri, mode: LaunchMode.platformDefault);
+          debugPrint('[StreamingBranding] launchUrl platformDefault fallback result: $fallbackLaunched for $uri');
+        }
+      } catch (e) {
+        debugPrint('[StreamingBranding] Error launching $uri externally: $e. Falling back to platformDefault.');
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
     }
   }
 }

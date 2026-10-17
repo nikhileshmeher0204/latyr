@@ -922,8 +922,15 @@ class _CtaButton extends StatelessWidget {
       onPressed: () async {
         if (url != null && url!.isNotEmpty) {
           final uri = Uri.tryParse(url!);
-          if (uri != null && await canLaunchUrl(uri)) {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          if (uri != null) {
+            try {
+              final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+              if (!launched) {
+                await launchUrl(uri, mode: LaunchMode.platformDefault);
+              }
+            } catch (_) {
+              await launchUrl(uri, mode: LaunchMode.platformDefault);
+            }
           }
         }
       },
