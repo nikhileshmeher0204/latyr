@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latyr_app/core/widgets/latyr_expandable_text.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/github_language_colors.dart';
+import 'package:latyr_app/features/feed/presentation/widgets/intent_detail_app_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const String _fontFamily = 'Inter';
@@ -66,76 +67,30 @@ class GitHubRepoDetailScreen extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // 1. Navigation Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(36, 36),
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: cardBg,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: borderColor, width: 0.8),
-                        ),
-                        child: Icon(
-                          CupertinoIcons.chevron_back,
-                          color: textColor,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        SvgPicture.asset(
-                          'assets/icons/github_mark.svg',
-                          width: 15,
-                          height: 15,
-                          colorFilter: ColorFilter.mode(
-                            textColor,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                        const SizedBox(width: 7),
-                        Text(
-                          'GitHub Repository',
-                          style: TextStyle(
-                            fontFamily: _fontFamily,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.2,
-                            color: subtextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(36, 36),
-                      onPressed: () => _copyToClipboard(context, repoUrl),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: cardBg,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: borderColor, width: 0.8),
-                        ),
-                        child: Icon(
-                          CupertinoIcons.link,
-                          color: textColor,
-                          size: 16,
-                        ),
-                      ),
-                    ),
-                  ],
+              // 1. Navigation Header (Consistent with CaptureDetailScreen)
+              IntentDetailAppBar(
+                title: 'GitHub Repository',
+                titleLeading: SvgPicture.asset(
+                  'assets/icons/github_mark.svg',
+                  width: 14,
+                  height: 14,
+                  colorFilter: ColorFilter.mode(
+                    textColor,
+                    BlendMode.srcIn,
+                  ),
                 ),
+                isDark: isDark,
+                actions: [
+                  IntentDetailAppBar.buildActionButton(
+                    isDark: isDark,
+                    onPressed: () => _copyToClipboard(context, repoUrl),
+                    child: Icon(
+                      CupertinoIcons.link,
+                      color: textColor,
+                      size: 18,
+                    ),
+                  ),
+                ],
               ),
 
               // 2. Main Scrollable Developer View

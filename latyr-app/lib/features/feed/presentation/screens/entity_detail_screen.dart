@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:latyr_app/core/widgets/latyr_progressive_blur.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
+import 'package:latyr_app/features/feed/presentation/widgets/intent_detail_app_bar.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/streaming_branding.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -450,39 +451,37 @@ class EntityDetailScreen extends StatelessWidget {
             ),
           ),
 
-          // 3. Floating Circular Frosted Glass Dismiss Button
+          // 3. Floating Standardized Frosted Glass Navigation Bar
           Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            left: 16,
-            child: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => Navigator.of(context).pop(),
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.55)
-                      : Colors.white.withValues(alpha: 0.90),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.2 : 0.08),
-                    width: 1.0,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.10),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  CupertinoIcons.xmark,
-                  color: isDark ? Colors.white : const Color(0xFF1D1D1F),
-                  size: 16,
-                ),
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IntentDetailAppBar(
+              title: formatLabel,
+              titleLeading: Icon(
+                isTv ? CupertinoIcons.tv : CupertinoIcons.film,
+                size: 15,
+                color: isDark ? CupertinoColors.white : const Color(0xFF1A1A1A),
               ),
+              isDark: isDark,
+              actions: [
+                if (imdbId != null && imdbId.isNotEmpty)
+                  IntentDetailAppBar.buildActionButton(
+                    isDark: isDark,
+                    onPressed: () {
+                      final url = 'https://www.imdb.com/title/$imdbId/';
+                      final uri = Uri.tryParse(url);
+                      if (uri != null) {
+                        launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    child: Icon(
+                      CupertinoIcons.link,
+                      color: isDark ? CupertinoColors.white : const Color(0xFF1A1A1A),
+                      size: 18,
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
