@@ -176,7 +176,9 @@ class _MovieShowCard extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          if ((rating != null && rating.isNotEmpty) || subtitleParts.isNotEmpty) ...[
+                          if ((rating != null && rating.isNotEmpty) ||
+                              subtitleParts.isNotEmpty ||
+                              (streamingPlatform != null && streamingPlatform.isNotEmpty)) ...[
                             const SizedBox(height: 4),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -191,8 +193,24 @@ class _MovieShowCard extends StatelessWidget {
                                     isDark: isDark,
                                   ),
                                 ],
-                                if (subtitleParts.isNotEmpty) ...[
+                                if (streamingPlatform != null && streamingPlatform.isNotEmpty) ...[
                                   if (rating != null && rating.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                                      child: Text(
+                                        '·',
+                                        style: TextStyle(
+                                          color: textColor.withValues(alpha: 0.40),
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  streamingBrand.icon,
+                                ],
+                                if (subtitleParts.isNotEmpty) ...[
+                                  if ((rating != null && rating.isNotEmpty) ||
+                                      (streamingPlatform != null && streamingPlatform.isNotEmpty))
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 5),
                                       child: Text(
@@ -240,25 +258,18 @@ class _MovieShowCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          if (streamingPlatform != null && streamingPlatform.isNotEmpty)
-                            streamingBrand.icon
-                          else
-                            const SizedBox.shrink(),
-                          _OpenIntentButton(
-                            isDark: isDark,
-                            onTap: () {
-                              Navigator.of(context).push(
-                                CupertinoPageRoute(
-                                  builder: (context) => EntityDetailScreen(entity: entity),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: _OpenIntentButton(
+                          isDark: isDark,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              CupertinoPageRoute(
+                                builder: (context) => EntityDetailScreen(entity: entity),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
