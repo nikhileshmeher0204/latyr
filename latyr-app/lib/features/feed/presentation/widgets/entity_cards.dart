@@ -176,14 +176,17 @@ class _MovieShowCard extends StatelessWidget {
                           ),
                         ),
                         if (rating != null && rating.isNotEmpty) ...[
-                          const SizedBox(width: 6),
-                          _RatingSourceBadge(
-                            rating: rating,
-                            source: ratingSource,
-                            votes: imdbVotes,
-                            rottenTomatoes: rottenTomatoes,
-                            title: entity.title,
-                            isDark: isDark,
+                          const SizedBox(width: 8),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: _RatingSourceBadge(
+                              rating: rating,
+                              source: ratingSource,
+                              votes: imdbVotes,
+                              rottenTomatoes: rottenTomatoes,
+                              title: entity.title,
+                              isDark: isDark,
+                            ),
                           ),
                         ],
                       ],
@@ -273,52 +276,70 @@ class _RatingSourceBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isImdb = source.toUpperCase() == 'IMDB';
-    final accentColor = isImdb ? const Color(0xFFF5C518) : const Color(0xFF01B4E4);
+    final textColor = isDark ? Colors.white : Colors.black;
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      minimumSize: Size.zero,
+      pressedOpacity: 0.6,
+      onPressed: () {
         if (title != null) {
-          _showRatingSheet(context, accentColor);
+          _showRatingSheet(context, const Color(0xFFF5C518));
         }
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
-        decoration: BoxDecoration(
-          color: accentColor.withValues(alpha: isDark ? 0.22 : 0.15),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: accentColor.withValues(alpha: isDark ? 0.55 : 0.38),
-            width: 0.8,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(
+            CupertinoIcons.star_fill,
+            size: 11,
+            color: Color(0xFFFFD60A),
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('★', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 10.5)),
-            const SizedBox(width: 3),
-            Text(
-              rating,
-              style: TextStyle(
-                fontFamily: _fontFamily,
-                color: isDark ? Colors.white : Colors.black,
-                fontSize: 10.5,
-                fontWeight: FontWeight.w800,
-              ),
+          const SizedBox(width: 3),
+          Text(
+            rating,
+            style: TextStyle(
+              fontFamily: _fontFamily,
+              color: textColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
+              height: 1.0,
             ),
-            const SizedBox(width: 3),
+          ),
+          const SizedBox(width: 4),
+          if (isImdb)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5C518),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: const Text(
+                'IMDb',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  color: Colors.black,
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.2,
+                  height: 1.0,
+                ),
+              ),
+            )
+          else
             Text(
               source,
               style: TextStyle(
                 fontFamily: _fontFamily,
-                color: accentColor,
-                fontSize: 8.5,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.3,
+                color: textColor.withValues(alpha: 0.6),
+                fontSize: 9.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.1,
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -337,7 +358,7 @@ class _RatingSourceBadge extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('★', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 20)),
+                const Icon(CupertinoIcons.star_fill, color: Color(0xFFFFD60A), size: 18),
                 const SizedBox(width: 6),
                 Text(
                   '$rating / 10 ($source)',
@@ -377,7 +398,6 @@ class _RatingSourceBadge extends StatelessWidget {
   }
 }
 
-
 class _FlavoredStreamingCtaButton extends StatelessWidget {
   final StreamingBrand brand;
   final String title;
@@ -396,8 +416,11 @@ class _FlavoredStreamingCtaButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = isDark ? Colors.white : Colors.black;
+
     return CupertinoButton(
       padding: EdgeInsets.zero,
+      minimumSize: Size.zero,
+      pressedOpacity: 0.65,
       onPressed: () {
         StreamingBrand.launchStreamingOrSearch(
           url: url,
@@ -406,35 +429,33 @@ class _FlavoredStreamingCtaButton extends StatelessWidget {
         );
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5.5),
         decoration: BoxDecoration(
-          color: brand.brandColor.withValues(alpha: isDark ? 0.25 : 0.12),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: brand.brandColor.withValues(alpha: isDark ? 0.65 : 0.4),
-            width: 0.9,
-          ),
+          color: isDark ? const Color(0x18FFFFFF) : const Color(0x0C000000),
+          borderRadius: BorderRadius.circular(100),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             brand.icon,
-            const SizedBox(width: 5),
+            const SizedBox(width: 5.5),
             Text(
               brand.actionLabel,
               style: TextStyle(
                 fontFamily: _fontFamily,
-                color: textColor,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
+                color: textColor.withValues(alpha: 0.92),
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.15,
+                height: 1.1,
               ),
             ),
             const SizedBox(width: 4),
             Icon(
-              CupertinoIcons.play_arrow_solid,
-              size: 9,
-              color: textColor.withValues(alpha: 0.75),
+              CupertinoIcons.play_fill,
+              size: 8.5,
+              color: textColor.withValues(alpha: 0.65),
             ),
           ],
         ),
