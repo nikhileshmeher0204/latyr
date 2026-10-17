@@ -111,7 +111,7 @@ class _MovieShowCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 2:3 Magazine Sized Poster
+              // 2:3 Magazine Sized Poster (Unmodified studio artwork for legal & trademark compliance)
               Hero(
                 tag: 'entity_poster_${entity.id ?? entity.title}',
                 child: Container(
@@ -127,40 +127,28 @@ class _MovieShowCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: (posterUrl != null && posterUrl.isNotEmpty)
-                              ? CachedNetworkImage(
-                                  imageUrl: posterUrl,
-                                  width: 90,
-                                  height: 135,
-                                  fit: BoxFit.cover,
-                                  fadeInDuration: const Duration(milliseconds: 150),
-                                  fadeOutDuration: const Duration(milliseconds: 100),
-                                  memCacheWidth: 270,
-                                  placeholder: (context, url) => Container(
-                                    width: 90,
-                                    height: 135,
-                                    color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
-                                    child: const Center(
-                                      child: CupertinoActivityIndicator(radius: 10),
-                                    ),
-                                  ),
-                                  errorWidget: (context, error, stack) => _buildPlaceholderPoster(isDark),
-                                )
-                              : _buildPlaceholderPoster(isDark),
-                        ),
-                      ),
-                      if (streamingPlatform != null && streamingPlatform.isNotEmpty)
-                        Positioned(
-                          top: 6,
-                          right: 6,
-                          child: _PosterStreamingBadge(brand: streamingBrand),
-                        ),
-                    ],
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: (posterUrl != null && posterUrl.isNotEmpty)
+                        ? CachedNetworkImage(
+                            imageUrl: posterUrl,
+                            width: 90,
+                            height: 135,
+                            fit: BoxFit.cover,
+                            fadeInDuration: const Duration(milliseconds: 150),
+                            fadeOutDuration: const Duration(milliseconds: 100),
+                            memCacheWidth: 270,
+                            placeholder: (context, url) => Container(
+                              width: 90,
+                              height: 135,
+                              color: isDark ? const Color(0x33FFFFFF) : const Color(0x1A000000),
+                              child: const Center(
+                                child: CupertinoActivityIndicator(radius: 10),
+                              ),
+                            ),
+                            errorWidget: (context, error, stack) => _buildPlaceholderPoster(isDark),
+                          )
+                        : _buildPlaceholderPoster(isDark),
                   ),
                 ),
               ),
@@ -252,18 +240,25 @@ class _MovieShowCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: _OpenIntentButton(
-                          isDark: isDark,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              CupertinoPageRoute(
-                                builder: (context) => EntityDetailScreen(entity: entity),
-                              ),
-                            );
-                          },
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          if (streamingPlatform != null && streamingPlatform.isNotEmpty)
+                            streamingBrand.icon
+                          else
+                            const SizedBox.shrink(),
+                          _OpenIntentButton(
+                            isDark: isDark,
+                            onTap: () {
+                              Navigator.of(context).push(
+                                CupertinoPageRoute(
+                                  builder: (context) => EntityDetailScreen(entity: entity),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -429,37 +424,6 @@ class _RatingSourceBadge extends StatelessWidget {
           child: const Text('Close'),
         ),
       ),
-    );
-  }
-}
-
-class _PosterStreamingBadge extends StatelessWidget {
-  final StreamingBrand brand;
-
-  const _PosterStreamingBadge({
-    required this.brand,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(3.5),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.65),
-        borderRadius: BorderRadius.circular(5),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.20),
-          width: 0.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 4,
-            offset: const Offset(0, 1.5),
-          ),
-        ],
-      ),
-      child: brand.icon,
     );
   }
 }
