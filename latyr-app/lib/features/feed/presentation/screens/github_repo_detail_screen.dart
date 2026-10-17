@@ -64,44 +64,21 @@ class GitHubRepoDetailScreen extends StatelessWidget {
       ),
       child: CupertinoPageScaffold(
         backgroundColor: scaffoldBg,
-        child: SafeArea(
-          child: Column(
-            children: [
-              // 1. Navigation Header (Consistent with CaptureDetailScreen)
-              IntentDetailAppBar(
-                title: 'GitHub Repository',
-                titleLeading: SvgPicture.asset(
-                  'assets/icons/github_mark.svg',
-                  width: 14,
-                  height: 14,
-                  colorFilter: ColorFilter.mode(
-                    textColor,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                isDark: isDark,
-                actions: [
-                  IntentDetailAppBar.buildActionButton(
-                    isDark: isDark,
-                    onPressed: () => _copyToClipboard(context, repoUrl),
-                    child: Icon(
-                      CupertinoIcons.link,
-                      color: textColor,
-                      size: 18,
-                    ),
-                  ),
-                ],
+        child: Stack(
+          children: [
+            // 1. Main Scrollable Developer View (scrolls cleanly under the progressive blur)
+            SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: MediaQuery.of(context).padding.top + 68,
+                bottom: MediaQuery.of(context).padding.bottom + 24,
               ),
-
-              // 2. Main Scrollable Developer View
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Repository Identity Card
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Repository Identity Card
                       Container(
                         padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
@@ -543,13 +520,43 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-            ],
+
+                // 2. Floating Navigation Bar (Identical byte-to-byte architecture with CaptureDetailScreen)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: IntentDetailAppBar(
+                    title: 'GitHub Repository',
+                    titleLeading: SvgPicture.asset(
+                      'assets/icons/github_mark.svg',
+                      width: 14,
+                      height: 14,
+                      colorFilter: ColorFilter.mode(
+                        textColor,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    isDark: isDark,
+                    scaffoldBgColor: scaffoldBg,
+                    actions: [
+                      IntentDetailAppBar.buildActionButton(
+                        isDark: isDark,
+                        onPressed: () => _copyToClipboard(context, repoUrl),
+                        child: Icon(
+                          CupertinoIcons.link,
+                          color: textColor,
+                          size: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
+        );
+      }
 
   Widget _buildAvatarFallback(String owner) {
     return Center(

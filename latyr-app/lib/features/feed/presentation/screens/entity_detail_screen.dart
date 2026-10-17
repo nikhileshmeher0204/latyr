@@ -464,6 +464,7 @@ class EntityDetailScreen extends StatelessWidget {
                 color: isDark ? CupertinoColors.white : const Color(0xFF1A1A1A),
               ),
               isDark: isDark,
+              scaffoldBgColor: scaffoldBgColor,
               actions: [
                 if (imdbId != null && imdbId.isNotEmpty)
                   IntentDetailAppBar.buildActionButton(
