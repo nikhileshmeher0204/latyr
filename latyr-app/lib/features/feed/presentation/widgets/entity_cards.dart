@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latyr_app/core/design/latyr_colors.dart';
 import 'package:latyr_app/core/widgets/latyr_expandable_text.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
@@ -483,20 +484,51 @@ class _GitHubRepoCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (avatarUrl != null && avatarUrl.isNotEmpty) ...[
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF21262D) : const Color(0xFFEAEEF2),
-                      borderRadius: BorderRadius.circular(9),
-                      border: Border.all(color: borderColor, width: 0.8),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: CachedNetworkImage(
-                      imageUrl: avatarUrl,
-                      fit: BoxFit.cover,
-                      errorWidget: (_, _, _) => _buildDefaultSquare(),
-                    ),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF21262D) : const Color(0xFFEAEEF2),
+                          borderRadius: BorderRadius.circular(9),
+                          border: Border.all(color: borderColor, width: 0.8),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: CachedNetworkImage(
+                          imageUrl: avatarUrl,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, _, _) => _buildDefaultSquare(),
+                        ),
+                      ),
+                      Positioned(
+                        right: -3,
+                        bottom: -3,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF161B22) : Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: borderColor,
+                              width: 1.0,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: SvgPicture.asset(
+                            'assets/icons/github_mark.svg',
+                            width: 10,
+                            height: 10,
+                            colorFilter: ColorFilter.mode(
+                              isDark ? Colors.white : Colors.black,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ] else ...[
                   _buildDefaultSquare(),
@@ -615,10 +647,23 @@ class _GitHubRepoCard extends StatelessWidget {
 }
 
   Widget _buildDefaultSquare() {
-    return _buildIconSquare(
-      icon: CupertinoIcons.chevron_left_slash_chevron_right,
-      iconColor: const Color(0xFF64D2FF),
-      bgColor: const Color(0xFF64D2FF).withValues(alpha: 0.15),
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: const Color(0xFF24292F),
+        borderRadius: BorderRadius.circular(9),
+      ),
+      alignment: Alignment.center,
+      child: SvgPicture.asset(
+        'assets/icons/github_mark.svg',
+        width: 22,
+        height: 22,
+        colorFilter: const ColorFilter.mode(
+          Colors.white,
+          BlendMode.srcIn,
+        ),
+      ),
     );
   }
 }
