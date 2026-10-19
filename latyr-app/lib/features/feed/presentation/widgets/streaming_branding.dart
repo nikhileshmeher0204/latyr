@@ -75,6 +75,26 @@ class StreamingBrand {
               placeholderBuilder: (_) => Container(
                 color: token.tileColor,
               ),
+              errorBuilder: (context, error, stackTrace) {
+                if (token.svgUrl!.contains('uat-assets.latyr.app')) {
+                  final edgeUrl = token.svgUrl!.replaceFirst(
+                    'uat-assets.latyr.app',
+                    'latyr-a5dfa.web.app',
+                  );
+                  return SvgPicture.network(
+                    edgeUrl,
+                    fit: BoxFit.contain,
+                    colorFilter: token.iconColor != null
+                        ? ColorFilter.mode(token.iconColor!, BlendMode.srcIn)
+                        : null,
+                    placeholderBuilder: (_) => Container(
+                      color: token.tileColor,
+                    ),
+                    errorBuilder: (_, _, _) => fallbackIcon,
+                  );
+                }
+                return fallbackIcon;
+              },
             ),
           ),
         ),

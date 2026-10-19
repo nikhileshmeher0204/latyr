@@ -7,7 +7,6 @@ import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:latyr_app/features/feed/presentation/screens/entertainment_detail_screen.dart';
 import 'package:latyr_app/features/feed/presentation/screens/github_repo_detail_screen.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/github_language_colors.dart';
-import 'package:latyr_app/features/feed/presentation/widgets/streaming_branding.dart';
 
 const String _fontFamily = 'Inter';
 const String _roundedFontFamily = 'InterRounded';
@@ -53,24 +52,21 @@ class _MovieShowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final posterUrl = entity.metadata['poster_url']?.toString();
-    final rating = entity.metadata['rating']?.toString();
-    final ratingSource = entity.metadata['rating_source']?.toString() ?? 'IMDb';
-    final imdbVotes = entity.metadata['imdb_votes']?.toString();
-    final rottenTomatoes = entity.metadata['rotten_tomatoes_rating']?.toString();
-    final contentRating = entity.metadata['content_rating']?.toString();
-    final releaseYear = entity.metadata['release_year']?.toString();
-    final runtime = entity.metadata['runtime_formatted']?.toString();
-    final seasons = entity.metadata['seasons_formatted']?.toString();
-    final tagline = entity.metadata['tagline']?.toString();
-    final streamingPlatform = entity.metadata['streaming_platform']?.toString();
+    final movie = entity.entertainment;
+    final posterUrl = movie.posterUrl;
+    final rating = movie.rating;
+    final ratingSource = movie.ratingSource;
+    final imdbVotes = movie.imdbVotes;
+    final rottenTomatoes = movie.rottenTomatoesRating;
+    final contentRating = movie.contentRating;
+    final releaseYear = movie.releaseYear;
+    final tagline = movie.tagline;
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
 
-    final isTv = (entity.metadata['media_type']?.toString().toLowerCase() == 'tv' ||
-        entity.entityType.toUpperCase() == 'TV_SHOW');
+    final isTv = movie.isTv;
     final formatLabel = isTv ? 'Series' : 'Movie';
-    final durationOrSeasons = isTv ? seasons : runtime;
+    final durationOrSeasons = movie.durationOrSeasons;
 
     final metadataElements = [
       if (releaseYear != null && releaseYear.isNotEmpty) releaseYear,
@@ -85,16 +81,6 @@ class _MovieShowCard extends StatelessWidget {
     final descriptionText = (entity.description != null && entity.description!.isNotEmpty)
         ? entity.description!
         : (tagline != null && tagline.isNotEmpty ? tagline : null);
-
-    final providerLogoUrl = entity.metadata['provider_logo_url']?.toString() ??
-        entity.metadata['streaming_icon']?.toString();
-
-    final streamingBrand = StreamingBrand.resolve(
-      streamingPlatform,
-      mediaType: isTv ? 'tv' : 'movie',
-      logoUrl: providerLogoUrl,
-      metadata: entity.metadata,
-    );
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -177,9 +163,7 @@ class _MovieShowCard extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          if ((rating != null && rating.isNotEmpty) ||
-                              subtitleParts.isNotEmpty ||
-                              (streamingPlatform != null && streamingPlatform.isNotEmpty)) ...[
+                          if ((rating != null && rating.isNotEmpty) || subtitleParts.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -194,24 +178,8 @@ class _MovieShowCard extends StatelessWidget {
                                     isDark: isDark,
                                   ),
                                 ],
-                                if (streamingPlatform != null && streamingPlatform.isNotEmpty) ...[
-                                  if (rating != null && rating.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                                      child: Text(
-                                        '·',
-                                        style: TextStyle(
-                                          color: textColor.withValues(alpha: 0.40),
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  streamingBrand.icon,
-                                ],
                                 if (subtitleParts.isNotEmpty) ...[
-                                  if ((rating != null && rating.isNotEmpty) ||
-                                      (streamingPlatform != null && streamingPlatform.isNotEmpty))
+                                  if (rating != null && rating.isNotEmpty)
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 5),
                                       child: Text(
@@ -505,10 +473,11 @@ class _GitHubRepoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stars = entity.metadata['stars'];
-    final forks = entity.metadata['forks'];
-    final language = entity.metadata['language']?.toString();
-    final avatarUrl = entity.metadata['owner_avatar_url']?.toString();
+    final repo = entity.gitHubRepo;
+    final stars = repo.stars;
+    final forks = repo.forks;
+    final language = repo.language;
+    final avatarUrl = repo.ownerAvatarUrl;
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
     final borderColor = isDark ? const Color(0xFF30363D) : const Color(0xFFD0D7DE);
@@ -602,7 +571,7 @@ class _GitHubRepoCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          if (language != null && language.isNotEmpty) ...[
+                          if (language.isNotEmpty) ...[
                             Container(
                               width: 8,
                               height: 8,
@@ -730,8 +699,10 @@ class _QuoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final quote = entity.quote;
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
+    final authorOrSource = quote.author ?? entity.description;
 
     return _CardContainer(
       cardColor: cardColor,
@@ -751,7 +722,7 @@ class _QuoteCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  '\u201C${entity.title}\u201D',
+                  '\u201C${quote.quoteText.isNotEmpty ? quote.quoteText : entity.title}\u201D',
                   style: TextStyle(
                     fontFamily: _fontFamily,
                     color: textColor,
@@ -764,12 +735,12 @@ class _QuoteCard extends StatelessWidget {
               ),
             ],
           ),
-          if (entity.description != null && entity.description!.isNotEmpty) ...[
+          if (authorOrSource != null && authorOrSource.isNotEmpty) ...[
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(left: 42),
               child: Text(
-                '\u2014 ${entity.description}',
+                '\u2014 $authorOrSource',
                 style: TextStyle(
                   fontFamily: _fontFamily,
                   color: textColor.withValues(alpha: 0.6),

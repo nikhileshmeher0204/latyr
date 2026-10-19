@@ -66,8 +66,16 @@ class BrandRegistry {
       final serverLogo = serverMetadata['logo_url']?.toString();
       final serverWatchUrl = serverMetadata['watch_url']?.toString() ?? serverMetadata['link']?.toString();
 
+      final fallback = _resolveFallback(cleanName, mediaTitle: mediaTitle);
+      var resolvedSvgUrl = serverSvgUrl ?? fallback.svgUrl;
+      if (resolvedSvgUrl != null) {
+        resolvedSvgUrl = resolvedSvgUrl.replaceFirst(
+          RegExp(r'https?://(?:uat-assets\.latyr\.app|latyr-a5dfa\.web\.app)/assets/icons/streaming/'),
+          EnvironmentConfig.cdnBaseUrl,
+        );
+      }
+
       if (serverTileHex != null && serverTileHex.isNotEmpty) {
-        final fallback = _resolveFallback(cleanName, mediaTitle: mediaTitle);
         return BrandToken(
           name: cleanName,
           brandColor: BrandToken.colorFromHex(serverBrandHex, fallback: fallback.brandColor),
@@ -75,7 +83,7 @@ class BrandRegistry {
           iconColor: serverIconHex != null
               ? BrandToken.colorFromHex(serverIconHex, fallback: Colors.white)
               : fallback.iconColor,
-          svgUrl: serverSvgUrl ?? fallback.svgUrl,
+          svgUrl: resolvedSvgUrl,
           logoUrl: serverLogo ?? fallback.logoUrl,
           watchUrl: serverWatchUrl ?? fallback.watchUrl,
         );

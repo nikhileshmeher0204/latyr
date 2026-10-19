@@ -31,28 +31,24 @@ class GitHubRepoDetailScreen extends StatelessWidget {
     final textColor = isDark ? const Color(0xFFF0F6FC) : const Color(0xFF1F2328);
     final subtextColor = isDark ? const Color(0xFF8B949E) : const Color(0xFF656D76);
 
-    // Metadata extraction
-    final fullName = entity.metadata['full_name']?.toString() ?? entity.title;
-    final owner = entity.metadata['owner']?.toString() ?? (fullName.contains('/') ? fullName.split('/')[0] : '');
-    final repoName = entity.metadata['repo_name']?.toString() ?? (fullName.contains('/') ? fullName.split('/')[1] : fullName);
-    final avatarUrl = entity.metadata['owner_avatar_url']?.toString() ?? entity.metadata['avatar_url']?.toString();
-    final starsFormatted = GitHubLanguageColors.formatCount(entity.metadata['stars']);
-    final forksFormatted = GitHubLanguageColors.formatCount(entity.metadata['forks']);
-    final watchersFormatted = GitHubLanguageColors.formatCount(entity.metadata['watchers']);
-    final openIssues = entity.metadata['open_issues']?.toString();
-    final language = entity.metadata['language']?.toString();
-    final license = entity.metadata['license']?.toString();
-    final homepage = entity.metadata['homepage']?.toString();
-    final defaultBranch = entity.metadata['default_branch']?.toString() ?? 'main';
-    final isArchived = entity.metadata['is_archived'] == true;
-    final relativeTime = GitHubLanguageColors.formatRelativeTime(entity.metadata['pushed_at']?.toString());
-    final rawTopics = entity.metadata['topics'];
-    final List<String> topics = rawTopics is List ? rawTopics.map((e) => e.toString()).toList() : [];
-
-    // Audit telemetry
-    final audit = entity.metadata['resolution_audit'] as Map<String, dynamic>?;
-
-    final repoUrl = entity.externalUrl ?? 'https://github.com/$fullName';
+    // Strongly-typed metadata extraction
+    final repo = entity.gitHubRepo;
+    final owner = repo.owner;
+    final repoName = repo.repoName;
+    final avatarUrl = repo.avatarUrl;
+    final starsFormatted = repo.starsFormatted;
+    final forksFormatted = repo.forksFormatted;
+    final watchersFormatted = repo.watchersFormatted;
+    final openIssues = repo.openIssues;
+    final language = repo.language;
+    final license = repo.license;
+    final homepage = repo.homepage;
+    final defaultBranch = repo.defaultBranch;
+    final isArchived = repo.isArchived;
+    final relativeTime = GitHubLanguageColors.formatRelativeTime(repo.pushedAt);
+    final List<String> topics = repo.topics;
+    final audit = repo.audit;
+    final repoUrl = repo.repoUrl;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
@@ -198,7 +194,7 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                               runSpacing: 8,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                if (language != null && language.isNotEmpty) ...[
+                                if (language.isNotEmpty) ...[
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -256,7 +252,7 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                if (license != null && license.isNotEmpty) ...[
+                                if (license.isNotEmpty) ...[
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                                     decoration: BoxDecoration(
@@ -464,9 +460,9 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                             if (openIssues != null)
                               _buildSpecRow(label: 'Open Issues', value: openIssues, textColor: textColor, subtextColor: subtextColor, isLast: false, borderColor: borderColor),
                             _buildSpecRow(label: 'Watchers', value: watchersFormatted, textColor: textColor, subtextColor: subtextColor, isLast: false, borderColor: borderColor),
-                            if (language != null)
+                            if (language.isNotEmpty)
                               _buildSpecRow(label: 'Primary Language', value: language, textColor: textColor, subtextColor: subtextColor, isLast: false, borderColor: borderColor),
-                            if (license != null)
+                            if (license.isNotEmpty)
                               _buildSpecRow(label: 'License', value: license, textColor: textColor, subtextColor: subtextColor, isLast: true, borderColor: borderColor),
                           ],
                         ),

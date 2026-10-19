@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'entity_metadata/entity_metadata.dart';
+
+export 'entity_metadata/entity_metadata.dart';
 
 class ExtractedEntityModel {
   final String? id;
@@ -47,3 +50,52 @@ class ExtractedEntityModel {
     return [];
   }
 }
+
+/// Ergonomic, type-safe getters for domain-specific metadata
+extension ExtractedEntityMetadataX on ExtractedEntityModel {
+  /// Typed metadata for Movie and TV Show entities.
+  EntertainmentMetadata get entertainment => EntertainmentMetadata.fromMap(
+        metadata,
+        fallbackOverview: description,
+        entityType: entityType,
+      );
+
+  /// Typed metadata for GitHub Repository entities.
+  GitHubRepoMetadata get gitHubRepo => GitHubRepoMetadata.fromMap(
+        metadata,
+        fallbackTitle: title,
+        fallbackUrl: externalUrl,
+      );
+
+  /// Typed metadata for Book entities.
+  BookMetadata get book => BookMetadata.fromMap(
+        metadata,
+        fallbackDescription: description,
+      );
+
+  /// Typed metadata for Recipe entities.
+  RecipeMetadata get recipe => RecipeMetadata.fromMap(
+        metadata,
+        fallbackDescription: description,
+      );
+
+  /// Typed metadata for Place / Location entities.
+  PlaceMetadata get place => PlaceMetadata.fromMap(
+        metadata,
+        fallbackTitle: title,
+      );
+
+  /// Typed metadata for Quote entities.
+  QuoteMetadata get quote => QuoteMetadata.fromMap(
+        metadata,
+        fallbackQuote: title,
+        fallbackAuthor: description,
+      );
+
+  /// Typed metadata for Tool, Idea, and Generic entities.
+  GenericEntityMetadata get generic => GenericEntityMetadata.fromMap(
+        metadata,
+        fallbackDescription: description,
+      );
+}
+

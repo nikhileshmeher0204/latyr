@@ -131,13 +131,16 @@ class WhereToWatchCard extends StatelessWidget {
           final category = WatchProviderCategory.fromString(
             pMap['type']?.toString() ?? pMap['category']?.toString(),
           );
+          final item = WatchProviderItem.fromServerMap(
+            pMap,
+            category: category,
+            mediaTitle: mediaTitle,
+          );
+          // Deduplicate by canonical SVG or brand name to prevent duplicate tiles for same service (e.g. standard vs with Ads)
+          final canonicalKey = item.svgUrl ?? item.name.toLowerCase();
           final seen = seenPerCategory.putIfAbsent(category, () => <String>{});
-          if (pName.isNotEmpty && seen.add(pName.toLowerCase())) {
-            grouped[category]!.add(WatchProviderItem.fromServerMap(
-              pMap,
-              category: category,
-              mediaTitle: mediaTitle,
-            ));
+          if (pName.isNotEmpty && seen.add(canonicalKey)) {
+            grouped[category]!.add(item);
           }
         }
       }
@@ -385,11 +388,36 @@ class _WatchProviderLogoButtonState extends State<_WatchProviderLogoButton> {
                 ? ColorFilter.mode(item.iconColor!, BlendMode.srcIn)
                 : null,
             placeholderBuilder: (_) => _buildFallbackInitial(size),
+            errorBuilder: (context, error, stackTrace) {
+              // Resilient fallback: If uat-assets.latyr.app DNS is not yet resolved,
+              // fall back to Firebase Hosting edge domain or TMDB logo
+              if (item.svgUrl!.contains('uat-assets.latyr.app')) {
+                final edgeUrl = item.svgUrl!.replaceFirst(
+                  'uat-assets.latyr.app',
+                  'latyr-a5dfa.web.app',
+                );
+                return SvgPicture.network(
+                  edgeUrl,
+                  fit: BoxFit.contain,
+                  colorFilter: item.iconColor != null
+                      ? ColorFilter.mode(item.iconColor!, BlendMode.srcIn)
+                      : null,
+                  placeholderBuilder: (_) => _buildFallbackInitial(size),
+                  errorBuilder: (_, _, _) => _buildSecondaryFallback(size),
+                );
+              }
+              return _buildSecondaryFallback(size);
+            },
           ),
         ),
       );
     }
 
+    return _buildSecondaryFallback(size);
+  }
+
+  Widget _buildSecondaryFallback(double size) {
+    final item = widget.item;
     if (item.logoUrl != null && item.logoUrl!.isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: item.logoUrl!,

@@ -141,13 +141,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   Widget _buildEntityWidget(ExtractedEntityModel entity, String type) {
     if (type == 'MOVIE' || type == 'TV_SHOW') {
-      final meta = entity.metadata;
-      final isTv = (meta['media_type']?.toString().toLowerCase() == 'tv' || type == 'TV_SHOW');
-      final mediaTypeLabel = isTv ? 'Series' : 'Movie';
-      final year = meta['release_year']?.toString();
-      final durationOrSeasons = isTv
-          ? meta['seasons_formatted']?.toString()
-          : meta['runtime_formatted']?.toString();
+      final movie = entity.entertainment;
+      final mediaTypeLabel = movie.isTv ? 'Series' : 'Movie';
+      final year = movie.releaseYear;
+      final durationOrSeasons = movie.durationOrSeasons;
       final subtitleParts = [
         mediaTypeLabel,
         if (year != null && year.isNotEmpty) year,
@@ -156,29 +153,32 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
       return MovieShowEntityCard(
         title: entity.title,
-        description: entity.description ?? meta['tagline']?.toString(),
-        rating: double.tryParse(meta['rating']?.toString() ?? ''),
+        description: entity.description ?? movie.tagline,
+        rating: double.tryParse(movie.rating ?? ''),
         releaseYearOrSeasons: subtitleParts.isNotEmpty ? subtitleParts : null,
         externalUrl: entity.externalUrl,
-        posterUrl: meta['poster_url']?.toString(),
+        posterUrl: movie.posterUrl,
       );
     } else if (type == 'GITHUB_REPO' || type == 'REPO') {
+      final repo = entity.gitHubRepo;
       return GitHubRepoEntityCard(
         title: entity.title,
         description: entity.description,
-        language: entity.metadata['language']?.toString(),
-        stars: int.tryParse(entity.metadata['stars']?.toString() ?? ''),
+        language: repo.language,
+        stars: repo.stars,
         externalUrl: entity.externalUrl,
       );
     } else if (type == 'QUOTE') {
+      final quote = entity.quote;
       return QuoteEntityCard(
-        quoteText: entity.title,
-        authorOrAttribution: entity.description ?? 'Saved Quote',
+        quoteText: quote.quoteText.isNotEmpty ? quote.quoteText : entity.title,
+        authorOrAttribution: quote.author ?? entity.description ?? 'Saved Quote',
       );
     } else if (type == 'PLACE' || type == 'LOCATION') {
+      final place = entity.place;
       return PlaceEntityCard(
         name: entity.title,
-        location: entity.metadata['location']?.toString() ?? entity.title,
+        location: place.displayLocation ?? entity.title,
         notesSummary: entity.description,
       );
     }

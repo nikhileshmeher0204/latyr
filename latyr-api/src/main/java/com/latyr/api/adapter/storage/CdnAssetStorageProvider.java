@@ -13,11 +13,11 @@ public class CdnAssetStorageProvider implements AssetStorageProvider {
     private final String cdnBaseUrl;
 
     public CdnAssetStorageProvider(
-        @Value("${latyr.assets.cdn-base-url:https://latyr-a5dfa.web.app/assets/icons/streaming/}") String cdnBaseUrl
+        @Value("${latyr.assets.cdn-base-url:https://uat-assets.latyr.app/assets/icons/streaming/}") String cdnBaseUrl
     ) {
         String base = (cdnBaseUrl != null && !cdnBaseUrl.isBlank())
             ? cdnBaseUrl.trim()
-            : "https://latyr-a5dfa.web.app/assets/icons/streaming/";
+            : "https://uat-assets.latyr.app/assets/icons/streaming/";
         this.cdnBaseUrl = base.endsWith("/") ? base : base + "/";
     }
 

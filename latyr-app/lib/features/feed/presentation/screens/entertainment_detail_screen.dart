@@ -27,45 +27,30 @@ class EntertainmentDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final meta = entity.metadata;
-    final backdropUrl = meta['backdrop_url']?.toString();
-    final posterUrl = meta['poster_url']?.toString();
-    final heroImage = (posterUrl != null && posterUrl.isNotEmpty)
-        ? posterUrl
-        : ((backdropUrl != null && backdropUrl.isNotEmpty) ? backdropUrl : null);
-
-    final rating = meta['rating']?.toString();
-    final ratingSource = meta['rating_source']?.toString() ?? 'IMDb';
-    final imdbVotes = meta['imdb_votes']?.toString();
-    final rottenTomatoes = meta['rotten_tomatoes_rating']?.toString();
-    final metascore = meta['metascore_rating']?.toString();
-    final contentRating = meta['content_rating']?.toString();
-    final awards = meta['awards']?.toString();
-    final writers = meta['writers']?.toString();
-    final country = meta['country']?.toString();
-    final language = meta['language']?.toString();
-    final releasedDate = meta['released_date']?.toString();
-    final boxOffice = meta['box_office']?.toString();
-    final releaseYear = meta['release_year']?.toString();
-    final runtime = meta['runtime_formatted']?.toString();
-    final seasons = meta['seasons_formatted']?.toString();
-    final tagline = meta['tagline']?.toString();
-    final overview = meta['overview']?.toString() ?? entity.description ?? '';
-    final imdbId = meta['imdb_id']?.toString();
-    final director = meta['director']?.toString();
-    final rawCast = meta['lead_cast'];
-    final List<String> leadCast = (rawCast is List)
-        ? rawCast.map((e) => e.toString()).toList()
-        : [];
-    final rawGenres = meta['genres'];
-    final List<String> genres = (rawGenres is List)
-        ? rawGenres.map((e) => e.toString()).toList()
-        : [];
-
-    final isTv = (meta['media_type']?.toString().toLowerCase() == 'tv' ||
-        entity.entityType.toUpperCase() == 'TV_SHOW');
-    final formatLabel = isTv ? 'TV Series' : 'Movie';
-    final durationOrSeasons = isTv ? seasons : runtime;
+    final movie = entity.entertainment;
+    final heroImage = movie.heroImage;
+    final rating = movie.rating;
+    final ratingSource = movie.ratingSource;
+    final imdbVotes = movie.imdbVotes;
+    final rottenTomatoes = movie.rottenTomatoesRating;
+    final metascore = movie.metascoreRating;
+    final contentRating = movie.contentRating;
+    final awards = movie.awards;
+    final writers = movie.writers;
+    final country = movie.country;
+    final language = movie.language;
+    final releasedDate = movie.releasedDate;
+    final boxOffice = movie.boxOffice;
+    final releaseYear = movie.releaseYear;
+    final tagline = movie.tagline;
+    final overview = movie.overview ?? '';
+    final imdbId = movie.imdbId;
+    final director = movie.director;
+    final leadCast = movie.leadCast;
+    final genres = movie.genres;
+    final isTv = movie.isTv;
+    final formatLabel = movie.formatLabel;
+    final durationOrSeasons = movie.durationOrSeasons;
 
     // Dynamic system theming: smoothly adapts between light and dark mode,
     // while preserving a rich black-tinted progressive blur on the hero poster.
@@ -90,23 +75,8 @@ class EntertainmentDetailScreen extends StatelessWidget {
     }
     final subtitleString = subtitleItems.join(' · ');
 
-    // Metrics items: Year · Runtime [Rating] 🍅 RT ★ IMDb (Apple TV compact row)
+    // Metrics items: ★ IMDb 🍅 RT [Metascore] Year · Runtime [Rating] (Apple TV compact row)
     final metricWidgets = <Widget>[];
-    final hasYear = releaseYear != null && releaseYear.isNotEmpty;
-    final hasDuration = durationOrSeasons != null && durationOrSeasons.isNotEmpty;
-    if (hasYear && hasDuration) {
-      metricWidgets.add(_VibrantText(text: '$releaseYear · $durationOrSeasons', isDark: heroIsDark));
-    } else if (hasYear) {
-      metricWidgets.add(_VibrantText(text: releaseYear, isDark: heroIsDark));
-    } else if (hasDuration) {
-      metricWidgets.add(_VibrantText(text: durationOrSeasons, isDark: heroIsDark));
-    }
-    if (contentRating != null && contentRating.isNotEmpty && contentRating != 'N/A') {
-      metricWidgets.add(_MaturityBadge(rated: contentRating, isDark: heroIsDark));
-    }
-    if (rottenTomatoes != null && rottenTomatoes.isNotEmpty) {
-      metricWidgets.add(_RottenTomatoesText(score: rottenTomatoes, isDark: heroIsDark));
-    }
     if (rating != null && rating.isNotEmpty) {
       metricWidgets.add(_RatingText(
         rating: rating,
@@ -118,8 +88,23 @@ class EntertainmentDetailScreen extends StatelessWidget {
         isDark: heroIsDark,
       ));
     }
+    if (rottenTomatoes != null && rottenTomatoes.isNotEmpty) {
+      metricWidgets.add(_RottenTomatoesText(score: rottenTomatoes, isDark: heroIsDark));
+    }
     if (metascore != null && metascore.isNotEmpty && metascore != 'N/A') {
       metricWidgets.add(_MetascoreText(score: metascore, isDark: heroIsDark));
+    }
+    final hasYear = releaseYear != null && releaseYear.isNotEmpty;
+    final hasDuration = durationOrSeasons != null && durationOrSeasons.isNotEmpty;
+    if (hasYear && hasDuration) {
+      metricWidgets.add(_VibrantText(text: '$releaseYear · $durationOrSeasons', isDark: heroIsDark));
+    } else if (hasYear) {
+      metricWidgets.add(_VibrantText(text: releaseYear, isDark: heroIsDark));
+    } else if (hasDuration) {
+      metricWidgets.add(_VibrantText(text: durationOrSeasons, isDark: heroIsDark));
+    }
+    if (contentRating != null && contentRating.isNotEmpty && contentRating != 'N/A') {
+      metricWidgets.add(_MaturityBadge(rated: contentRating, isDark: heroIsDark));
     }
 
     final hasDetails = (director != null && director.isNotEmpty && director != 'N/A') ||
@@ -318,7 +303,7 @@ class EntertainmentDetailScreen extends StatelessWidget {
 
                       // Where to Watch Card (Adaptive Light Grey Card)
                       WhereToWatchCard(
-                        metadata: meta,
+                        metadata: entity.metadata,
                         title: entity.title,
                         isDark: isDark,
                       ),
