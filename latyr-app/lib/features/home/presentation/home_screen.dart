@@ -11,8 +11,9 @@ import 'package:latyr_app/core/design/latyr_typography.dart';
 import 'package:latyr_app/features/capture/presentation/capture_providers.dart';
 import 'package:latyr_app/features/home/presentation/home_providers.dart';
 import 'package:latyr_app/core/database/app_database.dart';
+import 'package:flutter/services.dart';
 import 'package:latyr_app/features/feed/presentation/screens/capture_detail_screen.dart';
-import 'package:latyr_app/features/feed/presentation/capture_feed_screen.dart';
+import 'package:latyr_app/features/home/presentation/widgets/app_switcher_scroll_physics.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -141,40 +142,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            Navigator.of(context).push(
-              CupertinoPageRoute(
-                builder: (_) => const CaptureFeedScreen(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: btnBg,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: btnBg,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(CupertinoIcons.book, size: 16, color: iconColor),
+              const SizedBox(width: 6),
+              Text(
+                'All Captures',
+                style: LTypography.roundedPill.copyWith(
+                  color: textColor,
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Icon(CupertinoIcons.book, size: 16, color: iconColor),
-                const SizedBox(width: 6),
-                Text(
-                  'All Captures',
-                  style: LTypography.roundedPill.copyWith(
-                    color: textColor,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         Row(
@@ -659,28 +650,46 @@ class StackedFeedCarousel extends StatefulWidget {
 class _StackedFeedCarouselState extends State<StackedFeedCarousel> {
   final _pageController = PageController();
   double _page = 0;
+  int _lastHapticPage = 0;
 
   @override
   void initState() {
     super.initState();
-    _pageController.addListener(() {
-      setState(() {
-        _page = _pageController.page ?? 0;
-      });
+    _pageController.addListener(_handleScroll);
+  }
+
+  void _handleScroll() {
+    final currentPage = _pageController.page ?? 0.0;
+    final rounded = currentPage.round();
+    if (rounded != _lastHapticPage && (currentPage - rounded).abs() < 0.12) {
+      _lastHapticPage = rounded;
+      HapticFeedback.selectionClick();
+    }
+    setState(() {
+      _page = currentPage;
     });
   }
 
   @override
   void dispose() {
+    _pageController.removeListener(_handleScroll);
     _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Sort indices so the center card (closest to _page) is drawn LAST (on top)
-    List<int> sortedIndices = List.generate(widget.captures.length, (i) => i);
-    sortedIndices.sort((a, b) {
+    final total = widget.captures.length;
+    // Calculate only visible indices (within distance < 2.0) for 120Hz frame budget
+    final minVisible = (_page - 2.0).floor().clamp(0, total - 1);
+    final maxVisible = (_page + 2.0).ceil().clamp(0, total - 1);
+
+    final visibleIndices = <int>[];
+    for (int i = minVisible; i <= maxVisible; i++) {
+      visibleIndices.add(i);
+    }
+    // Sort descending by distance so closest (center) card is rendered on top
+    visibleIndices.sort((a, b) {
       double distA = (a - _page).abs();
       double distB = (b - _page).abs();
       return distB.compareTo(distA);
@@ -729,22 +738,56 @@ class _StackedFeedCarouselState extends State<StackedFeedCarousel> {
             ),
           ),
 
-          // Stacked cards
-          for (int i in sortedIndices) _buildAnimatedCard(i),
+          // Stacked cards (only visible indices built & rendered)
+          for (int i in visibleIndices) _buildAnimatedCard(i),
 
-          // Transparent PageView to capture swipe gestures and card taps
+          // Transparent PageView driving the physics engine with Apple App Switcher momentum
           PageView.builder(
             controller: _pageController,
             itemCount: widget.captures.length,
-            physics: const BouncingScrollPhysics(),
+            pageSnapping: false, // Critical: enables continuous momentum flings across 5-6 cards
+            physics: const AppSwitcherScrollPhysics(),
             itemBuilder: (context, index) => GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () {
-                Navigator.of(context).push(
-                  CupertinoPageRoute(
-                    builder: (context) => CaptureDetailScreen(capture: widget.captures[index]),
-                  ),
-                );
+              onTapUp: (details) {
+                final screenWidth = MediaQuery.of(context).size.width;
+                final tapX = details.globalPosition.dx;
+                final centerX = screenWidth / 2.0;
+                const double centerThreshold = 85.0; // Half-width of center active card
+                final currentIndex = _page.round();
+
+                if (tapX < centerX - centerThreshold) {
+                  // Tapped left peeking card -> smoothly animate to previous card
+                  if (currentIndex > 0) {
+                    HapticFeedback.lightImpact();
+                    _pageController.animateToPage(
+                      currentIndex - 1,
+                      duration: const Duration(milliseconds: 320),
+                      curve: Curves.easeOutCubic,
+                    );
+                  }
+                } else if (tapX > centerX + centerThreshold) {
+                  // Tapped right peeking card -> smoothly animate to next card
+                  if (currentIndex < widget.captures.length - 1) {
+                    HapticFeedback.lightImpact();
+                    _pageController.animateToPage(
+                      currentIndex + 1,
+                      duration: const Duration(milliseconds: 320),
+                      curve: Curves.easeOutCubic,
+                    );
+                  }
+                } else {
+                  // Tapped center card -> open details
+                  if (currentIndex >= 0 && currentIndex < widget.captures.length) {
+                    Navigator.of(context).push(
+                      CupertinoPageRoute(
+                        builder: (context) => CaptureDetailScreen(
+                          capture: widget.captures[currentIndex],
+                        ),
+                      ),
+                    );
+                  }
+                }
               },
               child: const SizedBox.expand(),
             ),
@@ -758,8 +801,7 @@ class _StackedFeedCarouselState extends State<StackedFeedCarousel> {
     double diff = index - _page;
     double absDiff = diff.abs();
 
-    // Only show active and immediately adjacent cards
-    if (absDiff >= 2) return const SizedBox.shrink();
+    if (absDiff >= 2.0) return const SizedBox.shrink();
 
     double sign = diff < 0 ? -1 : 1;
     double x = 0;
@@ -769,8 +811,7 @@ class _StackedFeedCarouselState extends State<StackedFeedCarousel> {
 
     if (absDiff <= 1) {
       // Interpolate between center (0) and side (1)
-      // Side cards are tucked closer to the center card
-      x = diff * 95; // Reduced from 120 to 95 to tuck them closer
+      x = diff * 95;
       scale = 1.0 - (absDiff * 0.15); // scales down to 0.85
       angle = diff * 0.08; // slightly tilted outwards
       opacity = 1.0 - (absDiff * 0.3); // slightly faded
@@ -783,13 +824,12 @@ class _StackedFeedCarouselState extends State<StackedFeedCarousel> {
       opacity = 0.7 - (extraDiff * 0.7);
     }
 
-
     return Positioned(
       key: ValueKey('card_$index'),
       child: Align(
         alignment: Alignment.center,
         child: Transform.translate(
-          offset: Offset(x, 0), // Centered vertically
+          offset: Offset(x, 0),
           child: Transform.rotate(
             angle: angle,
             child: Transform.scale(
@@ -797,9 +837,9 @@ class _StackedFeedCarouselState extends State<StackedFeedCarousel> {
               child: Opacity(
                 opacity: opacity.clamp(0.0, 1.0),
                 child: _buildStackedCard(
-                    widget.captures[index],
-                    widget.isDark,
-                  ),
+                  widget.captures[index],
+                  widget.isDark,
+                ),
               ),
             ),
           ),
@@ -827,12 +867,14 @@ class _StackedFeedCarouselState extends State<StackedFeedCarousel> {
   }
 
   Widget _buildStackedCard(LocalCapture capture, bool isDark) {
-    return SizedBox(
-      width: 220,
-      height: 260,
-      child: LatyrCaptureCard(
-        capture: capture,
-        isDark: isDark,
+    return RepaintBoundary(
+      child: SizedBox(
+        width: 220,
+        height: 260,
+        child: LatyrCaptureCard(
+          capture: capture,
+          isDark: isDark,
+        ),
       ),
     );
   }

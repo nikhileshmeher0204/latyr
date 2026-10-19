@@ -58,6 +58,11 @@ This document defines the core architecture principles, coding standards, and de
   - `resolution_latency_ms`: execution duration for performance benchmarking
   - `resolved_at`: ISO-8601 timestamp
 
+### 8. Strict Zero-Hardcoded Brand & UI Metadata Rule (Server-Driven & Dynamic Architecture)
+- **Zero Inlined Magic Constants in UI**: AI agents and contributors are **strictly prohibited** from hardcoding vendor brand colors (e.g. `Color(0xFF00A8E1)`), magic hex values, vendor-specific strings, or hardcoded `if-else` / `switch` brand cases inside Flutter UI presentation widgets.
+- **Server-Driven Metadata (Single Source of Truth)**: Dynamic vendor metadata (streaming platforms, logos, brand colors, tile background colors, deeplink templates) must be **server-driven**. `latyr-api` enriches entity payloads with `brand_color`, `tile_color`, `logo_url`, and `watch_url`. When a third-party service rebrands (e.g., HBO Max $\rightarrow$ Max, Disney+ Hotstar $\rightarrow$ JioHotstar), the metadata is updated on the server/CDN catalog without requiring mobile app store releases.
+- **Pure Stateless Renderers**: Mobile presentation widgets (e.g., `StreamingPlatformsCard`) must remain pure, stateless consumers. They parse and render the dynamic metadata contract delivered by the API.
+- **Dynamic Palette Extraction & Centralized Fallback**: If an uncataloged or regional provider arrives without server brand metadata, the client MUST either extract dominant/vibrant colors dynamically from the logo image bitmap at runtime (via dynamic palette extraction) or resolve through a centralized `core/design` Brand Token Registry—NEVER through inlined `if-else` or ad-hoc `Color(...)` literals in widget files.
 
 ---
 
@@ -72,6 +77,7 @@ This document defines the core architecture principles, coding standards, and de
 - **State Management**: Use `flutter_riverpod` (AsyncNotifier / StateNotifier).
 - **Offline First**: Use `drift` (SQLite) for local caching, ensuring instant UI renders and background synchronization with `latyr-api`.
 - **Share Extension Target**: The native iOS/Android share sheet must complete local write and return to system under **300ms**.
+- **No Inlined Brand Tokens**: Presentation widgets must NEVER contain hardcoded vendor hex colors, switch-cases, or brand logic. Always consume server-provided `brand_color`/`tile_color` or resolve through a centralized `core/design` Brand Token Registry.
 
 ---
 

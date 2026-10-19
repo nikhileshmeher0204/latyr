@@ -4,6 +4,7 @@ import com.latyr.api.adapter.AIProvider;
 import com.latyr.api.domain.enums.ActionCTA;
 import com.latyr.api.domain.enums.EntityType;
 import com.latyr.api.domain.enums.StreamingPlatform;
+import com.latyr.api.domain.enums.WatchProviderCategory;
 import com.latyr.api.integration.OmdbClient;
 import com.latyr.api.integration.TmdbClient;
 import org.slf4j.Logger;
@@ -40,15 +41,27 @@ public class EntertainmentEntityEnricher implements EntityEnricher {
 
     private final TmdbClient tmdbClient;
     private final OmdbClient omdbClient;
+    private final StreamingBrandCatalog brandCatalog;
 
     @Autowired
-    public EntertainmentEntityEnricher(TmdbClient tmdbClient, OmdbClient omdbClient) {
+    public EntertainmentEntityEnricher(
+            TmdbClient tmdbClient,
+            OmdbClient omdbClient,
+            StreamingBrandCatalog brandCatalog
+    ) {
         this.tmdbClient = tmdbClient;
         this.omdbClient = omdbClient;
+        this.brandCatalog = brandCatalog != null
+            ? brandCatalog
+            : new StreamingBrandCatalog(new com.latyr.api.adapter.storage.CdnAssetStorageProvider(null));
+    }
+
+    public EntertainmentEntityEnricher(TmdbClient tmdbClient, OmdbClient omdbClient) {
+        this(tmdbClient, omdbClient, null);
     }
 
     public EntertainmentEntityEnricher(TmdbClient tmdbClient) {
-        this(tmdbClient, null);
+        this(tmdbClient, null, null);
     }
 
     @Override
@@ -554,43 +567,108 @@ public class EntertainmentEntityEnricher implements EntityEnricher {
     private void attachWatchProviders(Map<String, Object> enrichedMeta, Map<String, TmdbClient.TmdbCountryWatchProviders> results) {
         if (results == null || results.isEmpty()) return;
 
-        // Preference: IN (India) -> US -> First available country with flatrate streaming
+        // Preference: IN (India) -> US -> First available country with watch providers
         TmdbClient.TmdbCountryWatchProviders country = results.get("IN");
-        if (country == null || country.flatrate == null || country.flatrate.isEmpty()) {
+        if (!hasAnyWatchProviders(country)) {
             country = results.get("US");
         }
-        if (country == null || country.flatrate == null || country.flatrate.isEmpty()) {
+        if (!hasAnyWatchProviders(country)) {
             for (TmdbClient.TmdbCountryWatchProviders c : results.values()) {
-                if (c.flatrate != null && !c.flatrate.isEmpty()) {
+                if (hasAnyWatchProviders(c)) {
                     country = c;
                     break;
                 }
             }
         }
 
-        if (country != null && country.flatrate != null && !country.flatrate.isEmpty()) {
-            TmdbClient.TmdbProviderInfo top = country.flatrate.get(0);
-            enrichedMeta.put("streaming_platform", top.providerName);
-            if (top.logoPath != null && !top.logoPath.isBlank()) {
-                String fullLogoUrl = TMDB_LOGO_BASE_W92 + top.logoPath;
-                enrichedMeta.put("provider_logo_url", fullLogoUrl);
-                enrichedMeta.put("streaming_icon", fullLogoUrl);
+        if (country == null) return;
+
+        if (country.link != null) {
+            enrichedMeta.put("watch_link", country.link);
+        }
+
+        String mediaTitle = enrichedMeta.get("title") != null ? enrichedMeta.get("title").toString() : "";
+        List<Map<String, Object>> providersList = new ArrayList<>();
+
+        // 1. Subscription (Flatrate / SVOD)
+        appendProvidersForCategory(providersList, country.flatrate, WatchProviderCategory.FLATRATE, mediaTitle);
+
+        // 2. Rent (TVOD)
+        appendProvidersForCategory(providersList, country.rent, WatchProviderCategory.RENT, mediaTitle);
+
+        // 3. Buy (EST)
+        appendProvidersForCategory(providersList, country.buy, WatchProviderCategory.BUY, mediaTitle);
+
+        // 4. Free & Ad-supported (AVOD)
+        List<TmdbClient.TmdbProviderInfo> freeAndAds = new ArrayList<>();
+        if (country.free != null) freeAndAds.addAll(country.free);
+        if (country.ads != null) freeAndAds.addAll(country.ads);
+        appendProvidersForCategory(providersList, freeAndAds, WatchProviderCategory.FREE, mediaTitle);
+
+        if (!providersList.isEmpty()) {
+            Map<String, Object> top = providersList.get(0);
+            enrichedMeta.put("streaming_platform", top.get("provider_name"));
+            if (top.containsKey("brand_color")) {
+                enrichedMeta.put("streaming_brand_color", top.get("brand_color"));
             }
-            if (country.link != null) {
-                enrichedMeta.put("watch_link", country.link);
+            if (top.containsKey("tile_color")) {
+                enrichedMeta.put("streaming_tile_color", top.get("tile_color"));
             }
-            List<Map<String, Object>> providersList = new ArrayList<>();
-            for (TmdbClient.TmdbProviderInfo p : country.flatrate) {
-                Map<String, Object> pMap = new HashMap<>();
-                pMap.put("provider_id", p.providerId);
-                pMap.put("provider_name", p.providerName);
-                if (p.logoPath != null) {
-                    pMap.put("logo_url", TMDB_LOGO_BASE_W92 + p.logoPath);
-                }
-                providersList.add(pMap);
+            if (top.containsKey("watch_url")) {
+                enrichedMeta.put("watch_url", top.get("watch_url"));
+                enrichedMeta.put("streaming_deep_link", top.get("watch_url"));
+            }
+            if (top.containsKey("logo_url")) {
+                enrichedMeta.put("provider_logo_url", top.get("logo_url"));
+                enrichedMeta.put("streaming_icon", top.get("logo_url"));
             }
             enrichedMeta.put("watch_providers", providersList);
         }
+    }
+
+    private void appendProvidersForCategory(
+            List<Map<String, Object>> targetList,
+            List<TmdbClient.TmdbProviderInfo> rawProviders,
+            WatchProviderCategory category,
+            String mediaTitle) {
+        if (rawProviders == null || rawProviders.isEmpty()) return;
+
+        Set<String> seenInCat = new HashSet<>();
+        for (TmdbClient.TmdbProviderInfo p : rawProviders) {
+            if (p.providerName != null && seenInCat.add(p.providerName.toLowerCase(Locale.ROOT))) {
+                Map<String, Object> pMap = new HashMap<>();
+                pMap.put("provider_id", p.providerId);
+                pMap.put("provider_name", p.providerName);
+                pMap.put("type", category.getCode()); // "subscription", "rent", "buy", "free"
+                pMap.put("category", category.name()); // "FLATRATE", "RENT", "BUY", "FREE"
+                pMap.put("category_display", category.getDisplayName()); // "Subscription", "Rent", "Buy", "Free"
+                if (p.logoPath != null) {
+                    pMap.put("logo_url", TMDB_LOGO_BASE_W92 + p.logoPath);
+                }
+                StreamingBrandCatalog.BrandMetadata brandMeta = brandCatalog.resolve(p.providerId, p.providerName);
+                pMap.put("brand_color", brandMeta.brandColor());
+                pMap.put("tile_color", brandMeta.tileColor());
+                if (brandMeta.svgAsset() != null) {
+                    pMap.put("svg_asset", brandMeta.svgAsset());
+                }
+                if (brandMeta.svgUrl() != null) {
+                    pMap.put("svg_url", brandMeta.svgUrl());
+                }
+                String watchUrl = brandCatalog.buildWatchUrl(brandMeta, mediaTitle);
+                if (watchUrl != null) {
+                    pMap.put("watch_url", watchUrl);
+                }
+                targetList.add(pMap);
+            }
+        }
+    }
+
+    private boolean hasAnyWatchProviders(TmdbClient.TmdbCountryWatchProviders c) {
+        return c != null && (!isEmpty(c.flatrate) || !isEmpty(c.rent) || !isEmpty(c.buy) || !isEmpty(c.free) || !isEmpty(c.ads));
+    }
+
+    private boolean isEmpty(List<?> list) {
+        return list == null || list.isEmpty();
     }
 }
 

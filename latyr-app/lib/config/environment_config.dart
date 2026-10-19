@@ -32,4 +32,11 @@ class EnvironmentConfig {
   static bool get isLocal => environment == 'local';
   static bool get isUat => environment == 'uat';
   static bool get isProd => environment == 'prod';
+
+  /// Resolves the Static Asset CDN base URL directly from environment configuration.
+  /// Populated via `--dart-define-from-file=.env.<env>` (e.g. .env.local, .env.uat, .env.prod).
+  static const String cdnBaseUrl = String.fromEnvironment(
+    'CDN_BASE_URL',
+    defaultValue: 'https://latyr-a5dfa.web.app/assets/icons/streaming/',
+  );
 }

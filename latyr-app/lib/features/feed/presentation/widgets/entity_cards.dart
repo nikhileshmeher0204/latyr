@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latyr_app/core/design/latyr_colors.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
-import 'package:latyr_app/features/feed/presentation/screens/entity_detail_screen.dart';
+import 'package:latyr_app/features/feed/presentation/screens/entertainment_detail_screen.dart';
 import 'package:latyr_app/features/feed/presentation/screens/github_repo_detail_screen.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/github_language_colors.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/streaming_branding.dart';
@@ -93,6 +93,7 @@ class _MovieShowCard extends StatelessWidget {
       streamingPlatform,
       mediaType: isTv ? 'tv' : 'movie',
       logoUrl: providerLogoUrl,
+      metadata: entity.metadata,
     );
 
     return RepaintBoundary(
@@ -101,7 +102,7 @@ class _MovieShowCard extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push(
             CupertinoPageRoute(
-              builder: (context) => EntityDetailScreen(entity: entity),
+              builder: (context) => EntertainmentDetailScreen(entity: entity),
             ),
           );
         },
@@ -265,7 +266,7 @@ class _MovieShowCard extends StatelessWidget {
                           onTap: () {
                             Navigator.of(context).push(
                               CupertinoPageRoute(
-                                builder: (context) => EntityDetailScreen(entity: entity),
+                                builder: (context) => EntertainmentDetailScreen(entity: entity),
                               ),
                             );
                           },
@@ -874,7 +875,7 @@ class _GenericCard extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   CupertinoPageRoute(
-                    builder: (_) => EntityDetailScreen(entity: entity),
+                    builder: (_) => EntertainmentDetailScreen(entity: entity),
                   ),
                 );
               },

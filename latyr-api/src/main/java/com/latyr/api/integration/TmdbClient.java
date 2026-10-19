@@ -290,6 +290,8 @@ public class TmdbClient {
         public List<TmdbProviderInfo> flatrate = new ArrayList<>();
         public List<TmdbProviderInfo> rent = new ArrayList<>();
         public List<TmdbProviderInfo> buy = new ArrayList<>();
+        public List<TmdbProviderInfo> free = new ArrayList<>();
+        public List<TmdbProviderInfo> ads = new ArrayList<>();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

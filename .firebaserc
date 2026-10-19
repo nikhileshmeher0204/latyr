@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "latyr-a5dfa",
+    "uat": "latyr-a5dfa",
+    "prod": "latyr-prod"
+  }
+}

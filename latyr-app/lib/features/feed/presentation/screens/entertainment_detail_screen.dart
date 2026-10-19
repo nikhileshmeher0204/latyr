@@ -2,26 +2,25 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:latyr_app/core/widgets/latyr_progressive_blur.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/intent_detail_app_bar.dart';
-import 'package:latyr_app/features/feed/presentation/widgets/streaming_branding.dart';
+import 'package:latyr_app/features/feed/presentation/widgets/where_to_watch_card.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const String _fontFamily = 'Inter';
 const String _roundedFontFamily = 'InterRounded';
 
-/// EntityDetailScreen
+/// EntertainmentDetailScreen
 ///
-/// Apple TV-inspired editorial full-screen hero presentation for extracted intents.
+/// Apple TV-inspired editorial full-screen hero presentation for extracted entertainment media intents (Movies & TV Shows).
 /// Displays a high-res portrait poster extending down through the title, synopsis,
 /// and bottoming out just below the ratings row.
 /// Employs Latyr's progressive blur shader with color vibrancy, and renders
 /// translucent, luminous typography with subtle depth shadows without container boxes.
-class EntityDetailScreen extends StatelessWidget {
+class EntertainmentDetailScreen extends StatelessWidget {
   final ExtractedEntityModel entity;
 
-  const EntityDetailScreen({
+  const EntertainmentDetailScreen({
     super.key,
     required this.entity,
   });
@@ -52,8 +51,6 @@ class EntityDetailScreen extends StatelessWidget {
     final seasons = meta['seasons_formatted']?.toString();
     final tagline = meta['tagline']?.toString();
     final overview = meta['overview']?.toString() ?? entity.description ?? '';
-    final streamingPlatform = meta['streaming_platform']?.toString();
-    final streamingDeepLink = meta['streaming_deep_link']?.toString();
     final imdbId = meta['imdb_id']?.toString();
     final director = meta['director']?.toString();
     final rawCast = meta['lead_cast'];
@@ -69,13 +66,6 @@ class EntityDetailScreen extends StatelessWidget {
         entity.entityType.toUpperCase() == 'TV_SHOW');
     final formatLabel = isTv ? 'TV Series' : 'Movie';
     final durationOrSeasons = isTv ? seasons : runtime;
-
-    final providerLogoUrl = meta['provider_logo_url']?.toString() ?? meta['streaming_icon']?.toString();
-    final streamingBrand = StreamingBrand.resolve(
-      streamingPlatform,
-      mediaType: isTv ? 'tv' : 'movie',
-      logoUrl: providerLogoUrl,
-    );
 
     // Dynamic system theming: smoothly adapts between light and dark mode,
     // while preserving a rich black-tinted progressive blur on the hero poster.
@@ -176,60 +166,36 @@ class EntityDetailScreen extends StatelessWidget {
                             ),
                           ],
                   ),
-                  clipBehavior: Clip.antiAlias,
+                  clipBehavior: isDark ? Clip.none : Clip.antiAlias,
                   child: Stack(
                     children: [
-                      // A. High-Res Poster Artwork with ShaderMask bottom fade to completely eliminate visible edge
+                      // A. High-Res Poster Artwork
                       if (heroImage != null && heroImage.isNotEmpty)
                         Positioned.fill(
-                          child: ShaderMask(
-                            shaderCallback: (rect) => LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              stops: const [0.0, 0.65, 0.92, 1.0],
-                              colors: [
-                                Colors.white,
-                                Colors.white,
-                                Colors.white.withValues(alpha: 0.35),
-                                Colors.transparent,
-                              ],
-                            ).createShader(rect),
-                            blendMode: BlendMode.dstIn,
-                            child: CachedNetworkImage(
-                              imageUrl: heroImage,
-                              fit: BoxFit.cover,
-                              alignment: Alignment.topCenter,
-                              fadeInDuration: const Duration(milliseconds: 200),
-                            ),
+                          child: CachedNetworkImage(
+                            imageUrl: heroImage,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.topCenter,
+                            fadeInDuration: const Duration(milliseconds: 150),
                           ),
                         ),
 
-                      // B. Progressive Blur Shader with Black Tint
-                      // Diffuses the poster artwork downwards with a rich dark/black tint (no milky white wash)
-                      Positioned(
-                        top: topArtSpacing + ((tagline != null && tagline.isNotEmpty) ? 24.0 : 0.0),
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
+                      // B. Hardware-Accelerated Theatrical Dissolve (Zero offscreen GPU passes for 165Hz scrolling)
+                      Positioned.fill(
                         child: IgnorePointer(
-                          child: LatyrProgressiveBlur(
-                            sigmaStart: 18.0,
-                            sigmaEnd: 0.0,
-                            begin: Alignment.bottomCenter,
-                            end: const Alignment(0.0, -0.2),
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Colors.black.withValues(alpha: 0.40),
-                                    Colors.black.withValues(alpha: 0.85),
-                                    Colors.black,
-                                  ],
-                                  stops: const [0.0, 0.35, 0.80, 1.0],
-                                ),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                stops: const [0.0, 0.28, 0.58, 0.85, 1.0],
+                                colors: [
+                                  Colors.black.withValues(alpha: 0.30),
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.45),
+                                  Colors.black.withValues(alpha: 0.88),
+                                  Colors.black,
+                                ],
                               ),
                             ),
                           ),
@@ -350,18 +316,11 @@ class EntityDetailScreen extends StatelessWidget {
                   children: [
                     const SizedBox(height: 20),
 
-                      // Apple TV High-Contrast Action Button ("Watch on Netflix")
-                      _AppleTvWatchButton(
-                        brand: streamingBrand,
-                        logoUrl: providerLogoUrl,
+                      // Where to Watch Card (Adaptive Light Grey Card)
+                      WhereToWatchCard(
+                        metadata: meta,
+                        title: entity.title,
                         isDark: isDark,
-                        onTap: () {
-                          StreamingBrand.launchStreamingOrSearch(
-                            url: streamingDeepLink ?? entity.externalUrl,
-                            title: entity.title,
-                            platform: streamingPlatform,
-                          );
-                        },
                       ),
 
                       // Information Section (Apple style list with hairline dividers, no containers)
@@ -427,31 +386,7 @@ class EntityDetailScreen extends StatelessWidget {
             ),
           ),
 
-          // 2. Top Atmospheric Scrim (Protects status bar icons & dismiss button contrast across posters)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: MediaQuery.of(context).padding.top + 54,
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.55),
-                      Colors.black.withValues(alpha: 0.20),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.55, 1.0],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // 3. Floating Standardized Frosted Glass Navigation Bar
+          // 2. Floating Standardized Frosted Glass Navigation Bar
           Positioned(
             top: 0,
             left: 0,
@@ -618,115 +553,45 @@ class _AppleTvSynopsisState extends State<_AppleTvSynopsis> {
           : null,
     );
 
-    if (_isExpanded) {
-      return GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => setState(() => _isExpanded = false),
-        child: Text.rich(
-          TextSpan(
-            text: widget.text,
-            style: textStyle,
-            children: [
-              WidgetSpan(
-                alignment: PlaceholderAlignment.middle,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 6),
-                  child: _buildPill(label: 'LESS'),
-                ),
-              ),
-            ],
-          ),
-          textAlign: TextAlign.start,
-        ),
-      );
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final tp = TextPainter(
-          text: TextSpan(text: widget.text, style: textStyle),
-          textDirection: TextDirection.ltr,
-          maxLines: 2,
-        )..layout(maxWidth: constraints.maxWidth);
-
-        if (!tp.didExceedMaxLines) {
-          return Text(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => setState(() => _isExpanded = !_isExpanded),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
             widget.text,
             style: textStyle,
-            textAlign: TextAlign.start,
-          );
-        }
-
-        int low = 0;
-        int high = widget.text.length;
-        int bestCut = 0;
-
-        while (low <= high) {
-          final mid = (low + high) ~/ 2;
-          final candidate = '${widget.text.substring(0, mid).trimRight()}\u2026 ';
-          final testTp = TextPainter(
-            text: TextSpan(
-              text: '$candidate     MORE',
-              style: textStyle,
-            ),
-            textDirection: TextDirection.ltr,
-            maxLines: 2,
-          )..layout(maxWidth: constraints.maxWidth);
-
-          if (!testTp.didExceedMaxLines) {
-            bestCut = mid;
-            low = mid + 1;
-          } else {
-            high = mid - 1;
-          }
-        }
-
-        final visibleText = '${widget.text.substring(0, bestCut).trimRight()}\u2026 ';
-
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => setState(() => _isExpanded = true),
-          child: Text.rich(
-            TextSpan(
-              text: visibleText,
-              style: textStyle,
-              children: [
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: _buildPill(label: 'MORE'),
+            maxLines: _isExpanded ? null : 2,
+            overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 5),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(
+              color: widget.isDark ? Colors.white : const Color(0xFF1C1C1E),
+              borderRadius: BorderRadius.circular(9),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
                 ),
               ],
             ),
-            textAlign: TextAlign.start,
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPill({required String label}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(
-        color: widget.isDark ? Colors.white : const Color(0xFF1C1C1E),
-        borderRadius: BorderRadius.circular(9),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
+            child: Text(
+              _isExpanded ? 'LESS' : 'MORE',
+              style: TextStyle(
+                fontFamily: _fontFamily,
+                fontSize: 9.5,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.6,
+                color: widget.isDark ? Colors.black : Colors.white,
+              ),
+            ),
           ),
         ],
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: _fontFamily,
-          fontSize: 9.5,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.6,
-          color: widget.isDark ? Colors.black : Colors.white,
-        ),
       ),
     );
   }
@@ -949,99 +814,6 @@ class _MetascoreText extends StatelessWidget {
                 ),
               ]
             : null,
-      ),
-    );
-  }
-}
-
-/// Apple TV signature high-contrast action button ("Watch on Netflix")
-class _AppleTvWatchButton extends StatefulWidget {
-  final StreamingBrand brand;
-  final String? logoUrl;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _AppleTvWatchButton({
-    required this.brand,
-    this.logoUrl,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  State<_AppleTvWatchButton> createState() => _AppleTvWatchButtonState();
-}
-
-class _AppleTvWatchButtonState extends State<_AppleTvWatchButton> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final btnBgColor = widget.isDark ? Colors.white : const Color(0xFF1C1C1E);
-    final btnTextColor = widget.isDark ? Colors.black : Colors.white;
-
-    final logoUrl = widget.logoUrl;
-    final hasLogo = logoUrl != null && logoUrl.isNotEmpty;
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onTap,
-      child: AnimatedScale(
-        scale: _isPressed ? 0.98 : 1.0,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutCubic,
-        child: Container(
-          width: double.infinity,
-          height: 50,
-          decoration: BoxDecoration(
-            color: btnBgColor,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: widget.isDark ? 0.25 : 0.12),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                CupertinoIcons.play_fill,
-                size: 15,
-                color: btnTextColor,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Watch on ${widget.brand.name}',
-                style: TextStyle(
-                  fontFamily: _fontFamily,
-                  fontSize: 15.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
-                  color: btnTextColor,
-                ),
-              ),
-              if (hasLogo) ...[
-                const SizedBox(width: 10),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: CachedNetworkImage(
-                    imageUrl: logoUrl,
-                    width: 20,
-                    height: 20,
-                    fit: BoxFit.cover,
-                    errorWidget: (context, url, error) => const SizedBox.shrink(),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
       ),
     );
   }

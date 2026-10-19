@@ -41,6 +41,18 @@ class LColors {
     darkColor: Color(0xBF1F1F23), // 75% elevated dark
   );
 
+  /// Light grey surface card background (Light Gray in light mode, Dark Slate in dark mode).
+  static const CupertinoDynamicColor lightGreyCard = CupertinoDynamicColor.withBrightness(
+    color: Color(0xFFF2F2F7), // Apple System Gray 6 / Light Grey
+    darkColor: Color(0xFF1C1C1E), // Apple System Gray 6 Dark
+  );
+
+  /// Border for light grey surface cards.
+  static const CupertinoDynamicColor lightGreyCardBorder = CupertinoDynamicColor.withBrightness(
+    color: Color(0xFFE5E5EA),
+    darkColor: Color(0xFF2C2C2E),
+  );
+
   // ─── Labels / Text ─────────────────────────────────────────────────────────
 
   /// Primary text — used for titles and prominent content.
