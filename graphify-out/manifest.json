@@ -816,9 +816,9 @@
     "semantic_hash": "7da113978d4ffd5132651674b4f1be50"
   },
   "latyr-app/android/app/src/main/kotlin/com/latyr/latyr_app/MainActivity.kt": {
-    "mtime": 1792841477.9386544,
-    "seen": 1792850943.8378875,
-    "ast_hash": "3f0b15178e7f7d6eb6afd4b4b7fd3784",
+    "mtime": 1792861378.0034988,
+    "seen": 1792861830.293509,
+    "ast_hash": "e0c9bcd04aaa7e0d819b0a39944bcf11",
     "semantic_hash": ""
   },
   "latyr-app/android/build.gradle.kts": {
@@ -966,9 +966,9 @@
     "semantic_hash": "1c7422e389986c689ea91fd3c8519ff4"
   },
   "latyr-app/lib/core/services/share_intent_service.dart": {
-    "mtime": 1792841477.949574,
-    "seen": 1792850943.8378875,
-    "ast_hash": "3164d28361fa94a8121f3939a824101b",
+    "mtime": 1792861571.531157,
+    "seen": 1792861830.2940319,
+    "ast_hash": "c8dae175014c9781d53b24305c7a0714",
     "semantic_hash": ""
   },
   "latyr-app/lib/core/services/sync_service.dart": {
@@ -1104,9 +1104,9 @@
     "semantic_hash": "ceb9e5fdc446ea3712d8865484de2329"
   },
   "latyr-app/lib/features/capture/presentation/capture_providers.dart": {
-    "mtime": 1792841477.9577093,
-    "seen": 1792850943.8378875,
-    "ast_hash": "11bcc0dd04113135f7a17e6d9768cd94",
+    "mtime": 1792861581.7031772,
+    "seen": 1792861830.2940319,
+    "ast_hash": "c69ac88efa043c26e278546513d8556a",
     "semantic_hash": ""
   },
   "latyr-app/lib/features/collections/domain/collection_models.dart": {
@@ -2082,9 +2082,9 @@
     "semantic_hash": ""
   },
   "latyr-app/test/core/network/share_auth_test.dart": {
-    "mtime": 1792841477.9677627,
-    "seen": 1792850943.8378875,
-    "ast_hash": "354873628937796666a1aac4a8ef8867",
+    "mtime": 1792858116.2617862,
+    "seen": 1792861830.2940319,
+    "ast_hash": "8c11c0ced08db7438921c4d949ee0a56",
     "semantic_hash": ""
   },
   "latyr-app/test/core/network/sse_auth_test.dart": {
@@ -2112,9 +2112,9 @@
     "semantic_hash": ""
   },
   "latyr-app/lib/features/auth/data/firebase_auth_gateway.dart": {
-    "mtime": 1792841477.9521923,
-    "seen": 1792850943.8378875,
-    "ast_hash": "84484fcb4c12ca22711af57a93cfcdcc",
+    "mtime": 1792859908.5950875,
+    "seen": 1792861830.2940319,
+    "ast_hash": "5d44c79ac5667689249e29b707da46cc",
     "semantic_hash": ""
   },
   "latyr-app/lib/features/auth/domain/auth_gateway.dart": {
