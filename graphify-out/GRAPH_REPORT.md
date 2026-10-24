@@ -1,17 +1,17 @@
 # Graph Report - latyr  (2026-10-24)
 
 ## Corpus Check
-- 291 files · ~1,710,800 words
+- 291 files · ~1,711,368 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 57 file(s) not represented in the graph (top: (none) 9, .properties 8, .xml 7)
 
 ## Summary
-- 3505 nodes · 7542 edges · 161 communities (90 shown, 71 thin omitted)
+- 3508 nodes · 7547 edges · 167 communities (94 shown, 73 thin omitted)
 - Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 896 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a3f41dc7`
+- Built from commit: `987f3d5d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -22,7 +22,7 @@
 - app_database.g.dart
 - EntityType
 - auth_providers.dart
-- DurableIngestionPostgresTest.java
+- IngestionOutboxMapper
 - glass_card.dart
 - capture_detail_screen.dart
 - CanonicalSource
@@ -33,19 +33,20 @@
 - latyr_spacing.dart
 - entity_cards.dart
 - github_repo_detail_screen.dart
-- TmdbClient
+- GitHubEntityEnricher
 - latyr_typography.dart
 - app_colors.dart
 - latyr_rich_summary.dart
 - EntertainmentEntityEnricher
 - entertainment_metadata.dart
 - UserSubscriptionHistory
+- CaptureService
 - sse_auth_test.dart
 - .processJob
 - filter_chip_bar.dart
 - Capture
 - Uuid
-- app_auth_boundary_test.dart
+- org.junit.jupiter.api.DisplayName
 - capture_repository.dart
 - IngestionJob
 - NotificationLog
@@ -65,7 +66,7 @@
 - CaptureControllerTest.java
 - extracted_entity_model.dart
 - User
-- share_intent_service.dart
+- environment_config.dart
 - intent_detail_app_bar.dart
 - github_repo_metadata.dart
 - AuthenticatedUser
@@ -77,7 +78,7 @@
 - org.springframework.stereotype.Component
 - app_theme.dart
 - OmdbCatalog
-- UserMapper
+- SubscriptionQuotaService
 - org.springframework.stereotype.Component
 - Intent
 - summary_token.dart
@@ -85,37 +86,39 @@
 - app_auth_boundary_test.dart
 - GoogleGenAIConfig.java
 - AppDelegate
-- UserSubscription
+- brand_registry.dart
 - firebase_auth_gateway_test.dart
 - AIEntity
-- ProviderOperationException
+- org.springframework.stereotype.Component
 - CaptureMapper
 - fake_auth_gateway.dart
 - Collection
-- place_metadata.dart
+- assertions
+- String?
 - capture_source_icon.dart
 - app_switcher_scroll_physics.dart
 - .claim
 - latyr_expandable_text.dart
 - IngestionOutboxEvent
-- .extractMedia
+- ProviderOperationException
 - PostgresTestDatabase
-- brand_registry.dart
+- processing_captures_section.dart
 - app.dart
-- List
+- TmdbClient
 - UserSubscriptionMapper
 - DurableIngestionStore
-- entertainment_detail_screen.dart
-- CaptureAdmissionPostgresTest
+- State
+- OmdbClient
 - EntertainmentEntityEnricher
 - .createUrlCapture
 - CollectionMapper
+- .resolveArgument
 - capture_source_classifier.dart
 - IngestionPipelinePostgresTest
-- SubscriptionQuotaService
+- RevenueCatWebhookController
 - github_language_colors.dart
 - LocalCapture
-- token_provider_test.dart
+- api_client.dart
 - app_properties.dart
 - watch_provider_category.dart
 - org.junit.jupiter.api.Test
@@ -133,24 +136,30 @@
 - Java 21 virtual threads
 - com.latyr:latyr-api
 - sync_service.dart
-- WeatherIntegrationClient
-- UserService
-- StreamingBrandCatalog
-- SecurityConfig.java
-- Dart Flutter DevTools extension settings
-- dart:async
+- jakarta.servlet.http.HttpServletRequest
 - Language
+- StreamingBrandCatalog
+- com.fasterxml.jackson.databind.ObjectMapper
+- Dart Flutter DevTools extension settings
+- CaptureStreamController.java
+- AIAnalysisResult
 - RemovedDiagnosticRoutesTest.java
 - Document
 - CurrentUserArgumentResolver
 - UrlSourceClassifier
-- Intent
+- java.util.Map
 - IngestionStageCheckpoint
-- .findByCanonicalUrlHash
+- share_intent_service.dart
 - Document
-- JobStatus
+- org.springframework.http.ResponseEntity
 - TypographyContext
+- RestGitHubClient
 - org.slf4j.Logger
+- collections
+- ResurfacingScheduler
+- DurableIngestionPostgresTest.java
+- _RenderShaderProgressiveBlur
+- _ShaderProgressiveBlur
 
 ## God Nodes (most connected - your core abstractions)
 1. `IngestionJob` - 89 edges
@@ -173,17 +182,17 @@
   latyr-app/pubspec.yaml → AGENTS.md
 - `Flutter runtime dependency catalog` --references--> `Offline-first Drift SQLite caching`  [EXTRACTED]
   latyr-app/pubspec.yaml → AGENTS.md
-- `IngestionPipelineService` --references--> `AIProvider`  [EXTRACTED]
-  latyr-api/src/main/java/com/latyr/api/service/IngestionPipelineService.java → latyr-api/src/main/java/com/latyr/api/adapter/AIProvider.java
+- `GoogleGenAIAdapter` --implements--> `AIProvider`  [EXTRACTED]
+  latyr-api/src/main/java/com/latyr/api/adapter/GoogleGenAIAdapter.java → latyr-api/src/main/java/com/latyr/api/adapter/AIProvider.java
 
 ## Import Cycles
 - None detected.
 
-## Communities (161 total, 71 thin omitted)
+## Communities (167 total, 73 thin omitted)
 
 ### Community 0 - "package:flutter/cupertino.dart"
 Cohesion: 0.03
-Nodes (67): fromString, image, rootCollectionsProvider, build, CollectionsScreen, build, CaptureBannerWidget, onTap (+59 more)
+Nodes (75): fromString, image, build, CaptureBannerWidget, onTap, build, categoryTag, ForYouCardWidget (+67 more)
 
 ### Community 2 - "app_database.dart"
 Cohesion: 0.04
@@ -195,59 +204,55 @@ Nodes (53): _, actualTableName, _alias, aliasedName, allSchemaEntities, allTable
 
 ### Community 4 - "EntityType"
 Cohesion: 0.08
-Nodes (22): AIProvider, GoogleGenAIAdapter, TypeReference<Map<String, Object>>, ActionCTA, COOK, EXPLORE, OPEN_GITHUB, READ (+14 more)
+Nodes (21): TypeReference<Map<String, Object>>, ActionCTA, COOK, EXPLORE, OPEN_GITHUB, READ, REMEMBER, VISIT (+13 more)
 
 ### Community 5 - "auth_providers.dart"
 Cohesion: 0.07
 Nodes (25): _accessEpoch, _actionInFlight, AuthController, authGatewayProvider, AuthPhase, AuthState, dispose, errorMessage (+17 more)
 
-### Community 6 - "DurableIngestionPostgresTest.java"
-Cohesion: 0.13
-Nodes (6): AnalysisOutcomeUnknownException, IngestionLeaseLostException, IngestionOutboxMapper, IngestionEventOutbox, IngestionOutboxWorker, DurableIngestionMigrationPostgresTest
-
 ### Community 7 - "glass_card.dart"
 Cohesion: 0.04
-Nodes (40): AppleTvBadge, AppleTvBadgeVariant, build, emoji, fontSize, icon, label, padding (+32 more)
+Nodes (38): AppleTvBadge, AppleTvBadgeVariant, build, emoji, fontSize, icon, label, padding (+30 more)
 
 ### Community 8 - "capture_detail_screen.dart"
-Cohesion: 0.04
-Nodes (45): build, capture, cardColorFor, _cleanPreviewSummary, _computeIsDark, createState, didChangeDependencies, didUpdateWidget (+37 more)
+Cohesion: 0.05
+Nodes (40): capture, cardColorFor, _cleanPreviewSummary, _computeIsDark, createState, didChangeDependencies, didUpdateWidget, _extractedColor (+32 more)
 
 ### Community 9 - "CanonicalSource"
-Cohesion: 0.10
-Nodes (7): SourceType, IMAGE, INSTAGRAM_REEL, WEB_URL, YOUTUBE_SHORT, YOUTUBE_VIDEO, CanonicalSource
+Cohesion: 0.08
+Nodes (8): SourceType, IMAGE, INSTAGRAM_REEL, WEB_URL, YOUTUBE_SHORT, YOUTUBE_VIDEO, CanonicalSource, CanonicalDeduplicationServiceTest
 
 ### Community 10 - "collections_providers.dart"
 Cohesion: 0.06
-Nodes (25): SubCategoryGroup, build, CategoryDetailScreen, categoryGroup, captures, capturesAsync, cat, categoryCaptures (+17 more)
+Nodes (23): build, SubCategoryGroup, build, CategoryDetailScreen, categoryGroup, captures, capturesAsync, cat (+15 more)
 
 ### Community 11 - "latyr_colors.dart"
 Cohesion: 0.05
 Nodes (42): amberBorder, amberFill, ambientHoney, ambientWarmGlow, ambientWheat, brandAmber, brandAmberDark, brandAmberLight (+34 more)
 
 ### Community 12 - "latyr_progressive_blur.dart"
-Cohesion: 0.05
+Cohesion: 0.06
 Nodes (26): alwaysNeedsCompositing, begin, build, child, _configureShader, createRenderObject, createState, devicePixelRatio (+18 more)
 
 ### Community 13 - "search_screen.dart"
-Cohesion: 0.07
-Nodes (24): captureListStreamProvider, _buildOverlappingFeed, build, _buildEmptyState, _buildEntityWidget, createState, _filters, LibraryScreen (+16 more)
+Cohesion: 0.08
+Nodes (23): captureListStreamProvider, _buildOverlappingFeed, build, _buildEmptyState, _buildEntityWidget, createState, _filters, LibraryScreen (+15 more)
 
 ### Community 14 - "latyr_spacing.dart"
 Cohesion: 0.05
 Nodes (38): base, blurCard, blurNav, brLG, brMD, brPill, brSheet, brSM (+30 more)
 
 ### Community 15 - "entity_cards.dart"
-Cohesion: 0.04
-Nodes (53): _DottedUnderlineText, _HandwrittenWavyText, EntertainmentDetailScreen, _MaturityBadge, _MetascoreText, _RatingText, _VibrantText, borderColor (+45 more)
+Cohesion: 0.03
+Nodes (70): _DottedUnderlineText, _HandwrittenWavyText, ExtractedEntityMetadataX, ExtractedEntityModel, build, _buildDetailRow, createState, EntertainmentDetailScreen (+62 more)
 
 ### Community 16 - "github_repo_detail_screen.dart"
-Cohesion: 0.03
-Nodes (54): clearCache, ColorExtractionService, extractDominantColor, getCachedColor, _inFlightCache, _performExtraction, _resolvedCache, build (+46 more)
+Cohesion: 0.04
+Nodes (45): clearCache, ColorExtractionService, extractDominantColor, getCachedColor, _inFlightCache, _performExtraction, _resolvedCache, actionLabel (+37 more)
 
-### Community 17 - "TmdbClient"
-Cohesion: 0.07
-Nodes (26): GitHubEntityEnricher, GitHubRepoDetailsDTO, LicenseDTO, OwnerDTO, ItemDTO, GitHubClient, OmdbClient, OmdbMovieResponse (+18 more)
+### Community 17 - "GitHubEntityEnricher"
+Cohesion: 0.20
+Nodes (7): GitHubEntityEnricher, GitHubRepoDetailsDTO, LicenseDTO, OwnerDTO, ItemDTO, GitHubClient, GitHubEntityEnricherTest
 
 ### Community 18 - "latyr_typography.dart"
 Cohesion: 0.05
@@ -270,56 +275,60 @@ Cohesion: 0.06
 Nodes (34): awards, backdropUrl, boxOffice, contentRating, country, director, durationOrSeasons, EntertainmentMetadata (+26 more)
 
 ### Community 23 - "UserSubscriptionHistory"
-Cohesion: 0.09
+Cohesion: 0.08
 Nodes (6): SubscriptionEventType, CANCELLATION, DOWNGRADE, RENEWAL, UPGRADE, UserSubscriptionHistory
+
+### Community 24 - "CaptureService"
+Cohesion: 0.11
+Nodes (5): EntityController, CanonicalSourceMapper, ExtractedEntityMapper, CanonicalDeduplicationService, CaptureService
 
 ### Community 25 - "sse_auth_test.dart"
 Cohesion: 0.06
-Nodes (28): ApiClient, createCapture, dio, getCaptureDetail, getCaptures, getWeatherContext, updateEntity, uploadImageCapture (+20 more)
-
-### Community 26 - ".processJob"
-Cohesion: 0.10
-Nodes (7): AIAnalysisResult, ScrapedMedia, ScraperProvider, CaptureAnalysisCodec, CaptureSuccessPolicy, CaptureSuccessPolicyTest, IngestionPipelineServiceTest
+Nodes (26): AuthInterceptor, onError, onRequest, TokenProvider, active, auth, client, db (+18 more)
 
 ### Community 27 - "filter_chip_bar.dart"
 Cohesion: 0.05
 Nodes (39): _confirmReminder, handleAction, _handleGitHubAction, _handleMapsAction, _launchUriSafely, _launchWebUrl, _showReminderSheet, _showToast (+31 more)
 
 ### Community 28 - "Capture"
-Cohesion: 0.13
-Nodes (5): ContentType, IMAGE, TEXT, URL, Capture
-
-### Community 29 - "Uuid"
-Cohesion: 0.11
-Nodes (6): PlanTier, FREE, PRO, ResourceNotFoundException, CanonicalSourceMapper, CanonicalDeduplicationService
-
-### Community 30 - "app_auth_boundary_test.dart"
 Cohesion: 0.09
-Nodes (16): FirebaseAuthGateway, AuthGateway, AuthSession, changes, current, _Gateway, initialize, setSession (+8 more)
+Nodes (6): ContentType, IMAGE, TEXT, URL, Capture, CaptureDetailResponse
+
+### Community 30 - "org.junit.jupiter.api.DisplayName"
+Cohesion: 0.14
+Nodes (3): EntertainmentEntityEnricherTest, EphemeralMediaStreamerTest, MarkupSanitizerTest
 
 ### Community 31 - "capture_repository.dart"
 Cohesion: 0.08
-Nodes (22): SseClient, apiClient, captureUrl, checkProcessingCaptures, db, dispose, _disposed, fetchRemoteFeed (+14 more)
+Nodes (23): SseClient, apiClient, captureUrl, checkProcessingCaptures, db, dispose, _disposed, fetchRemoteFeed (+15 more)
+
+### Community 32 - "IngestionJob"
+Cohesion: 0.06
+Nodes (7): JobStatus, COMPLETED, FAILED, PENDING, PROCESSING, IngestionJob, IngestionJobMapper
 
 ### Community 34 - "JsonbTypeHandler.java"
 Cohesion: 0.16
 Nodes (3): JsonbTypeHandler, StringArrayTypeHandler, UuidTypeHandler
 
 ### Community 35 - "WatchProviderCategory"
-Cohesion: 0.15
+Cohesion: 0.16
 Nodes (5): WatchProviderCategory, BUY, FLATRATE, FREE, RENT
 
 ### Community 37 - "home_screen.dart"
 Cohesion: 0.04
-Nodes (51): captureRepositoryProvider, shareIntentServiceProvider, apiClient, capturesToday, categoriesDiscovered, city, condition, db (+43 more)
+Nodes (45): captureRepositoryProvider, apiClient, capturesToday, categoriesDiscovered, city, condition, db, fromJson (+37 more)
 
 ### Community 38 - "sse_client.dart"
 Cohesion: 0.08
 Nodes (22): _cancelToken, connect, _connectionGeneration, data, _dio, disconnect, dispose, _eventController (+14 more)
 
+### Community 39 - "SseNotificationService"
+Cohesion: 0.28
+Nodes (3): CaptureStreamController, SseNotificationService, SseNotificationServiceTest
+
 ### Community 41 - "TmdbCatalog"
-Cohesion: 0.15
-Nodes (14): TmdbCast, TmdbCatalog, TmdbCountryWatchProviders, TmdbCredits, TmdbCrew, TmdbExternalIds, TmdbGenre, TmdbItem (+6 more)
+Cohesion: 0.18
+Nodes (13): TmdbCast, TmdbCatalog, TmdbCountryWatchProviders, TmdbCredits, TmdbCrew, TmdbExternalIds, TmdbGenre, TmdbItem (+5 more)
 
 ### Community 43 - "Live visual verification showcase / Latyr Flutter package manifest"
 Cohesion: 0.09
@@ -327,51 +336,47 @@ Nodes (21): Feature-First MVVM, Dynamic palette extraction and Brand Token Regis
 
 ### Community 44 - "capture_repository_test.dart"
 Cohesion: 0.09
-Nodes (20): AppDatabase, _FeedAdapter, calls, close, db, fetch, getCaptureById, main (+12 more)
+Nodes (21): AppDatabase, _FeedAdapter, calls, close, _CustomResponseAdapter, db, fetch, getCaptureById (+13 more)
 
 ### Community 45 - "V1__init_schema.sql"
 Cohesion: 0.11
 Nodes (36): canonical_sources, capture_collections, captures, extracted_entities, idx_canonical_sources_hash, idx_captures_resurface, idx_captures_user_status_created, idx_extracted_entities_metadata_gin (+28 more)
 
 ### Community 46 - "auth_gateway.dart"
-Cohesion: 0.11
-Nodes (14): AuthenticationRequiredException, toString, AuthFailure, AuthFailureKind, initialize, isSupported, kind, message (+6 more)
+Cohesion: 0.10
+Nodes (15): AuthenticationRequiredException, toString, AuthFailure, AuthFailureKind, AuthSession, initialize, isSupported, kind (+7 more)
 
 ### Community 47 - "CaptureControllerTest.java"
-Cohesion: 0.08
-Nodes (6): PagedResponse, PageMetadata, CaptureControllerTest, HandlerMethodArgumentResolver, CaptureStreamControllerTest, CurrentUserArgumentResolver
+Cohesion: 0.12
+Nodes (4): PagedResponse, PageMetadata, CaptureControllerTest, CaptureStreamControllerTest
 
 ### Community 48 - "extracted_entity_model.dart"
 Cohesion: 0.08
-Nodes (18): actionCta, book, description, entertainment, entityType, externalUrl, ExtractedEntityMetadataX, ExtractedEntityModel (+10 more)
+Nodes (16): actionCta, book, description, entertainment, entityType, externalUrl, fromJson, generic (+8 more)
 
-### Community 50 - "share_intent_service.dart"
-Cohesion: 0.08
-Nodes (16): cdnBaseUrl, environment, EnvironmentConfig, isLocal, isProd, isUat, _rawApiUrl, _channel (+8 more)
+### Community 50 - "environment_config.dart"
+Cohesion: 0.17
+Nodes (7): cdnBaseUrl, environment, EnvironmentConfig, isLocal, isProd, isUat, _rawApiUrl
 
 ### Community 51 - "intent_detail_app_bar.dart"
 Cohesion: 0.09
 Nodes (18): actions, backIcon, build, buildActionButton, enableBlur, IntentDetailAppBar, isDark, onBack (+10 more)
 
 ### Community 52 - "github_repo_metadata.dart"
-Cohesion: 0.05
-Nodes (36): author, BookMetadata, buyUrl, coverUrl, fromMap, genres, isbn, overview (+28 more)
-
-### Community 53 - "AuthenticatedUser"
-Cohesion: 0.09
-Nodes (8): CaptureController, EntityController, CaptureDetailResponse, ExtractedEntityResponse, UpdateEntityRequest, AuthenticatedUser, CurrentUser, CaptureService
+Cohesion: 0.08
+Nodes (24): audit, avatarUrl, defaultBranch, forks, forksFormatted, formatCount, fromMap, fullName (+16 more)
 
 ### Community 54 - "CaptureQuotaLedger"
-Cohesion: 0.10
-Nodes (3): CaptureQuotaReservation, CaptureQuotaLedgerMapper, CaptureQuotaLedger
+Cohesion: 0.09
+Nodes (4): CaptureQuotaReservation, CaptureQuotaLedgerMapper, CaptureQuotaLedger, CaptureAdmissionPostgresTest
 
 ### Community 55 - "dominant_color_service.dart"
 Cohesion: 0.09
 Nodes (20): accent, background, DominantColorService, DominantPalette, extractDominantColor, extractPalette, fallback, getCachedPalette (+12 more)
 
 ### Community 56 - "org.springframework.context.annotation.Bean"
-Cohesion: 0.10
-Nodes (4): AsyncConfig, JacksonConfig, LatyrApiApplication, TestConfiguration
+Cohesion: 0.11
+Nodes (3): AsyncConfig, LatyrApiApplication, IngestionQueueWorker
 
 ### Community 60 - "app_theme.dart"
 Cohesion: 0.09
@@ -381,13 +386,13 @@ Nodes (18): accent, AppTheme, background, border, cupertinoTheme, darkTheme, err
 Cohesion: 0.18
 Nodes (3): OmdbCatalog, OmdbMovieResponse, OmdbRating
 
-### Community 62 - "UserMapper"
-Cohesion: 0.18
-Nodes (3): UserMapper, ResurfacingScheduler, ResurfacingSchedulerTest
+### Community 62 - "SubscriptionQuotaService"
+Cohesion: 0.15
+Nodes (6): UserController, UserMapper, UserSubscriptionHistoryMapper, SubscriptionQuotaService, UserService, RevenueCatWebhookControllerTest
 
 ### Community 63 - "org.springframework.stereotype.Component"
-Cohesion: 0.09
-Nodes (9): IdentityProvider, APPLE, GOOGLE, UNSUPPORTED, IdentityTokenVerifier, VerifiedIdentity, PathNormalizationFilter, HttpServletRequestWrapper (+1 more)
+Cohesion: 0.08
+Nodes (10): FirebaseIdentityTokenVerifier, IdentityProvider, APPLE, GOOGLE, UNSUPPORTED, IdentityTokenVerifier, VerifiedIdentity, PathNormalizationFilter (+2 more)
 
 ### Community 64 - "Intent"
 Cohesion: 0.16
@@ -398,36 +403,40 @@ Cohesion: 0.11
 Nodes (17): actionPayload, actionScheme, actionType, hashCode, highlight, icon3d, iconName, italic (+9 more)
 
 ### Community 67 - "app_auth_boundary_test.dart"
-Cohesion: 0.05
-Nodes (34): captures, CategoryGroup, categoryName, color, icon, subCategoryName, close, db (+26 more)
+Cohesion: 0.04
+Nodes (41): captures, CategoryGroup, categoryName, color, icon, subCategoryName, close, db (+33 more)
 
 ### Community 69 - "AppDelegate"
-Cohesion: 0.14
+Cohesion: 0.12
 Nodes (6): Flutter, AppDelegate, SceneDelegate, RunnerTests, UIKit, XCTest
 
+### Community 70 - "brand_registry.dart"
+Cohesion: 0.10
+Nodes (17): brandColor, BrandRegistry, BrandToken, colorFromHex, iconColor, logoUrl, name, resolve (+9 more)
+
 ### Community 71 - "firebase_auth_gateway_test.dart"
-Cohesion: 0.05
-Nodes (35): _authenticate, _google, _googleInitialization, initialize, _session, sessions, signInWithApple, signInWithGoogle (+27 more)
+Cohesion: 0.03
+Nodes (55): _authenticate, _google, _googleInitialization, initialize, _session, sessions, signInWithApple, signInWithGoogle (+47 more)
 
 ### Community 72 - "AIEntity"
 Cohesion: 0.17
 Nodes (5): AIEntity, DefaultEntityEnrichmentAdapter, CompositeEntityEnricher, EntityEnricher, DefaultEntityEnrichmentAdapterTest
 
-### Community 73 - "ProviderOperationException"
-Cohesion: 0.09
-Nodes (9): ExternalProviderException, LatyrException, Outcome, AMBIGUOUS, PERMANENT, RETRYABLE, UNSUPPORTED, ProviderOperationException (+1 more)
+### Community 73 - "org.springframework.stereotype.Component"
+Cohesion: 0.12
+Nodes (3): GoogleGenAIAdapter, ExternalProviderException, LatyrException
 
 ### Community 74 - "CaptureMapper"
 Cohesion: 0.15
 Nodes (7): CaptureStatus, COMPLETED, FAILED, PARTIAL, PENDING, PROCESSING, CaptureMapper
 
 ### Community 75 - "fake_auth_gateway.dart"
-Cohesion: 0.12
-Nodes (14): appleCalls, current, events, googleCalls, initializationError, initialize, pendingSignIn, _signIn (+6 more)
+Cohesion: 0.07
+Nodes (22): FirebaseAuthGateway, AuthGateway, _Gateway, controller, gateway, main, settle, appleCalls (+14 more)
 
-### Community 78 - "place_metadata.dart"
-Cohesion: 0.12
-Nodes (15): address, city, country, fromMap, latitude, location, longitude, mapsUrl (+7 more)
+### Community 78 - "String?"
+Cohesion: 0.06
+Nodes (31): category, confidenceScore, fromMap, GenericEntityMetadata, rawProperties, sourceDomain, summary, tags (+23 more)
 
 ### Community 79 - "capture_source_icon.dart"
 Cohesion: 0.14
@@ -441,41 +450,53 @@ Nodes (8): applyPhysicsToUserOffset, applyTo, AppSwitcherScrollPhysics, createBa
 Cohesion: 0.15
 Nodes (11): RoundedTextStyle, animationDuration, build, createState, _isExpanded, LatyrExpandableText, _LatyrExpandableTextState, maxLines (+3 more)
 
-### Community 86 - "brand_registry.dart"
+### Community 84 - "ProviderOperationException"
+Cohesion: 0.18
+Nodes (7): org.springframework.core.ParameterizedTypeReference<Map<String, Object>>, Outcome, AMBIGUOUS, PERMANENT, RETRYABLE, UNSUPPORTED, ProviderOperationException
+
+### Community 85 - "PostgresTestDatabase"
+Cohesion: 0.11
+Nodes (4): AnalysisOutcomeUnknownException, DurableIngestionMigrationPostgresTest, LegacyEnrichmentMigrationTest, PostgresTestDatabase
+
+### Community 86 - "processing_captures_section.dart"
 Cohesion: 0.06
-Nodes (32): brandColor, BrandRegistry, BrandToken, colorFromHex, iconColor, logoUrl, name, resolve (+24 more)
+Nodes (31): author, BookMetadata, buyUrl, coverUrl, fromMap, genres, isbn, overview (+23 more)
 
 ### Community 87 - "app.dart"
-Cohesion: 0.09
-Nodes (24): _AuthenticatedHome, build, _buildFloatingNavBar, _buildNavItem, createState, _currentIndex, dispose, initState (+16 more)
+Cohesion: 0.08
+Nodes (26): _AuthenticatedHome, build, _buildFloatingNavBar, _buildNavItem, createState, _currentIndex, dispose, initState (+18 more)
 
-### Community 88 - "List"
-Cohesion: 0.17
-Nodes (9): category, confidenceScore, fromMap, GenericEntityMetadata, rawProperties, sourceDomain, summary, tags (+1 more)
+### Community 88 - "TmdbClient"
+Cohesion: 0.35
+Nodes (13): TmdbCast, TmdbClient, TmdbCountryWatchProviders, TmdbCredits, TmdbCrew, TmdbExternalIds, TmdbGenre, TmdbMovieDetails (+5 more)
 
-### Community 92 - "entertainment_detail_screen.dart"
-Cohesion: 0.06
-Nodes (35): LatyrProgressiveBlur, _LatyrProgressiveBlurState, LatyrRichSummary, _LatyrRichSummaryState, _AppleTvImdbLinkTile, _AppleTvImdbLinkTileState, _AppleTvSynopsis, _AppleTvSynopsisState (+27 more)
+### Community 89 - "UserSubscriptionMapper"
+Cohesion: 0.12
+Nodes (3): UserSubscription, UserSubscriptionMapper, SubscriptionQuotaServiceTest
+
+### Community 92 - "State"
+Cohesion: 0.14
+Nodes (18): LatyrCaptureCard, _LatyrCaptureCardState, LatyrRichSummary, _LatyrRichSummaryState, _AppleTvImdbLinkTile, _AppleTvImdbLinkTileState, _AppleTvSynopsis, _AppleTvSynopsisState (+10 more)
+
+### Community 93 - "OmdbClient"
+Cohesion: 0.23
+Nodes (3): OmdbClient, OmdbMovieResponse, OmdbRating
 
 ### Community 96 - ".createUrlCapture"
-Cohesion: 0.21
-Nodes (3): CaptureResponse, CreateCaptureRequest, CaptureServiceTest
+Cohesion: 0.16
+Nodes (4): CaptureResponse, CreateCaptureRequest, CaptureServiceTest, GoogleGenAIAdapterTest
 
 ### Community 100 - "capture_source_classifier.dart"
 Cohesion: 0.12
 Nodes (11): CaptureSourceClassifier, classify, extractFirstUrl, normalizeUrl, _trackingParams, _urlRegex, _parseLinkTarget, stripMarkup (+3 more)
 
-### Community 102 - "SubscriptionQuotaService"
-Cohesion: 0.16
-Nodes (4): RevenueCatWebhookController, UserSubscriptionHistoryMapper, SubscriptionQuotaService, RevenueCatWebhookControllerTest
-
 ### Community 103 - "github_language_colors.dart"
 Cohesion: 0.29
 Nodes (5): _colors, formatCount, formatRelativeTime, GitHubLanguageColors, resolve
 
-### Community 105 - "token_provider_test.dart"
-Cohesion: 0.08
-Nodes (20): _Auth, _GoogleAccount, _User, _Adapter, _Auth, close, closed, connect (+12 more)
+### Community 105 - "api_client.dart"
+Cohesion: 0.12
+Nodes (12): ApiClient, createCapture, dio, getCaptureDetail, getCaptures, getWeatherContext, updateEntity, uploadImageCapture (+4 more)
 
 ### Community 106 - "app_properties.dart"
 Cohesion: 0.40
@@ -494,72 +515,76 @@ Cohesion: 0.47
 Nodes (4): Thin controllers, Immutable internal DTO records, MyBatis explicit SQL, Services and orchestrators
 
 ### Community 136 - "sync_service.dart"
-Cohesion: 0.12
-Nodes (12): captureRepository, _connectivity, dispose, _feedSyncTimer, _processingTimer, _startListening, _startTimers, _subscription (+4 more)
+Cohesion: 0.11
+Nodes (13): captureRepository, _connectivity, dispose, _feedSyncTimer, _isTriggering, _processingTimer, _startListening, _startTimers (+5 more)
 
-### Community 137 - "WeatherIntegrationClient"
-Cohesion: 0.14
-Nodes (8): CaptureStreamController, ContextController, WeatherContextResponse, HealthController, LocationData, WeatherData, WeatherIntegrationClient, ProbeController
+### Community 137 - "jakarta.servlet.http.HttpServletRequest"
+Cohesion: 0.23
+Nodes (5): ContextController, WeatherContextResponse, LocationData, WeatherData, WeatherIntegrationClient
 
-### Community 138 - "UserService"
-Cohesion: 0.18
-Nodes (6): UserController, UpdatePreferencesRequest, UserProfileResponse, UserService, UserControllerTest, CurrentUserArgumentResolver
+### Community 138 - "Language"
+Cohesion: 0.16
+Nodes (10): Language, ENGLISH, HINDI, HINGLISH, ORIGINAL, PlanTier, FREE, PRO (+2 more)
 
 ### Community 139 - "StreamingBrandCatalog"
 Cohesion: 0.17
 Nodes (4): BrandMetadata, StreamingBrandCatalog, AssetStorageProvider, CdnAssetStorageProvider
 
-### Community 142 - "dart:async"
-Cohesion: 0.17
-Nodes (6): close, fetch, RecordingHttpAdapter, requests, main, providers
+### Community 140 - "com.fasterxml.jackson.databind.ObjectMapper"
+Cohesion: 0.11
+Nodes (3): JacksonConfig, SecurityConfig, TestConfiguration
 
-### Community 143 - "Language"
-Cohesion: 0.18
-Nodes (5): Language, ENGLISH, HINDI, HINGLISH, ORIGINAL
+### Community 143 - "AIAnalysisResult"
+Cohesion: 0.19
+Nodes (4): AIAnalysisResult, CaptureAnalysisCodec, CaptureSuccessPolicy, CaptureSuccessPolicyTest
 
 ### Community 146 - "Document"
 Cohesion: 0.17
 Nodes (11): Apify Scraper, Document, Firebase Authentication, Flutter MVVM Riverpod Drift, Gemini Multimodal, Latyr Capture Understanding, MyBatis Explicit SQL, PostgreSQL Transactional Queue (+3 more)
 
-### Community 148 - "UrlSourceClassifier"
-Cohesion: 0.12
-Nodes (5): MarkupSanitizer, UrlSourceClassifier, EphemeralMediaStreamerTest, MarkupSanitizerTest, UrlSourceClassifierTest
+### Community 147 - "CurrentUserArgumentResolver"
+Cohesion: 0.14
+Nodes (4): WebConfig, CurrentUserArgumentResolver, HandlerMethodArgumentResolver, CurrentUserArgumentResolver
 
-### Community 149 - "Intent"
-Cohesion: 0.16
-Nodes (10): Intent, BUY, COOK, EXPLORE, LEARN, REMEMBER, VISIT, WATCH (+2 more)
+### Community 149 - "java.util.Map"
+Cohesion: 0.12
+Nodes (9): Intent, BUY, COOK, EXPLORE, LEARN, REMEMBER, VISIT, WATCH (+1 more)
+
+### Community 151 - "share_intent_service.dart"
+Cohesion: 0.17
+Nodes (9): _channel, dispose, _disposed, _extractUrl, _handleSharedText, _init, _lastHandledAt, _lastHandledUrl (+1 more)
 
 ### Community 153 - "Document"
 Cohesion: 0.14
 Nodes (13): Document, Dynamic Entity Enrichment, EntityDetailScreen, IMDb Destination Tile, Inline MORE Pill, JustWatch CDN Logos, LatyrExpandableText, Light Mode (+5 more)
 
-### Community 155 - "JobStatus"
-Cohesion: 0.25
-Nodes (5): JobStatus, COMPLETED, FAILED, PENDING, PROCESSING
-
 ### Community 161 - "org.slf4j.Logger"
-Cohesion: 0.10
-Nodes (7): ApifyScraperAdapter, EntityEnrichmentProvider, EphemeralMediaStreamer, ThumbnailStorage, FirebaseStorageService, IngestionPipelineService, IngestionQueueWorker
+Cohesion: 0.12
+Nodes (9): AIProvider, ApifyScraperAdapter, EntityEnrichmentProvider, EphemeralMediaStreamer, ScraperProvider, ThumbnailStorage, FirebaseStorageService, IngestionEventOutbox (+1 more)
+
+### Community 163 - "ResurfacingScheduler"
+Cohesion: 0.31
+Nodes (4): ResurfacingScheduler, FcmService, FcmServiceTest, ResurfacingSchedulerTest
 
 ## Knowledge Gaps
-- **1210 isolated node(s):** `com.latyr:latyr-api`, `GOOGLE`, `APPLE`, `UNSUPPORTED`, `WATCH` (+1205 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1671 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **71 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1212 isolated node(s):** `com.latyr:latyr-api`, `GOOGLE`, `APPLE`, `UNSUPPORTED`, `WATCH` (+1207 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1673 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **73 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Capture` connect `Capture` to `NotificationLog`, `CanonicalSource`, `CaptureMapper`, `Intent`, `.publishCore`, `.processJob`, `Uuid`, `java.util.List`?**
+- **Why does `Capture` connect `Capture` to `NotificationLog`, `CanonicalSource`, `CaptureMapper`, `org.springframework.stereotype.Component`, `assertions`, `java.util.Map`, `.processJob`, `Uuid`, `java.util.List`?**
   _High betweenness centrality (0.051) - this node is a cross-community bridge._
 - **What connects `com.latyr:latyr-api`, `GOOGLE`, `APPLE` to the rest of the system?**
-  _1210 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1212 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `package:flutter/cupertino.dart` be split into smaller, more focused modules?**
-  _Cohesion score 0.033707865168539325 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.03070175438596491 - nodes in this community are weakly interconnected._
 - **Why does `WatchProviderCategory` connect `WatchProviderCategory` to `org.springframework.stereotype.Component`?**
-  _High betweenness centrality (0.031) - this node is a cross-community bridge._
+  _High betweenness centrality (0.034) - this node is a cross-community bridge._
 - **Should `ExtractedEntity` be split into smaller, more focused modules?**
-  _Cohesion score 0.08163265306122448 - nodes in this community are weakly interconnected._
-- **Why does `IngestionJob` connect `IngestionJob` to `ExtractedEntity`, `org.slf4j.Logger`, `DurableIngestionPostgresTest.java`, `CanonicalSource`, `JobStatus`, `assertions`, `org.junit.jupiter.api.Test`, `.claim`, `IngestionStageCheckpoint`, `.publishCore`, `.processJob`, `DurableIngestionStore`, `Capture`, `Uuid`, `java.util.List`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+  _Cohesion score 0.09871794871794871 - nodes in this community are weakly interconnected._
+- **Why does `IngestionJob` connect `IngestionJob` to `ExtractedEntity`, `DurableIngestionPostgresTest.java`, `CanonicalSource`, `org.junit.jupiter.api.Test`, `assertions`, `.claim`, `PostgresTestDatabase`, `org.springframework.context.annotation.Bean`, `.processJob`, `DurableIngestionStore`, `Capture`, `Uuid`, `java.util.List`?**
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
 - **Should `app_database.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.03773584905660377 - nodes in this community are weakly interconnected._

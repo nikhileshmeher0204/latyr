@@ -8,6 +8,7 @@ class SyncService {
   StreamSubscription<List<ConnectivityResult>>? _subscription;
   Timer? _processingTimer;
   Timer? _feedSyncTimer;
+  bool _isTriggering = false;
 
   SyncService({
     required this.captureRepository,
@@ -45,9 +46,15 @@ class SyncService {
   }
 
   Future<void> triggerSync() async {
-    await captureRepository.syncPending();
-    await captureRepository.checkProcessingCaptures();
-    await captureRepository.fetchRemoteFeed();
+    if (_isTriggering) return;
+    _isTriggering = true;
+    try {
+      await captureRepository.syncPending();
+      await captureRepository.checkProcessingCaptures();
+      await captureRepository.fetchRemoteFeed();
+    } finally {
+      _isTriggering = false;
+    }
   }
 
   void dispose() {
