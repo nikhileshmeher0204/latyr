@@ -83,4 +83,60 @@ void main() {
       expect(await db.getPendingSyncCaptures(), hasLength(1));
     },
   );
+
+  test(
+    'cold start share awaits asynchronous auth resolution before capturing',
+    () async {
+      const channel = MethodChannel('com.latyr.latyr_app/share');
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(channel, (_) async => null);
+
+      final authCompleter = Completer<bool>();
+      var capturedUrl = '';
+      var signInNotices = 0;
+
+      final service = ShareIntentService(
+        canCapture: () async {
+          return authCompleter.future;
+        },
+        captureUrl: (url, {caption}) async {
+          capturedUrl = url;
+        },
+        onAuthenticationRequired: () => signInNotices++,
+      );
+
+      addTearDown(() {
+        service.dispose();
+        messenger.setMockMethodCallHandler(channel, null);
+      });
+
+      Future<void> share(String url) async {
+        final reply = Completer<ByteData?>();
+        ServicesBinding.instance.channelBuffers.push(
+          channel.name,
+          const StandardMethodCodec().encodeMethodCall(
+            MethodCall('onSharedText', url),
+          ),
+          reply.complete,
+        );
+        const StandardMethodCodec().decodeEnvelope((await reply.future)!);
+      }
+
+      // Simulate share intent arriving while auth is still initializing
+      final shareFuture = share('https://example.com/cold-start-share');
+
+      // Verify nothing is processed yet
+      expect(capturedUrl, isEmpty);
+      expect(signInNotices, 0);
+
+      // Now auth resolves to true
+      authCompleter.complete(true);
+      await shareFuture;
+      await Future<void>.delayed(Duration.zero);
+
+      expect(capturedUrl, 'https://example.com/cold-start-share');
+      expect(signInNotices, 0);
+    },
+  );
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:latyr_app/core/database/app_database.dart';
@@ -17,6 +18,7 @@ class CaptureRepository {
   final Uuid _uuid = const Uuid();
   StreamSubscription<SseCaptureEvent>? _sseSubscription;
   bool _disposed = false;
+  bool _isSyncing = false;
 
   bool get _hasCaptureSession => !_disposed && canCapture();
 
@@ -299,38 +301,65 @@ class CaptureRepository {
 
   Future<void> syncPending() async {
     if (!_hasCaptureSession) return;
-    final pendingList = await db.getPendingSyncCaptures();
-    if (pendingList.isEmpty) return;
+    if (_isSyncing) return;
+    _isSyncing = true;
+    try {
+      final pendingList = await db.getPendingSyncCaptures();
+      if (pendingList.isEmpty) return;
 
-    for (final item in pendingList) {
-      if (!_hasCaptureSession) return;
-      if (item.originalUrl != null && item.contentType == 'URL') {
-        try {
-          debugPrint('Syncing pending capture: ${item.id}');
-          final response = await apiClient.createCapture(item.originalUrl!);
-          if (!_hasCaptureSession) return;
-          final data = response.data;
-          final serverId = data?['id']?.toString();
-          final status = data?['status']?.toString() ??
-              (response.statusCode == 200 ? 'COMPLETED' : 'PROCESSING');
+      for (final item in pendingList) {
+        if (!_hasCaptureSession) return;
+        if (item.originalUrl != null && item.contentType == 'URL') {
+          try {
+            debugPrint('Syncing pending capture: ${item.id}');
+            final response = await apiClient.createCapture(
+              item.originalUrl!,
+              caption: item.originalCaption,
+            );
+            if (!_hasCaptureSession) return;
+            final data = response.data;
+            final serverId = data?['id']?.toString();
+            final serverStatus = data?['status']?.toString();
+            final status = serverStatus ??
+                (response.statusCode == 200 ? 'COMPLETED' : 'PROCESSING');
 
-          await db.updateCapture(
-            LocalCapturesCompanion(
-              id: Value(item.id),
-              serverCaptureId: Value(serverId),
-              status: Value(status),
-              intent: Value(data?['intent']?.toString()),
-              category: Value(data?['category']?.toString()),
-              thumbnailUrl: Value(data?['thumbnail_url']?.toString()),
-              updatedAt: Value(DateTime.now()),
-              syncedAt: Value(DateTime.now()),
-            ),
-          );
-        } catch (e) {
-          debugPrint('Sync pending failed for ${item.id}: $e');
-          // Will retry on next sync tick
+            await db.updateCapture(
+              LocalCapturesCompanion(
+                id: Value(item.id),
+                serverCaptureId: Value(serverId),
+                status: Value(status),
+                intent: Value(data?['intent']?.toString()),
+                category: Value(data?['category']?.toString()),
+                thumbnailUrl: Value(data?['thumbnail_url']?.toString()),
+                updatedAt: Value(DateTime.now()),
+                syncedAt: Value(DateTime.now()),
+              ),
+            );
+          } on DioException catch (e) {
+            final statusCode = e.response?.statusCode;
+            final errorCode = e.response?.data is Map ? e.response?.data['error']?.toString() : null;
+            final errorMessage = e.response?.data is Map ? e.response?.data['message']?.toString() : null;
+            debugPrint('Sync pending DioException for ${item.id}: status=$statusCode, error=$errorCode');
+
+            if (statusCode == 400 || statusCode == 402) {
+              await db.updateCapture(
+                LocalCapturesCompanion(
+                  id: Value(item.id),
+                  status: const Value('FAILED'),
+                  summary: Value(errorMessage ?? errorCode ?? 'Sync failed ($statusCode)'),
+                  updatedAt: Value(DateTime.now()),
+                ),
+              );
+            } else if (statusCode == 401 || statusCode == 403) {
+              return;
+            }
+          } catch (e) {
+            debugPrint('Sync pending unexpected error for ${item.id}: $e');
+          }
         }
       }
+    } finally {
+      _isSyncing = false;
     }
   }
 
@@ -338,119 +367,134 @@ class CaptureRepository {
     if (!_hasCaptureSession) throw const AuthenticationRequiredException();
   }
 
-  Future<void> fetchRemoteFeed({int page = 0, int size = 20}) async {
+  Future<void> fetchRemoteFeed({
+    int page = 0,
+    int size = 20,
+    bool hydrateAll = false,
+    int maxPages = 10,
+  }) async {
     if (!_hasCaptureSession) return;
     try {
-      final response = await apiClient.getCaptures(page: page, size: size);
-      if (!_hasCaptureSession) return;
-      final items = response.data?['items'] as List<dynamic>?;
+      int currentPage = page;
+      bool hasMore = true;
+      int pagesFetched = 0;
 
-      if (items != null) {
-        for (final raw in items) {
-          if (!_hasCaptureSession) return;
-          if (raw is Map<String, dynamic>) {
-            final serverId = raw['id']?.toString();
-            if (serverId != null) {
-              var existing = await db.getCaptureByServerId(serverId);
-              if (!_hasCaptureSession) return;
-              final rawCaption = raw['original_caption']?.toString();
-              if (existing == null && rawCaption != null) {
-                existing = await db.getUniqueUnboundUrlCapture(rawCaption);
-              }
-              final id = existing?.id ?? _uuid.v4();
+      while (hasMore && pagesFetched < maxPages) {
+        final response = await apiClient.getCaptures(page: currentPage, size: size);
+        if (!_hasCaptureSession) return;
+        final data = response.data;
+        final items = data?['items'] as List<dynamic>?;
+        final totalPages = data?['total_pages'] as int? ?? 1;
+        pagesFetched++;
 
-              final serverUpdatedAt = raw['updated_at'] != null
-                  ? DateTime.tryParse(raw['updated_at'].toString())
-                  : null;
+        if (items != null && items.isNotEmpty) {
+          for (final raw in items) {
+            if (!_hasCaptureSession) return;
+            if (raw is Map<String, dynamic>) {
+              final serverId = raw['id']?.toString();
+              if (serverId != null) {
+                var existing = await db.getCaptureByServerId(serverId);
+                if (!_hasCaptureSession) return;
+                final rawCaption = raw['original_caption']?.toString();
+                if (existing == null && rawCaption != null) {
+                  existing = await db.getUniqueUnboundUrlCapture(rawCaption);
+                }
+                final id = existing?.id ?? _uuid.v4();
 
-              // If existing item lacks entities or has newer updates on server, fetch detail
-              String? entitiesJson = existing?.entitiesJson;
-              final bool needsEntityRefresh = entitiesJson == null ||
-                  entitiesJson.isEmpty ||
-                  (serverUpdatedAt != null && (existing?.updatedAt == null || serverUpdatedAt.isAfter(existing!.updatedAt)));
+                final serverUpdatedAt = raw['updated_at'] != null
+                    ? DateTime.tryParse(raw['updated_at'].toString())
+                    : null;
 
-              if (needsEntityRefresh) {
-                try {
-                  final detailResp = await apiClient.getCaptureDetail(serverId);
-                  if (!_hasCaptureSession) return;
-                  final detailData = detailResp.data;
-                  if (detailData != null && detailData['entities'] != null) {
-                    entitiesJson = jsonEncode(detailData['entities']);
-                  }
-                } catch (_) {}
-              }
-
-              final newStatus = raw['status']?.toString() ?? 'COMPLETED';
-              final newSourceType = raw['source_type']?.toString() ??
-                  CaptureSourceClassifier.classify(rawCaption)?.name.toUpperCase();
-              final newIntent = raw['intent']?.toString();
-              final newCategory = raw['category']?.toString(); final newSubCategory = raw['sub_category']?.toString(); final newSummary = raw['summary']?.toString();
-              final newTitle = raw['title']?.toString();
-              final rawTranscript = raw['audio_transcript']?.toString();
-              final rawThumbnail = raw['thumbnail_url']?.toString();
-              final serverCreatedAt = raw['created_at'] != null
-                  ? DateTime.tryParse(raw['created_at'].toString())
-                  : null;
-
-              if (!_hasCaptureSession) return;
-              if (existing != null) {
-                final bool hasChanged = existing.serverCaptureId != serverId ||
-                    existing.status != newStatus ||
-                    existing.sourceType != newSourceType ||
-                    existing.intent != newIntent ||
-                    existing.category != newCategory || existing.subCategory != newSubCategory || existing.summary != newSummary ||
-                    existing.title != newTitle ||
-                    existing.originalCaption != rawCaption ||
-                    existing.audioTranscript != rawTranscript ||
-                    existing.thumbnailUrl != rawThumbnail ||
-                    existing.entitiesJson != entitiesJson;
-
-                if (!hasChanged) {
-                  // No modifications to database row, skipping to prevent Drift stream emissions
-                  continue;
+                String? entitiesJson = existing?.entitiesJson;
+                if (raw['entities'] != null) {
+                  entitiesJson = jsonEncode(raw['entities']);
                 }
 
-                await db.updateCapture(
-                  LocalCapturesCompanion(
-                    id: Value(existing.id),
-                    serverCaptureId: Value(serverId),
-                    status: Value(newStatus),
-                    sourceType: Value(newSourceType ?? existing.sourceType),
-                    intent: Value(newIntent),
-                    category: Value(newCategory), subCategory: Value(newSubCategory), summary: Value(newSummary),
-                    title: Value(newTitle ?? existing.title),
-                    originalCaption: Value(rawCaption),
-                    thumbnailUrl: Value(rawThumbnail ?? existing.thumbnailUrl),
-                    audioTranscript: Value(rawTranscript),
-                    entitiesJson: Value(entitiesJson),
-                    updatedAt: Value(serverUpdatedAt ?? existing.updatedAt),
-                    syncedAt: Value(DateTime.now()),
-                  ),
-                );
-              } else {
-                await db.insertCapture(
-                  LocalCapturesCompanion(
-                    id: Value(id),
-                    serverCaptureId: Value(serverId),
-                    originalUrl: Value(raw['original_caption']?.toString()),
-                    sourceType: Value(newSourceType),
-                    contentType: Value(raw['content_type']?.toString() ?? 'URL'),
-                    status: Value(newStatus),
-                    intent: Value(newIntent),
-                    category: Value(newCategory), subCategory: Value(newSubCategory), summary: Value(newSummary),
-                    title: Value(newTitle),
-                    originalCaption: Value(rawCaption),
-                    thumbnailUrl: Value(rawThumbnail),
-                    audioTranscript: Value(rawTranscript),
-                    entitiesJson: Value(entitiesJson),
-                    createdAt: Value(serverCreatedAt ?? DateTime.now()),
-                    updatedAt: Value(serverUpdatedAt ?? serverCreatedAt ?? DateTime.now()),
-                    syncedAt: Value(DateTime.now()),
-                  ),
-                );
+                final newStatus = raw['status']?.toString() ?? 'COMPLETED';
+                final newSourceType = raw['source_type']?.toString() ??
+                    CaptureSourceClassifier.classify(rawCaption)?.name.toUpperCase();
+                final newIntent = raw['intent']?.toString();
+                final newCategory = raw['category']?.toString();
+                final newSubCategory = raw['sub_category']?.toString();
+                final newSummary = raw['summary']?.toString();
+                final newTitle = raw['title']?.toString();
+                final rawTranscript = raw['audio_transcript']?.toString();
+                final rawThumbnail = raw['thumbnail_url']?.toString();
+                final serverCreatedAt = raw['created_at'] != null
+                    ? DateTime.tryParse(raw['created_at'].toString())
+                    : null;
+
+                if (!_hasCaptureSession) return;
+                if (existing != null) {
+                  final bool hasChanged = existing.serverCaptureId != serverId ||
+                      existing.status != newStatus ||
+                      existing.sourceType != newSourceType ||
+                      existing.intent != newIntent ||
+                      existing.category != newCategory ||
+                      existing.subCategory != newSubCategory ||
+                      existing.summary != newSummary ||
+                      existing.title != newTitle ||
+                      existing.originalCaption != rawCaption ||
+                      existing.audioTranscript != rawTranscript ||
+                      existing.thumbnailUrl != rawThumbnail ||
+                      existing.entitiesJson != entitiesJson;
+
+                  if (!hasChanged) {
+                    continue;
+                  }
+
+                  await db.updateCapture(
+                    LocalCapturesCompanion(
+                      id: Value(existing.id),
+                      serverCaptureId: Value(serverId),
+                      status: Value(newStatus),
+                      sourceType: Value(newSourceType ?? existing.sourceType),
+                      intent: Value(newIntent),
+                      category: Value(newCategory),
+                      subCategory: Value(newSubCategory),
+                      summary: Value(newSummary),
+                      title: Value(newTitle ?? existing.title),
+                      originalCaption: Value(rawCaption),
+                      thumbnailUrl: Value(rawThumbnail ?? existing.thumbnailUrl),
+                      audioTranscript: Value(rawTranscript),
+                      entitiesJson: Value(entitiesJson),
+                      updatedAt: Value(serverUpdatedAt ?? existing.updatedAt),
+                      syncedAt: Value(DateTime.now()),
+                    ),
+                  );
+                } else {
+                  await db.insertCapture(
+                    LocalCapturesCompanion(
+                      id: Value(id),
+                      serverCaptureId: Value(serverId),
+                      originalUrl: Value(raw['original_caption']?.toString()),
+                      sourceType: Value(newSourceType),
+                      contentType: Value(raw['content_type']?.toString() ?? 'URL'),
+                      status: Value(newStatus),
+                      intent: Value(newIntent),
+                      category: Value(newCategory),
+                      subCategory: Value(newSubCategory),
+                      summary: Value(newSummary),
+                      title: Value(newTitle),
+                      originalCaption: Value(rawCaption),
+                      thumbnailUrl: Value(rawThumbnail),
+                      audioTranscript: Value(rawTranscript),
+                      entitiesJson: Value(entitiesJson),
+                      createdAt: Value(serverCreatedAt ?? DateTime.now()),
+                      updatedAt: Value(serverUpdatedAt ?? serverCreatedAt ?? DateTime.now()),
+                      syncedAt: Value(DateTime.now()),
+                    ),
+                  );
+                }
               }
             }
           }
+        }
+
+        if (hydrateAll && currentPage + 1 < totalPages) {
+          currentPage++;
+        } else {
+          hasMore = false;
         }
       }
     } catch (_) {}

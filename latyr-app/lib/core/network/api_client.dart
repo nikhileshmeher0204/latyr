@@ -66,6 +66,7 @@ class ApiClient {
   }) async {
     final queryParams = <String, dynamic>{
       'page': page,
+      'size': size,
       ...?status != null ? {'status': status} : null,
       ...?category != null ? {'category': category} : null,
     };
