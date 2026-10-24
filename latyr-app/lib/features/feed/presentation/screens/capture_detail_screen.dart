@@ -4,15 +4,14 @@ import 'package:drift/drift.dart' as drift;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:latyr_app/config/app_properties.dart';
 import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/core/design/latyr_typography.dart';
 import 'package:latyr_app/core/enums/capture_source.dart';
 import 'package:latyr_app/core/services/color_extraction_service.dart';
 import 'package:latyr_app/core/util/capture_source_classifier.dart';
 import 'package:latyr_app/core/widgets/capture_source_icon.dart';
-import 'package:latyr_app/core/widgets/latyr_progressive_blur.dart';
 import 'package:latyr_app/core/widgets/rich_summary/latyr_rich_summary.dart';
+import 'package:latyr_app/core/widgets/navigation/latyr_app_bar.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:latyr_app/features/capture/presentation/capture_providers.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/entity_cards.dart';
@@ -209,7 +208,6 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
         CaptureSourceClassifier.classify(capture.originalUrl ?? capture.originalCaption);
 
     final topPadding = MediaQuery.of(context).padding.top;
-    final navBarHeight = topPadding + 58.0;
 
     return CupertinoPageScaffold(
       backgroundColor: scaffoldBgColor,
@@ -372,212 +370,82 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
             ),
           ),
 
-          // 3. High-Performance Progressive Frosted Blur Backdrop
-          if (AppProperties.enableTopBlur || AppProperties.enableTopTint)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: navBarHeight + 10.0,
-              child: IgnorePointer(
-                child: LatyrProgressiveBlur(
-                  enabled: AppProperties.enableTopBlur,
-                  sigmaStart: 25.0,
-                  sigmaEnd: 0.0,
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  child: AppProperties.enableTopTint
-                      ? DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              stops: const [0.0, 0.45, 0.80, 1.0],
-                              colors: [
-                                scaffoldBgColor.withValues(alpha: isDark ? 0.85 : 0.82),
-                                scaffoldBgColor.withValues(alpha: isDark ? 0.60 : 0.50),
-                                scaffoldBgColor.withValues(alpha: isDark ? 0.20 : 0.12),
-                                scaffoldBgColor.withValues(alpha: 0.0),
-                              ],
-                            ),
-                          ),
-                        )
-                      : null,
-                ),
-              ),
-            ),
-
-          // 4. Floating Navigation Bar (Seamless, transparent backdrop without cut-off box)
+          // 3. Canonical Persistent Latyr Navigation Bar
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Back Button
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                            width: 1.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                              blurRadius: 12,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
+            child: LatyrAppBar(
+              title: navTitle,
+              isDark: isDark,
+              scaffoldBgColor: scaffoldBgColor,
+              actions: [
+                LatyrAppBar.actionButton(
+                  isDark: isDark,
+                  onPressed: () {
+                    setState(() {
+                      _isFavorited = !_isFavorited;
+                    });
+                  },
+                  child: Icon(
+                    _isFavorited ? CupertinoIcons.suit_heart_fill : CupertinoIcons.suit_heart,
+                    color: _isFavorited ? CupertinoColors.systemPink : textColor,
+                    size: 20,
+                  ),
+                ),
+                if (source != null || (capture.originalUrl != null && capture.originalUrl!.isNotEmpty)) ...[
+                  const SizedBox(width: 8),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => _openSourceUrl(capture.originalUrl),
+                    child: Container(
+                      height: 42,
+                      padding: const EdgeInsets.symmetric(horizontal: 11),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(21),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                          width: 1.5,
                         ),
-                        child: Icon(CupertinoIcons.back, color: textColor, size: 20),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Centered Sub Category Bubble Pill (WITHOUT icon)
-                    Expanded(
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                                blurRadius: 14,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            navTitle.toUpperCase(),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: LTypography.footnoteSemibold.copyWith(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.8,
-                              color: textColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    // Right Actions: Favorite & Share
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () {
-                            setState(() {
-                              _isFavorited = !_isFavorited;
-                            });
-                          },
-                          child: Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              _isFavorited ? CupertinoIcons.suit_heart_fill : CupertinoIcons.suit_heart,
-                              color: _isFavorited ? CupertinoColors.systemPink : textColor,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                        if (source != null || (capture.originalUrl != null && capture.originalUrl!.isNotEmpty)) ...[
-                          const SizedBox(width: 8),
-                          CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: () => _openSourceUrl(capture.originalUrl),
-                            child: Container(
-                              height: 42,
-                              padding: const EdgeInsets.symmetric(horizontal: 11),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
-                                borderRadius: BorderRadius.circular(21),
-                                border: Border.all(
-                                  color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                                  width: 1.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  if (source != null)
-                                    CaptureSourceIcon(
-                                      source: source,
-                                      size: 17,
-                                      color: textColor,
-                                    )
-                                  else
-                                    Icon(
-                                      CupertinoIcons.globe,
-                                      size: 17,
-                                      color: textColor,
-                                    ),
-                                  const SizedBox(width: 5),
-                                  Icon(
-                                    CupertinoIcons.chevron_forward,
-                                    color: textColor.withValues(alpha: 0.8),
-                                    size: 14.0,
-                                  ),
-                                ],
-                              ),
-                            ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 3),
                           ),
                         ],
-                      ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          if (source != null)
+                            CaptureSourceIcon(
+                              source: source,
+                              size: 17,
+                              color: textColor,
+                            )
+                          else
+                            Icon(
+                              CupertinoIcons.globe,
+                              size: 17,
+                              color: textColor,
+                            ),
+                          const SizedBox(width: 5),
+                          Icon(
+                            CupertinoIcons.chevron_forward,
+                            color: textColor.withValues(alpha: 0.8),
+                            size: 14.0,
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                ],
+              ],
             ),
-          ),
+          )
         ],
       ),
     );
