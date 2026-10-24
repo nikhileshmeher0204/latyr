@@ -86,6 +86,32 @@ class GoogleGenAIAdapterTest {
                 adapter.analyzeMedia("bytes".getBytes(), "audio/mp3", "Caption", Language.ENGLISH)
         );
 
-        assertEquals("AI_INFERENCE_FAILED", ex.getErrorCode());
+        assertEquals("AI_OUTCOME_UNKNOWN", ex.getErrorCode());
+        verify(mockModels,times(1)).generateContent(anyString(),any(Content.class),any(GenerateContentConfig.class));
+    }
+
+    @Test void imageQuotaFailureCannotFabricateSuccessfulContent() {
+        Client client = mock(Client.class); Models models = mock(Models.class);
+        ReflectionTestUtils.setField(client,"models",models);
+        when(models.generateContent(anyString(),any(Content.class),any(GenerateContentConfig.class)))
+                .thenThrow(new com.google.genai.errors.ApiException(429,"RESOURCE_EXHAUSTED","Quota exceeded"));
+        var adapter = new GoogleGenAIAdapter(client);
+        var failure = assertThrows(com.latyr.api.exception.ProviderOperationException.class,
+                () -> adapter.analyzeImage(new byte[]{1},"image/png",Language.ORIGINAL));
+        assertEquals("AI_RATE_LIMITED",failure.getErrorCode());
+        assertEquals(com.latyr.api.exception.ProviderOperationException.Outcome.RETRYABLE,failure.getOutcome());
+        verify(models,times(1)).generateContent(anyString(),any(Content.class),any(GenerateContentConfig.class));
+    }
+
+    @Test void malformedResponseIsPermanentAndDoesNotReplayPaidCall() {
+        Client client = mock(Client.class); Models models = mock(Models.class);
+        ReflectionTestUtils.setField(client,"models",models);
+        var response = mock(GenerateContentResponse.class); when(response.text()).thenReturn("invalid response");
+        when(models.generateContent(anyString(),any(Content.class),any(GenerateContentConfig.class))).thenReturn(response);
+        var failure = assertThrows(com.latyr.api.exception.ProviderOperationException.class,
+                () -> new GoogleGenAIAdapter(client).analyzeMedia(new byte[]{1},"audio/mp3","Caption",Language.ORIGINAL));
+        assertEquals("AI_INVALID_RESPONSE",failure.getErrorCode());
+        assertEquals(com.latyr.api.exception.ProviderOperationException.Outcome.PERMANENT,failure.getOutcome());
+        verify(models,times(1)).generateContent(anyString(),any(Content.class),any(GenerateContentConfig.class));
     }
 }

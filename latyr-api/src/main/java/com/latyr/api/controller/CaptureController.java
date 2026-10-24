@@ -34,7 +34,7 @@ public class CaptureController {
             @Valid @RequestBody CreateCaptureRequest request
     ) {
         CaptureResponse response = captureService.createUrlCapture(currentUser.getUserId(), request);
-        if (CaptureStatus.COMPLETED.equals(response.status())) {
+        if (response.status() != CaptureStatus.PENDING && response.status() != CaptureStatus.PROCESSING) {
             return ResponseEntity.ok(response);
         }
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
@@ -52,7 +52,7 @@ public class CaptureController {
         byte[] bytes = file.getBytes();
         CaptureResponse response = captureService.createImageCapture(currentUser.getUserId(), bytes, file.getOriginalFilename());
 
-        if (CaptureStatus.COMPLETED.equals(response.status())) {
+        if (response.status() != CaptureStatus.PENDING && response.status() != CaptureStatus.PROCESSING) {
             return ResponseEntity.ok(response);
         }
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

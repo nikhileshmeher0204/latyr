@@ -130,6 +130,18 @@ class AppDatabase extends _$AppDatabase {
         .getSingleOrNull();
   }
 
+  /// A URL can reconcile a remote record only before server identity is known.
+  /// Ambiguous pending rows and private image records must remain untouched.
+  Future<LocalCapture?> getUniqueUnboundUrlCapture(String url) async {
+    final candidates = await (select(localCaptures)
+          ..where((t) => t.originalUrl.equals(url) &
+              t.contentType.equals('URL') &
+              (t.serverCaptureId.isNull() | t.serverCaptureId.equals('')))
+          ..limit(2))
+        .get();
+    return candidates.length == 1 ? candidates.single : null;
+  }
+
   Future<int> insertCapture(LocalCapturesCompanion entry) {
     return into(localCaptures).insert(entry, mode: InsertMode.insertOrReplace);
   }

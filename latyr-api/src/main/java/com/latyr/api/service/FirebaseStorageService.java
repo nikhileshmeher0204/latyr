@@ -16,7 +16,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 @Service
-public class FirebaseStorageService {
+public class FirebaseStorageService implements com.latyr.api.adapter.ThumbnailStorage {
 
     private static final Logger log = LoggerFactory.getLogger(FirebaseStorageService.class);
 

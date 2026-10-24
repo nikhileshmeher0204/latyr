@@ -1,6 +1,6 @@
 package com.latyr.api.adapter;
 
-import com.latyr.api.exception.LatyrException;
+import com.latyr.api.exception.ProviderOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,16 +32,20 @@ public class EphemeralMediaStreamer {
             return new byte[0];
         }
 
-        log.info("Streaming media in-memory from URL: {}", mediaUrl);
         try {
             return webClient.get()
                     .uri(mediaUrl)
                     .retrieve()
                     .bodyToMono(byte[].class)
                     .block(Duration.ofSeconds(30));
-        } catch (Exception e) {
-            log.error("Failed to stream media from {}: {}", mediaUrl, e.getMessage());
-            throw new LatyrException("Failed to stream media: " + e.getMessage(), "MEDIA_STREAM_FAILED", HttpStatus.BAD_GATEWAY);
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException rejected) {
+            int status = rejected.getStatusCode().value();
+            throw new ProviderOperationException("MEDIA_UNAVAILABLE", status == 429 || status >= 500
+                    ? ProviderOperationException.Outcome.RETRYABLE : ProviderOperationException.Outcome.PERMANENT);
+        } catch (org.springframework.core.io.buffer.DataBufferLimitException oversized) {
+            throw new ProviderOperationException("MEDIA_TOO_LARGE", ProviderOperationException.Outcome.PERMANENT);
+        } catch (Exception failure) {
+            throw new ProviderOperationException("MEDIA_STREAM_FAILED", ProviderOperationException.Outcome.RETRYABLE);
         }
     }
 }

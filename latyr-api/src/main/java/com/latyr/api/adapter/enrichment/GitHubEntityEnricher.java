@@ -77,7 +77,13 @@ public class GitHubEntityEnricher implements EntityEnricher {
 
         // 0. Cache check: If already enriched with stars and audit record, bypass external calls
         if (metadata.containsKey("stars") && metadata.containsKey("resolution_audit")) {
-            return entity;
+            metadata.put("resolution_strategy", "CACHED");
+            metadata.put("resolution_source", "GITHUB_REST_V3");
+            metadata.put("predicted_target", extractPredictedPath(entity, metadata));
+            metadata.put("resolved_target", metadata.get("full_name"));
+            metadata.put("resolution_latency_ms", 0L);
+            metadata.put("resolved_at", Instant.now().toString());
+            return new AIProvider.AIEntity(entity.entityType(), entity.title(), entity.description(), entity.externalUrl(), entity.actionCta(), metadata);
         }
 
         String predictedTarget = extractPredictedPath(entity, metadata);
@@ -186,6 +192,13 @@ public class GitHubEntityEnricher implements EntityEnricher {
             audit.put("latency_ms", latencyMs);
             audit.put("resolved_at", Instant.now().toString());
             metadata.put("resolution_audit", audit);
+            metadata.put("resolution_strategy", audit.get("strategy_applied"));
+            metadata.put("resolution_source", audit.get("source_provider"));
+            metadata.put("predicted_target", audit.get("predicted_target"));
+            metadata.put("resolved_target", audit.get("resolved_target"));
+            metadata.put("fallback_reason", audit.get("fallback_reason"));
+            metadata.put("resolution_latency_ms", audit.get("latency_ms"));
+            metadata.put("resolved_at", audit.get("resolved_at"));
 
             String canonicalUrl = resolvedDetails.htmlUrl() != null ? resolvedDetails.htmlUrl() : "https://github.com/" + resolvedTarget;
             String canonicalDescription = (resolvedDetails.description() != null && !resolvedDetails.description().isBlank())
@@ -214,6 +227,13 @@ public class GitHubEntityEnricher implements EntityEnricher {
             audit.put("latency_ms", latencyMs);
             audit.put("resolved_at", Instant.now().toString());
             metadata.put("resolution_audit", audit);
+            metadata.put("resolution_strategy", audit.get("strategy_applied"));
+            metadata.put("resolution_source", audit.get("source_provider"));
+            metadata.put("predicted_target", audit.get("predicted_target"));
+            metadata.put("resolved_target", audit.get("resolved_target"));
+            metadata.put("fallback_reason", audit.get("fallback_reason"));
+            metadata.put("resolution_latency_ms", audit.get("latency_ms"));
+            metadata.put("resolved_at", audit.get("resolved_at"));
 
             String fallbackUrl = entity.externalUrl();
             if (fallbackUrl == null || fallbackUrl.isBlank()) {

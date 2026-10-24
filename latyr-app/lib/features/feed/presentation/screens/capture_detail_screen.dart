@@ -359,8 +359,9 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
                       const SizedBox(height: 18),
 
                       // Processing State Banner
-                      if (isProcessing) ...[
-                        _buildProcessingBanner(textColor, isDark, cardSurfaceColor),
+                      if (isProcessing || capture.status == 'PARTIAL') ...[
+                        _buildCaptureStatusBanner(textColor, isDark, cardSurfaceColor,
+                            isPartial: capture.status == 'PARTIAL'),
                         const SizedBox(height: 24),
                       ],
                       const SizedBox(height: 48),
@@ -986,20 +987,24 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
     );
   }
 
-  Widget _buildProcessingBanner(Color textColor, bool isDark, Color cardColor) {
+  Widget _buildCaptureStatusBanner(Color textColor, bool isDark, Color cardColor,
+      {required bool isPartial}) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: _buildCardDecoration(cardColor, isDark),
       child: Row(
         children: [
-          CupertinoActivityIndicator(radius: 12, color: textColor),
+          if (isPartial)
+            Icon(CupertinoIcons.exclamationmark_circle, size: 24, color: textColor)
+          else
+            CupertinoActivityIndicator(radius: 12, color: textColor),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'AI Analysis in Progress',
+                  isPartial ? 'Partial capture' : 'AI Analysis in Progress',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     color: textColor,
@@ -1010,7 +1015,9 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Extracting transcription, tools, repos & highlights...',
+                  isPartial
+                      ? 'The source was saved, but useful capture intents could not be extracted.'
+                      : 'Extracting transcription, tools, repos & highlights...',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     color: textColor.withValues(alpha: 0.75),

@@ -1,286 +1,268 @@
 package com.latyr.api.service;
 
-import com.latyr.api.adapter.AIProvider;
-import com.latyr.api.adapter.EntityEnrichmentProvider;
-import com.latyr.api.adapter.EphemeralMediaStreamer;
-import com.latyr.api.adapter.ScraperProvider;
+import com.latyr.api.adapter.*;
+import com.latyr.api.adapter.AIProvider.AIAnalysisResult;
+import com.latyr.api.adapter.AIProvider.AIEntity;
 import com.latyr.api.domain.enums.*;
 import com.latyr.api.domain.model.*;
+import com.latyr.api.dto.ExtractedEntityResponse;
+import com.latyr.api.exception.*;
 import com.latyr.api.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
 import java.util.*;
 
+/** External work has no DB transaction; every durable write checks execution ownership. */
 @Service
 public class IngestionPipelineService {
-
     private static final Logger log = LoggerFactory.getLogger(IngestionPipelineService.class);
+    private final DurableIngestionStore store;
+    private final CaptureMapper captures;
+    private final CanonicalSourceMapper sources;
+    private final ExtractedEntityMapper entities;
+    private final ScraperProvider scraper;
+    private final EphemeralMediaStreamer media;
+    private final AIProvider ai;
+    private final EntityEnrichmentProvider enricher;
+    private final ThumbnailStorage thumbnails;
+    private final CaptureQuotaLedger quota;
+    private final IngestionEventOutbox events;
 
-    private final IngestionJobMapper ingestionJobMapper;
-    private final CaptureMapper captureMapper;
-    private final CanonicalSourceMapper canonicalSourceMapper;
-    private final ExtractedEntityMapper extractedEntityMapper;
-    private final UserMapper userMapper;
-    private final ScraperProvider scraperProvider;
-    private final EphemeralMediaStreamer mediaStreamer;
-    private final AIProvider aiProvider;
-    private final EntityEnrichmentProvider entityEnricher;
-    private final SseNotificationService sseNotificationService;
-    private final FcmService fcmService;
-    private final FirebaseStorageService firebaseStorageService;
-
-    public IngestionPipelineService(
-            IngestionJobMapper ingestionJobMapper,
-            CaptureMapper captureMapper,
-            CanonicalSourceMapper canonicalSourceMapper,
-            ExtractedEntityMapper extractedEntityMapper,
-            UserMapper userMapper,
-            ScraperProvider scraperProvider,
-            EphemeralMediaStreamer mediaStreamer,
-            AIProvider aiProvider,
-            EntityEnrichmentProvider entityEnricher,
-            SseNotificationService sseNotificationService,
-            FcmService fcmService,
-            @org.springframework.beans.factory.annotation.Autowired(required = false) FirebaseStorageService firebaseStorageService) {
-        this.ingestionJobMapper = ingestionJobMapper;
-        this.captureMapper = captureMapper;
-        this.canonicalSourceMapper = canonicalSourceMapper;
-        this.extractedEntityMapper = extractedEntityMapper;
-        this.userMapper = userMapper;
-        this.scraperProvider = scraperProvider;
-        this.mediaStreamer = mediaStreamer;
-        this.aiProvider = aiProvider;
-        this.entityEnricher = entityEnricher;
-        this.sseNotificationService = sseNotificationService;
-        this.fcmService = fcmService;
-        this.firebaseStorageService = firebaseStorageService;
+    public IngestionPipelineService(DurableIngestionStore store, CaptureMapper captures, CanonicalSourceMapper sources,
+            ExtractedEntityMapper entities, ScraperProvider scraper, EphemeralMediaStreamer media, AIProvider ai,
+            EntityEnrichmentProvider enricher, ThumbnailStorage thumbnails, CaptureQuotaLedger quota,
+            IngestionEventOutbox events) {
+        this.store = store; this.captures = captures; this.sources = sources; this.entities = entities;
+        this.scraper = scraper; this.media = media; this.ai = ai; this.enricher = enricher;
+        this.thumbnails = thumbnails; this.quota = quota; this.events = events;
     }
 
-    @Transactional
     public void processJob(IngestionJob job) {
-        long startTimeMs = System.currentTimeMillis();
-        UUID jobId = job.getId();
-        UUID captureId = job.getCaptureId();
-        UUID userId = job.getUserId();
-
-        log.info("Starting ingestion processing for job {} (capture: {}, user: {})", jobId, captureId, userId);
-
+        String stage = null;
+        boolean sourceAvailable = false;
+        long started = System.nanoTime();
         try {
-            User user = userMapper.findById(userId).orElse(null);
-            Language userLanguage = user != null && user.getLanguage() != null ? user.getLanguage() : Language.ENGLISH;
-
-            Capture capture = captureMapper.findById(captureId)
-                    .orElseThrow(() -> new IllegalStateException("Capture not found: " + captureId));
-
-            // Mark capture and job as PROCESSING and notify mobile client via SSE
-            capture.setStatus(CaptureStatus.PROCESSING);
-            capture.setUpdatedAt(Instant.now());
-            captureMapper.update(capture);
-
-            job.setStatus(JobStatus.PROCESSING);
-            job.setUpdatedAt(Instant.now());
-            ingestionJobMapper.update(job);
-
-            if (sseNotificationService != null) {
-                sseNotificationService.emitCaptureEvent(userId, "CAPTURE_PROCESSING", Map.of(
-                        "capture_id", captureId,
-                        "status", "PROCESSING"
-                ));
+            if (job.getAttemptCount() > job.getMaxAttempts()) {
+                fail(job, null, false, "ATTEMPTS_EXHAUSTED", true);
+                return;
             }
-
-            CanonicalSource canonicalSource = canonicalSourceMapper.findById(capture.getCanonicalSourceId())
-                    .orElseThrow(() -> new IllegalStateException("CanonicalSource not found: " + capture.getCanonicalSourceId()));
-
-            AIProvider.AIAnalysisResult analysis;
-            String caption = null;
-            Integer videoDurationSec = null;
-
-            if (job.getSourceType() == SourceType.IMAGE) {
-                // Image / Screenshot Ingestion
-                String base64 = job.getPayload() != null ? (String) job.getPayload().get("image_base64") : null;
-                byte[] imageBytes = base64 != null ? Base64.getDecoder().decode(base64) : new byte[0];
-                analysis = aiProvider.analyzeImage(imageBytes, "image/png", userLanguage);
-                caption = "Screenshot capture";
+            store.withLease(job, () -> {
+                Capture capture = capture(job);
+                if (capture.getStatus() != CaptureStatus.COMPLETED) {
+                    capture.setStatus(CaptureStatus.PROCESSING);
+                    captures.update(capture);
+                    events.append(job.getUserId(), "CAPTURE_PROCESSING", Map.of("capture_id", job.getCaptureId(), "status", "PROCESSING"));
+                }
+            });
+            Capture capture = capture(job);
+            CanonicalSource source = sources.findById(job.getCanonicalSourceId()).orElseThrow();
+            Map<String,Object> analysisMap;
+            boolean enrichmentOnly = Boolean.TRUE.equals(job.getPayload().get("enrichment_only"));
+            if (enrichmentOnly) {
+                analysisMap = existingAnalysis(capture);
             } else {
-                // URL / Social Reel Ingestion
-                String rawUrl = (String) job.getPayload().get("url");
-                if (rawUrl == null || rawUrl.trim().isEmpty()) {
-                    rawUrl = canonicalSource.getOriginalUrl();
+                analysisMap = store.loadCheckpoint(job, "ANALYSIS");
+                if (analysisMap == null && CaptureSuccessPolicy.isUsefulCache(source.getAiAnalysisCache()))
+                    analysisMap = source.getAiAnalysisCache();
+            }
+            if (analysisMap == null) {
+                stage = "SOURCE";
+                Map<String,Object> input = store.loadCheckpoint(job, stage);
+                if (input == null) {
+                    store.startStage(job, stage);
+                    input = acquireSource(job, source);
+                    store.completeStage(job, stage, input);
                 }
-
-                // Step 1: Scrape media metadata
-                ScraperProvider.ScrapedMedia scraped = scraperProvider.extractMedia(rawUrl);
-                String jobCaption = job.getPayload() != null ? (String) job.getPayload().get("caption") : null;
-                if (jobCaption != null && !jobCaption.isBlank()) {
-                    caption = jobCaption;
+                sourceAvailable = true;
+                byte[] bytes;
+                if (job.getSourceType() == SourceType.IMAGE) {
+                    String base64 = CaptureAnalysisCodec.text(job.getPayload(), "image_base64");
+                    if (blank(base64)) throw new ProviderOperationException("EMPTY_IMAGE", ProviderOperationException.Outcome.PERMANENT);
+                    bytes = Base64.getDecoder().decode(base64);
+                    if (bytes.length == 0) throw new ProviderOperationException("EMPTY_IMAGE", ProviderOperationException.Outcome.PERMANENT);
                 } else {
-                    caption = scraped.caption();
+                    stage = "MEDIA";
+                    store.startStage(job, stage);
+                    String audioUrl = CaptureAnalysisCodec.text(input,"audio_url");
+                    bytes = media.streamMedia(audioUrl);
+                    if ((bytes == null || bytes.length == 0) && blank(CaptureAnalysisCodec.text(input,"caption")))
+                        throw new ProviderOperationException("NO_SOURCE_CONTENT", ProviderOperationException.Outcome.PERMANENT);
+                    store.completeStage(job, stage, Map.of("has_audio", bytes != null && bytes.length > 0));
                 }
-                videoDurationSec = scraped.durationSec();
-
-                // Step 1.1: Persist thumbnail to Firebase Storage (with fallback)
-                String rawThumbnailUrl = scraped.thumbnailUrl();
-                String finalThumbnailUrl = rawThumbnailUrl;
-                if (firebaseStorageService != null && rawThumbnailUrl != null && !rawThumbnailUrl.isBlank()) {
-                    finalThumbnailUrl = firebaseStorageService.uploadImageFromUrl(rawThumbnailUrl, captureId);
-                }
-
-                // Step 2: Ephemeral in-memory audio download (capped at 15MB)
-                byte[] audioBytes = mediaStreamer.streamMedia(scraped.audioUrl());
-
-                // Step 3: Multimodal Gemini AI inference
-                analysis = aiProvider.analyzeMedia(audioBytes, "audio/mp3", caption, userLanguage);
-
-                // Step 4: Immediate memory dereferencing for JVM Garbage Collection
-                audioBytes = null;
-
-                canonicalSource.setThumbnailUrl(finalThumbnailUrl);
-                capture.setThumbnailUrl(finalThumbnailUrl);
+                stage = "ANALYSIS";
+                store.startStage(job, stage);
+                AIAnalysisResult analysis = job.getSourceType() == SourceType.IMAGE
+                        ? ai.analyzeImage(bytes, "image/png", Language.ORIGINAL)
+                        : ai.analyzeMedia(bytes, "audio/mp3", CaptureAnalysisCodec.text(input,"caption"), Language.ORIGINAL);
+                if (analysis == null) throw new ProviderOperationException("AI_INVALID_RESPONSE", ProviderOperationException.Outcome.PERMANENT);
+                analysisMap = CaptureAnalysisCodec.encode(analysis);
+                analysisMap.put("original_caption", input.get("caption"));
+                analysisMap.put("thumbnail_url", input.get("thumbnail_url"));
+                analysisMap.put("video_duration_sec", input.get("duration_sec"));
+                store.completeStage(job, stage, analysisMap);
             }
-
-            // Step 5: Secondary Entity Enrichment (TMDB & GitHub)
-            List<AIProvider.AIEntity> enrichedEntities = entityEnricher.enrichEntities(analysis.entities());
-
-            // Step 6: Atomic DB Persistence
-            // 6.1 Update CanonicalSource 30-day cache
-            Map<String, Object> cacheMap = new HashMap<>();
-            cacheMap.put("title", analysis.title());
-            cacheMap.put("transcript", analysis.transcript());
-            cacheMap.put("intent", analysis.intent().name());
-            cacheMap.put("category", analysis.category());
-            cacheMap.put("sub_category", analysis.subCategory());
-            cacheMap.put("suggested_collection", analysis.suggestedCollection());
-            cacheMap.put("notification_copies", analysis.notificationCopies());
-            cacheMap.put("original_caption", caption);
-            cacheMap.put("audio_transcript", analysis.transcript());
-            cacheMap.put("thumbnail_url", capture.getThumbnailUrl());
-            cacheMap.put("entities", enrichedEntities.stream().map(e -> {
-                Map<String, Object> entityMap = new HashMap<>();
-                entityMap.put("title", e.title());
-                entityMap.put("description", e.description() != null ? e.description() : "");
-                entityMap.put("external_url", e.externalUrl() != null ? e.externalUrl() : "");
-                entityMap.put("entity_type", e.entityType().name());
-                entityMap.put("action_cta", e.actionCta().name());
-                entityMap.put("metadata", e.metadata() != null ? e.metadata() : Map.of());
-                return entityMap;
-            }).toList());
-
-            canonicalSource.setAiAnalysisCache(cacheMap);
-            canonicalSourceMapper.update(canonicalSource);
-
-            // 6.2 Update Capture
-            capture.setStatus(CaptureStatus.COMPLETED);
-            capture.setIntent(analysis.intent());
-            capture.setCategory(analysis.category());
-            capture.setSubCategory(analysis.subCategory());
-            capture.setTitle(analysis.title());
-            capture.setSummary(analysis.summary());
-            capture.setOriginalCaption(caption);
-            capture.setAudioTranscript(analysis.transcript());
-            capture.setNotificationCopies(analysis.notificationCopies());
-            capture.setDurationMs(System.currentTimeMillis() - startTimeMs);
-            capture.setVideoDurationSec(videoDurationSec);
-            captureMapper.update(capture);
-
-            // 6.3 Insert Extracted Entities
-            for (AIProvider.AIEntity ae : enrichedEntities) {
-                ExtractedEntity entity = new ExtractedEntity();
-                entity.setId(UUID.randomUUID());
-                entity.setCaptureId(captureId);
-                entity.setTitle(ae.title());
-                entity.setDescription(ae.description());
-                entity.setExternalUrl(ae.externalUrl());
-                entity.setEntityType(ae.entityType());
-                entity.setActionCta(ae.actionCta());
-                entity.setMetadata(ae.metadata() != null ? ae.metadata() : Map.of());
-
-                boolean isEntertainment = ae.entityType() == EntityType.MOVIE || ae.entityType() == EntityType.TV_SHOW;
-                boolean hasTmdbData = ae.metadata() != null && ae.metadata().containsKey("tmdb_id");
-                if (isEntertainment && !hasTmdbData) {
-                    entity.setEnrichmentStatus("PENDING");
-                    entity.setNextRetryAt(Instant.now().plusSeconds(120));
-                } else {
-                    entity.setEnrichmentStatus("ENRICHED");
-                }
-
-                entity.setCreatedAt(Instant.now());
-                extractedEntityMapper.insert(entity);
+            sourceAvailable = true;
+            if (!CaptureSuccessPolicy.isUsefulCache(analysisMap)) {
+                fail(job, null, false, "NO_USEFUL_INTENTS", true);
+                return;
             }
-
-            // 6.4 Mark Ingestion Job Completed
-            job.setStatus(JobStatus.COMPLETED);
-            job.setLockedAt(null);
-            job.setLockedBy(null);
-            ingestionJobMapper.update(job);
-
-            log.info("Successfully completed ingestion pipeline for job {} in {}ms", jobId, capture.getDurationMs());
-
-            // 6.5 Real-Time SSE Notification Broadcast to Foreground Mobile Device
-            if (sseNotificationService != null) {
-                Map<String, Object> payload = new java.util.HashMap<>();
-                payload.put("capture_id", captureId);
-                payload.put("status", "COMPLETED");
-                payload.put("intent", analysis.intent().name());
-                payload.put("category", analysis.category());
-                payload.put("sub_category", analysis.subCategory() != null ? analysis.subCategory() : "");
-                payload.put("title", analysis.title() != null ? analysis.title() : "");
-                payload.put("summary", analysis.summary() != null ? analysis.summary() : "");
-                payload.put("original_caption", caption != null ? caption : "");
-                payload.put("audio_transcript", analysis.transcript() != null ? analysis.transcript() : "");
-                payload.put("thumbnail_url", capture.getThumbnailUrl() != null ? capture.getThumbnailUrl() : "");
-                payload.put("source_type", capture.getSourceType() != null ? capture.getSourceType().name() : null);
-                payload.put("entities", enrichedEntities);
-
-                sseNotificationService.emitCaptureEvent(userId, "CAPTURE_COMPLETED", payload);
+            AIAnalysisResult analysis = CaptureAnalysisCodec.decode(analysisMap);
+            Map<String,Object> core = analysisMap;
+            stage = null;
+            store.withLease(job, () -> publishCore(job, core, started));
+            stage = "ENRICHMENT";
+            Map<String,Object> enrichedMap = store.loadCheckpoint(job, stage);
+            if (enrichedMap == null) {
+                store.startStage(job, stage);
+                List<AIEntity> enriched = enricher.enrichEntities(analysis.entities());
+                AIAnalysisResult result = new AIAnalysisResult(analysis.title(), analysis.summary(), analysis.transcript(),
+                        analysis.intent(), analysis.category(), analysis.subCategory(), analysis.suggestedCollection(),
+                        analysis.notificationCopies(), enriched);
+                if (!CaptureSuccessPolicy.isUseful(result) || enriched.size() != analysis.entities().size())
+                    throw new ProviderOperationException("ENRICHMENT_UNAVAILABLE", ProviderOperationException.Outcome.RETRYABLE);
+                enrichedMap = CaptureAnalysisCodec.encode(result);
+                enrichedMap.put("input_entity_keys", analysis.entities().stream().map(IngestionPipelineService::entityKey).toList());
+                store.completeStage(job, stage, enrichedMap);
             }
-
-            // 6.6 Silent FCM Push Notification for Background Sync
-            if (user != null && user.getFcmToken() != null && fcmService != null) {
-                fcmService.sendSilentSyncNotification(user.getFcmToken(), captureId);
-            }
-
-        } catch (Exception e) {
-            handleJobFailure(job, e);
+            Map<String,Object> facts = enrichedMap;
+            stage = null;
+            store.withLease(job, () -> { publishEnrichment(job, facts); store.complete(job); });
+        } catch (IngestionLeaseLostException lost) {
+            log.info("Discarded stale ingestion execution for job {}", job.getId());
+        } catch (AnalysisOutcomeUnknownException ambiguous) {
+            fail(job, null, false, "AI_OUTCOME_UNKNOWN", true);
+        } catch (ProviderOperationException failure) {
+            fail(job, stage, failure.getOutcome() == ProviderOperationException.Outcome.RETRYABLE,
+                    failure.getErrorCode(), sourceAvailable);
+        } catch (LatyrException failure) {
+            fail(job, stage, failure.getHttpStatus().is5xxServerError(), failure.getErrorCode(), sourceAvailable);
+        } catch (Exception failure) {
+            log.warn("Ingestion job {} failed at {} ({})", job.getId(), stage, failure.getClass().getSimpleName());
+            // An unclassified AI failure may have been accepted remotely; never replay it blindly.
+            fail(job, stage, !"ANALYSIS".equals(stage),
+                    "ANALYSIS".equals(stage) ? "AI_OUTCOME_UNKNOWN" : "PROCESSING_FAILED", sourceAvailable);
         }
     }
 
-    private void handleJobFailure(IngestionJob job, Exception e) {
-        int nextAttempt = job.getAttemptCount() + 1;
-        job.setAttemptCount(nextAttempt);
+    private Map<String,Object> acquireSource(IngestionJob job, CanonicalSource source) {
+        Map<String,Object> input = new LinkedHashMap<>();
+        if (job.getSourceType() == SourceType.IMAGE) { input.put("caption", null); return input; }
+        if (job.getSourceType() != SourceType.INSTAGRAM_REEL)
+            throw new ProviderOperationException("UNSUPPORTED_SOURCE", ProviderOperationException.Outcome.UNSUPPORTED);
+        ScraperProvider.ScrapedMedia scraped = scraper.extractMedia(source.getOriginalUrl());
+        if (scraped == null || (blank(scraped.caption()) && blank(scraped.audioUrl())))
+            throw new ProviderOperationException("NO_SOURCE_CONTENT", ProviderOperationException.Outcome.PERMANENT);
+        input.put("caption", scraped.caption()); input.put("audio_url", scraped.audioUrl());
+        input.put("thumbnail_url", thumbnails.uploadImageFromUrl(scraped.thumbnailUrl(), job.getCaptureId()));
+        input.put("duration_sec", scraped.durationSec());
+        return input;
+    }
 
-        log.warn("Ingestion job {} failed on attempt {}/{}: {}", job.getId(), nextAttempt, job.getMaxAttempts(), e.getMessage());
-
-        if (nextAttempt < job.getMaxAttempts()) {
-            // Requeue for exponential backoff retry
-            job.setStatus(JobStatus.PENDING);
-            job.setLockedAt(null);
-            job.setLockedBy(null);
-            ingestionJobMapper.update(job);
-        } else {
-            // Max attempts reached: Mark FAILED
-            job.setStatus(JobStatus.FAILED);
-            job.setLockedAt(null);
-            job.setLockedBy(null);
-            ingestionJobMapper.update(job);
-
-            captureMapper.findById(job.getCaptureId()).ifPresent(capture -> {
-                capture.setStatus(CaptureStatus.FAILED);
-                captureMapper.update(capture);
-            });
-            log.error("Ingestion job {} exhausted max attempts and marked FAILED", job.getId());
-
-            // Broadcast Failure Event over SSE
-            if (sseNotificationService != null) {
-                sseNotificationService.emitCaptureEvent(job.getUserId(), "CAPTURE_FAILED", Map.of(
-                        "capture_id", job.getCaptureId(),
-                        "status", "FAILED",
-                        "error", e.getMessage() != null ? e.getMessage() : "Processing failed"
-                ));
-            }
+    private void publishCore(IngestionJob job, Map<String,Object> core, long started) {
+        Capture capture = capture(job);
+        if (capture.getStatus() == CaptureStatus.COMPLETED) return;
+        AIAnalysisResult analysis = CaptureAnalysisCodec.decode(core);
+        CanonicalSource source = sources.findById(job.getCanonicalSourceId()).orElseThrow();
+        if (!CaptureSuccessPolicy.isUsefulCache(source.getAiAnalysisCache())) {
+            source.setAiAnalysisCache(core); source.setThumbnailUrl(CaptureAnalysisCodec.text(core,"thumbnail_url"));
+            sources.update(source);
         }
+        capture.setStatus(CaptureStatus.COMPLETED);
+        capture.setIntent(analysis.intent()); capture.setTitle(analysis.title()); capture.setSummary(analysis.summary());
+        capture.setCategory(analysis.category()); capture.setSubCategory(analysis.subCategory());
+        capture.setAudioTranscript(analysis.transcript()); capture.setNotificationCopies(analysis.notificationCopies());
+        capture.setOriginalCaption(CaptureAnalysisCodec.text(core,"original_caption"));
+        capture.setThumbnailUrl(CaptureAnalysisCodec.text(core,"thumbnail_url"));
+        if (core.get("video_duration_sec") instanceof Number duration) capture.setVideoDurationSec(duration.intValue());
+        capture.setDurationMs((System.nanoTime() - started) / 1_000_000);
+        captures.update(capture);
+        int extractionIndex = 0;
+        for (AIEntity entity : analysis.entities()) {
+            ExtractedEntity row = new ExtractedEntity(); row.setId(UUID.randomUUID()); row.setCaptureId(capture.getId());
+            row.setExtractionIndex(extractionIndex++);
+            apply(row, entity); row.setEnrichmentStatus("PENDING"); row.setNextRetryAt(null); entities.insert(row);
+        }
+        quota.finalizeCapture(capture.getId());
+        Map<String,Object> payload = new LinkedHashMap<>(core);
+        payload.put("capture_id", capture.getId()); payload.put("status", "COMPLETED");
+        payload.put("source_type", capture.getSourceType());
+        payload.put("entities", entities.findByCaptureId(capture.getId()).stream().map(ExtractedEntityResponse::fromModel).toList());
+        events.append(job.getUserId(), "CAPTURE_COMPLETED", payload);
+    }
+
+    private void publishEnrichment(IngestionJob job, Map<String,Object> facts) {
+        List<ExtractedEntity> rows = entities.findByCaptureId(job.getCaptureId());
+        List<AIEntity> results = CaptureAnalysisCodec.decode(facts).entities();
+        if (rows.size() != results.size() || !(facts.get("input_entity_keys") instanceof List<?> keys) || keys.size() != results.size())
+            throw new ProviderOperationException("ENRICHMENT_IDENTITY_MISMATCH", ProviderOperationException.Outcome.PERMANENT);
+        Map<String,Deque<ExtractedEntity>> byIdentity = new HashMap<>();
+        for (ExtractedEntity row : rows) {
+            String key = entityKey(new AIEntity(row.getEntityType(),row.getTitle(),row.getDescription(),row.getExternalUrl(),row.getActionCta(),row.getMetadata()));
+            byIdentity.computeIfAbsent(key, ignored -> new ArrayDeque<>()).add(row);
+        }
+        for (int index = 0; index < rows.size(); index++) {
+            Deque<ExtractedEntity> matches = byIdentity.get(keys.get(index).toString());
+            if (matches == null || matches.isEmpty())
+                throw new ProviderOperationException("ENRICHMENT_IDENTITY_MISMATCH", ProviderOperationException.Outcome.PERMANENT);
+            ExtractedEntity row = matches.removeFirst(); apply(row, results.get(index));
+            row.setEnrichmentStatus("ENRICHED"); row.setEnrichmentError(null); entities.update(row);
+            events.append(job.getUserId(), "ENTITY_ENRICHED", Map.of("capture_id", job.getCaptureId(), "entity", ExtractedEntityResponse.fromModel(row)));
+        }
+        CanonicalSource source = sources.findById(job.getCanonicalSourceId()).orElseThrow();
+        if (CaptureSuccessPolicy.isUsefulCache(source.getAiAnalysisCache())) {
+            Map<String,Object> cache = new LinkedHashMap<>(source.getAiAnalysisCache());
+            cache.put("entities", facts.get("entities")); cache.put("enrichment_status", "ENRICHED");
+            source.setAiAnalysisCache(cache); sources.update(source);
+        }
+    }
+
+    private void fail(IngestionJob job, String stage, boolean retryable, String code, boolean sourceAvailable) {
+        try {
+            store.withLease(job, () -> {
+                if (stage != null) store.failStage(job, stage, code);
+                Capture capture = capture(job);
+                Map<String,Object> partial = sourceAvailable && capture.getStatus() != CaptureStatus.COMPLETED
+                        ? store.loadCheckpoint(job,"ANALYSIS") : null;
+                boolean terminal = store.retryOrFail(job, retryable, code);
+                if (terminal && capture.getStatus() != CaptureStatus.COMPLETED) {
+                    capture.setStatus(sourceAvailable ? CaptureStatus.PARTIAL : CaptureStatus.FAILED);
+                    if (partial != null) {
+                        capture.setTitle(CaptureAnalysisCodec.text(partial,"title"));
+                        capture.setSummary(CaptureAnalysisCodec.text(partial,"summary"));
+                        capture.setAudioTranscript(CaptureAnalysisCodec.text(partial,"audio_transcript"));
+                        capture.setOriginalCaption(CaptureAnalysisCodec.text(partial,"original_caption"));
+                    }
+                    captures.update(capture); quota.releaseCapture(capture.getId());
+                    events.append(job.getUserId(), sourceAvailable ? "CAPTURE_PARTIAL" : "CAPTURE_FAILED",
+                            Map.of("capture_id", capture.getId(), "status", capture.getStatus().name(), "error", code));
+                } else if (terminal) {
+                    for (ExtractedEntity row : entities.findByCaptureId(capture.getId())) if (!"ENRICHED".equals(row.getEnrichmentStatus())) {
+                        row.setEnrichmentStatus("NOT_FOUND"); row.setEnrichmentError(code); entities.update(row);
+                    }
+                    events.append(job.getUserId(), "ENRICHMENT_FAILED", Map.of("capture_id", capture.getId(), "error", code));
+                }
+            });
+        } catch (IngestionLeaseLostException lost) {
+            log.info("Discarded stale failure for ingestion job {}", job.getId());
+        }
+    }
+
+    private Capture capture(IngestionJob job) { return captures.findById(job.getCaptureId()).orElseThrow(); }
+    private static boolean blank(String value) { return value == null || value.isBlank(); }
+    private static String entityKey(AIEntity value) {
+        return UUID.nameUUIDFromBytes((value.entityType().name() + ":" + value.title()).getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();
+    }
+    private static void apply(ExtractedEntity row, AIEntity value) {
+        row.setEntityType(value.entityType()); row.setTitle(value.title()); row.setDescription(value.description());
+        row.setExternalUrl(value.externalUrl()); row.setActionCta(value.actionCta());
+        row.setMetadata(value.metadata() == null ? Map.of() : value.metadata());
+    }
+    private Map<String,Object> existingAnalysis(Capture capture) {
+        AIAnalysisResult result = new AIAnalysisResult(capture.getTitle(), capture.getSummary(), capture.getAudioTranscript(),
+                capture.getIntent(), capture.getCategory(), capture.getSubCategory(), null, capture.getNotificationCopies(),
+                entities.findByCaptureId(capture.getId()).stream().map(row -> new AIEntity(row.getEntityType(), row.getTitle(),
+                        row.getDescription(), row.getExternalUrl(), row.getActionCta(), row.getMetadata())).toList());
+        return CaptureAnalysisCodec.encode(result);
     }
 }

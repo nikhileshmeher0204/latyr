@@ -1,5 +1,7 @@
 package com.latyr.api.integration;
 
+import com.latyr.api.exception.ProviderOperationException;
+import static com.latyr.api.exception.ProviderOperationException.Outcome.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.latyr.api.integration.dto.GitHubRepoDetailsDTO;
@@ -106,20 +108,26 @@ public class RestGitHubClient implements GitHubClient {
 
                 if (response.statusCode() == 200) {
                     GitHubRepoDetailsDTO dto = objectMapper.readValue(response.body(), GitHubRepoDetailsDTO.class);
-                    return Optional.ofNullable(dto);
+                    if (dto == null || dto.fullName() == null || !dto.fullName().contains("/")) {
+                        throw new ProviderOperationException("GITHUB_INVALID_RESPONSE", RETRYABLE);
+                    }
+                    return Optional.of(dto);
                 } else if (response.statusCode() == 404) {
                     log.debug("GitHub repository not found: {}/{}", sanitizedOwner, sanitizedRepo);
                     return Optional.empty();
                 } else {
-                    log.warn("GitHub API error [HTTP {}] for {}/{}: {}", response.statusCode(), sanitizedOwner, sanitizedRepo, response.body());
-                    return Optional.empty();
+                    throw httpFailure(response.statusCode());
                 }
             } finally {
                 concurrencyThrottle.release();
             }
-        } catch (Exception e) {
-            log.error("Failed to fetch repository {}/{}: {}", sanitizedOwner, sanitizedRepo, e.getMessage());
-            return Optional.empty();
+        } catch (ProviderOperationException failure) {
+            throw failure;
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new ProviderOperationException("GITHUB_INTERRUPTED", RETRYABLE);
+        } catch (Exception failure) {
+            throw new ProviderOperationException("GITHUB_UNAVAILABLE", RETRYABLE);
         }
     }
 
@@ -153,22 +161,30 @@ public class RestGitHubClient implements GitHubClient {
                 updateRateLimitHeaders(response);
 
                 if (response.statusCode() == 200) {
+                    if (!objectMapper.readTree(response.body()).path("items").isArray()) {
+                        throw new ProviderOperationException("GITHUB_INVALID_RESPONSE", RETRYABLE);
+                    }
                     GitHubSearchResultDTO result = objectMapper.readValue(response.body(), GitHubSearchResultDTO.class);
                     return result.items() != null ? result.items() : Collections.emptyList();
-                } else if (response.statusCode() == 403 || response.statusCode() == 429) {
-                    log.warn("GitHub Search API rate limit reached [HTTP {}]: {}", response.statusCode(), response.body());
-                    return Collections.emptyList();
                 } else {
-                    log.warn("GitHub search error [HTTP {}] for query '{}': {}", response.statusCode(), sanitizedQuery, response.body());
-                    return Collections.emptyList();
+                    throw httpFailure(response.statusCode());
                 }
             } finally {
                 concurrencyThrottle.release();
             }
-        } catch (Exception e) {
-            log.error("Failed to execute GitHub search for '{}': {}", sanitizedQuery, e.getMessage());
-            return Collections.emptyList();
+        } catch (ProviderOperationException failure) {
+            throw failure;
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new ProviderOperationException("GITHUB_INTERRUPTED", RETRYABLE);
+        } catch (Exception failure) {
+            throw new ProviderOperationException("GITHUB_UNAVAILABLE", RETRYABLE);
         }
+    }
+
+    private ProviderOperationException httpFailure(int status) {
+        return new ProviderOperationException("GITHUB_HTTP_" + status,
+                status == 403 || status == 429 || status >= 500 ? RETRYABLE : PERMANENT);
     }
 
     private void updateRateLimitHeaders(HttpResponse<?> response) {

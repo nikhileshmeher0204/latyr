@@ -4,5 +4,6 @@ public enum CaptureStatus {
     PENDING,
     PROCESSING,
     COMPLETED,
+    PARTIAL,
     FAILED
 }

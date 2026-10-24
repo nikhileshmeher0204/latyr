@@ -5,7 +5,6 @@ import com.latyr.api.domain.enums.SubscriptionEventType;
 import com.latyr.api.domain.model.User;
 import com.latyr.api.domain.model.UserSubscription;
 import com.latyr.api.domain.model.UserSubscriptionHistory;
-import com.latyr.api.exception.QuotaExceededException;
 import com.latyr.api.mapper.UserMapper;
 import com.latyr.api.mapper.UserSubscriptionHistoryMapper;
 import com.latyr.api.mapper.UserSubscriptionMapper;
@@ -57,30 +56,24 @@ public class SubscriptionQuotaService {
         sub.setQuotaResetAt(Instant.now().plus(30, ChronoUnit.DAYS));
         sub.setCreatedAt(Instant.now());
         sub.setUpdatedAt(Instant.now());
-        subscriptionMapper.insert(sub);
+        if (subscriptionMapper.insert(sub) == 0) {
+            return subscriptionMapper.findByUserId(userId).orElseThrow();
+        }
         return sub;
     }
 
     @Transactional
-    public void verifyAndIncrementQuota(UUID userId) {
-        UserSubscription sub = getSubscription(userId);
-
-        // Check if billing/monthly cycle reset is due
-        if (sub.getQuotaResetAt() != null && Instant.now().isAfter(sub.getQuotaResetAt())) {
-            log.info("Resetting monthly capture quota for user {}", userId);
+    public UserSubscription lockForQuota(UUID userId) {
+        subscriptionMapper.ensureDefault(userId, DEFAULT_FREE_QUOTA);
+        UserSubscription sub = subscriptionMapper.lockByUserId(userId).orElseThrow();
+        Instant now = Instant.now();
+        if (sub.getQuotaResetAt() != null && !now.isBefore(sub.getQuotaResetAt())) {
+            Instant nextReset = now.plus(30, ChronoUnit.DAYS);
+            subscriptionMapper.resetQuotaCycle(userId, nextReset);
             sub.setMonthlyCaptureCount(0);
-            sub.setQuotaResetAt(Instant.now().plus(30, ChronoUnit.DAYS));
-            subscriptionMapper.update(sub);
+            sub.setQuotaResetAt(nextReset);
         }
-
-        if (sub.getMonthlyCaptureCount() >= sub.getQuotaLimit()) {
-            throw new QuotaExceededException("Monthly capture quota exceeded for plan " + sub.getPlanTier());
-        }
-
-        int updated = subscriptionMapper.incrementMonthlyCaptureCountIfWithinQuota(userId);
-        if (updated == 0) {
-            throw new QuotaExceededException("Monthly capture quota exceeded for plan " + sub.getPlanTier());
-        }
+        return sub;
     }
 
     @SuppressWarnings("unchecked")

@@ -54,83 +54,45 @@ public class GoogleGenAIAdapter implements AIProvider {
                 .temperature(0.2f)
                 .build();
 
-        int maxAttempts = 3;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            try {
-                log.info("Invoking Gemini model {} (attempt {}/{})", modelName, attempt, maxAttempts);
-                GenerateContentResponse response = genAiClient.models.generateContent(modelName, content, config);
-                String jsonText = response.text();
-                log.info("Gemini raw response successfully received: {}", jsonText);
-                return parseStructuredResponse(jsonText);
-            } catch (LatyrException le) {
-                throw le;
-            } catch (Exception e) {
-                log.warn("Gemini call attempt {}/{} note: {}", attempt, maxAttempts, e.getMessage());
-                if (attempt < maxAttempts && (e.getMessage() != null && (e.getMessage().contains("429") || e.getMessage().contains("Quota") || e.getMessage().contains("503")))) {
-                    try {
-                        log.info("Rate limit / 503 encountered. Backing off for 12s before retry...");
-                        Thread.sleep(12000);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                } else if (attempt == maxAttempts) {
-                    log.error("Gemini analysis exhausted all {} attempts: {}", maxAttempts, e.getMessage());
-                    throw new LatyrException("Google GenAI analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
-                }
-            }
-        }
-        throw new LatyrException("Google GenAI analysis failed after retries", "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
+        return invoke(content, config);
     }
 
     @Override
     public AIAnalysisResult analyzeImage(byte[] imageBytes, String mimeType, Language language) {
-        log.info("Executing Google GenAI Vision inference for image analysis using model {}", modelName);
+        if (imageBytes == null || imageBytes.length == 0)
+            throw new com.latyr.api.exception.ProviderOperationException("EMPTY_IMAGE",
+                    com.latyr.api.exception.ProviderOperationException.Outcome.PERMANENT);
+        Content content = Content.builder().role("user").parts(List.of(
+                Part.fromText(buildPrompt(null, language, true)),
+                Part.fromBytes(imageBytes, mimeType != null ? mimeType : "image/png"))).build();
+        GenerateContentConfig config = GenerateContentConfig.builder()
+                .responseMimeType("application/json").temperature(0.2f).build();
+        return invoke(content, config);
+    }
+
+    private AIAnalysisResult invoke(Content content, GenerateContentConfig config) {
+        GenerateContentResponse response;
         try {
-            String promptText = buildPrompt(null, language, true);
-
-            List<Part> parts = List.of(
-                    Part.fromText(promptText),
-                    Part.fromBytes(imageBytes, mimeType != null ? mimeType : "image/png")
-            );
-
-            Content content = Content.builder().role("user").parts(parts).build();
-
-            GenerateContentConfig config = GenerateContentConfig.builder()
-                    .responseMimeType("application/json")
-                    .temperature(0.2f)
-                    .build();
-
-            GenerateContentResponse response = genAiClient.models.generateContent(modelName, content, config);
-            String jsonText = response.text();
-
-            return parseStructuredResponse(jsonText);
-        } catch (LatyrException le) {
-            throw le;
-        } catch (Exception e) {
-            log.error("Google GenAI Vision inference note: {}", e.getMessage());
-            if (e.getMessage() != null && e.getMessage().contains("Quota exceeded")) {
-                log.warn("Gemini API rate limit/quota hit. Applying graceful testing fallback for image analysis.");
-                return new AIAnalysisResult(
-                        "Captured Screenshot Content",
-                        "A temporary fallback summary generated due to rate limits.",
-                        "Captured Screenshot Content",
-                        Intent.EXPLORE,
-                        "Technology",
-                        "Screenshots",
-                        "Saved Images",
-                        List.of("Check out this saved screenshot!"),
-                        List.of(new AIEntity(
-                                EntityType.IDEA,
-                                "Visual Capture",
-                                "Saved screenshot visual content",
-                                null,
-                                ActionCTA.EXPLORE,
-                                Map.of("source", "image_upload")
-                        ))
-                );
-            }
-            throw new LatyrException("Google GenAI Vision analysis failed: " + e.getMessage(), "AI_INFERENCE_FAILED", HttpStatus.BAD_GATEWAY);
+            // Durable stage recovery owns retries; one adapter invocation makes one SDK call.
+            response = genAiClient.models.generateContent(modelName, content, config);
+        } catch (com.google.genai.errors.ApiException rejected) {
+            var outcome = rejected.code() == 429
+                    ? com.latyr.api.exception.ProviderOperationException.Outcome.RETRYABLE
+                    : rejected.code() >= 400 && rejected.code() < 500
+                        ? com.latyr.api.exception.ProviderOperationException.Outcome.PERMANENT
+                        : com.latyr.api.exception.ProviderOperationException.Outcome.AMBIGUOUS;
+            String code = rejected.code() == 429 ? "AI_RATE_LIMITED"
+                    : outcome == com.latyr.api.exception.ProviderOperationException.Outcome.PERMANENT ? "AI_REQUEST_REJECTED" : "AI_OUTCOME_UNKNOWN";
+            throw new com.latyr.api.exception.ProviderOperationException(code, outcome);
+        } catch (RuntimeException uncertain) {
+            throw new com.latyr.api.exception.ProviderOperationException("AI_OUTCOME_UNKNOWN",
+                    com.latyr.api.exception.ProviderOperationException.Outcome.AMBIGUOUS);
+        }
+        try {
+            return parseStructuredResponse(response.text());
+        } catch (Exception malformed) {
+            throw new com.latyr.api.exception.ProviderOperationException("AI_INVALID_RESPONSE",
+                    com.latyr.api.exception.ProviderOperationException.Outcome.PERMANENT);
         }
     }
 
@@ -261,7 +223,8 @@ public class GoogleGenAIAdapter implements AIProvider {
                             entityType = EntityType.IDEA;
                         }
 
-                        String title = map.get("title") != null ? map.get("title").toString() : "Saved Item";
+                        String title = map.get("title") != null ? map.get("title").toString().strip() : "";
+                        if (title.isBlank()) continue;
                         String description = map.get("description") != null ? map.get("description").toString() : "";
                         String externalUrl = map.get("external_url") != null ? map.get("external_url").toString() : null;
 

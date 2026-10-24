@@ -1,6 +1,7 @@
 package com.latyr.api.adapter;
 
 import com.latyr.api.exception.LatyrException;
+import com.latyr.api.exception.ProviderOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,18 +41,13 @@ public class ApifyScraperAdapter implements ScraperProvider {
     @SuppressWarnings("unchecked")
     public ScrapedMedia extractMedia(String url) {
         if (apiToken == null || apiToken.trim().isEmpty()) {
-            log.info("Apify API token is not configured. Extracting public OpenGraph metadata for URL: {}", url);
-            OgMetadata og = fetchInstagramOgMetadata(url);
-            if ((og.caption() == null || og.caption().isBlank()) && (og.imageUrl() == null || og.imageUrl().isBlank())) {
-                throw new LatyrException("Apify API token is not configured and metadata could not be extracted.", "MISSING_CONFIGURATION", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-            String caption = (og.caption() != null && !og.caption().isBlank()) ? og.caption() : ("Instagram Reel: " + url);
-            return new ScrapedMedia(url, null, og.imageUrl(), caption, "Instagram Reel", 30, Map.of("fallback", true, "url", url, "scraped_og", og.caption() != null));
+            throw new ProviderOperationException("MISSING_CONFIGURATION", ProviderOperationException.Outcome.PERMANENT);
         }
 
-        log.info("Executing live Apify Instagram Scraper for URL: {}", url);
+        boolean acquired = false;
         try {
             concurrencyLimiter.acquire();
+            acquired = true;
             Map<String, Object> requestBody = Map.of(
                     "directUrls", List.of(url),
                     "resultsType", "posts",
@@ -70,7 +66,7 @@ public class ApifyScraperAdapter implements ScraperProvider {
                     .block(Duration.ofSeconds(90));
 
             if (responseList == null || responseList.isEmpty()) {
-                throw new LatyrException("Apify returned empty dataset items for URL: " + url, "SCRAPING_FAILED", HttpStatus.BAD_GATEWAY);
+                throw new ProviderOperationException("SOURCE_UNAVAILABLE", ProviderOperationException.Outcome.PERMANENT);
             }
 
             Map<String, Object> item = responseList.get(0);
@@ -108,45 +104,19 @@ public class ApifyScraperAdapter implements ScraperProvider {
             return new ScrapedMedia(videoUrl, audioUrl, thumbnailUrl, caption, title, duration, sanitizedMetadata);
         } catch (LatyrException le) {
             throw le;
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new ProviderOperationException("SCRAPER_INTERRUPTED", ProviderOperationException.Outcome.RETRYABLE);
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException rejected) {
+            int status = rejected.getStatusCode().value();
+            throw new ProviderOperationException(status == 429 ? "SCRAPER_RATE_LIMITED" : "SCRAPER_REQUEST_REJECTED",
+                    status == 429 ? ProviderOperationException.Outcome.RETRYABLE :
+                    status >= 400 && status < 500 ? ProviderOperationException.Outcome.PERMANENT : ProviderOperationException.Outcome.AMBIGUOUS);
         } catch (Exception e) {
-            log.error("Live Apify scraping failed for URL {}: {}", url, e.getMessage());
-            throw new LatyrException("Failed to scrape media from Instagram: " + e.getMessage(), "SCRAPING_FAILED", HttpStatus.BAD_GATEWAY);
+            throw new ProviderOperationException("SCRAPER_OUTCOME_UNKNOWN", ProviderOperationException.Outcome.AMBIGUOUS);
         } finally {
-            concurrencyLimiter.release();
+            if (acquired) concurrencyLimiter.release();
         }
     }
 
-    private record OgMetadata(String caption, String imageUrl) {}
-
-    private OgMetadata fetchInstagramOgMetadata(String url) {
-        String caption = null;
-        String imageUrl = null;
-        try {
-            String html = webClient.get()
-                    .uri(url)
-                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block(Duration.ofSeconds(10));
-
-            if (html != null) {
-                // Find og:description or description
-                java.util.regex.Pattern descPattern = java.util.regex.Pattern.compile("<meta\\s+(?:property|name)=[\"'](?:og:description|description)[\"']\\s+content=[\"'](.*?)[\"']", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL);
-                java.util.regex.Matcher descMatcher = descPattern.matcher(html);
-                if (descMatcher.find()) {
-                    caption = org.springframework.web.util.HtmlUtils.htmlUnescape(descMatcher.group(1)).trim();
-                }
-
-                // Find og:image
-                java.util.regex.Pattern imgPattern = java.util.regex.Pattern.compile("<meta\\s+(?:property|name)=[\"']og:image[\"']\\s+content=[\"'](.*?)[\"']", java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.DOTALL);
-                java.util.regex.Matcher imgMatcher = imgPattern.matcher(html);
-                if (imgMatcher.find()) {
-                    imageUrl = org.springframework.web.util.HtmlUtils.htmlUnescape(imgMatcher.group(1)).trim();
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Could not extract public OG tags from Instagram URL {}: {}", url, e.getMessage());
-        }
-        return new OgMetadata(caption, imageUrl);
-    }
 }

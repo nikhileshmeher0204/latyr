@@ -1,174 +1,161 @@
 package com.latyr.api;
 
+import com.latyr.api.domain.enums.*;
+import com.latyr.api.domain.model.*;
+import com.latyr.api.dto.*;
 import com.latyr.api.exception.LatyrException;
-
-import com.latyr.api.domain.enums.ActionCTA;
-import com.latyr.api.domain.enums.CaptureStatus;
-import com.latyr.api.domain.enums.ContentType;
-import com.latyr.api.domain.enums.EntityType;
-import com.latyr.api.domain.enums.Intent;
-import com.latyr.api.domain.enums.SourceType;
-import com.latyr.api.domain.model.CanonicalSource;
-import com.latyr.api.domain.model.Capture;
-import com.latyr.api.domain.model.ExtractedEntity;
-import com.latyr.api.domain.model.IngestionJob;
-import com.latyr.api.dto.CaptureResponse;
-import com.latyr.api.dto.CreateCaptureRequest;
-import com.latyr.api.mapper.CaptureMapper;
-import com.latyr.api.mapper.ExtractedEntityMapper;
-import com.latyr.api.mapper.IngestionJobMapper;
-import com.latyr.api.service.CanonicalDeduplicationService;
-import com.latyr.api.service.CaptureService;
-import com.latyr.api.service.SubscriptionQuotaService;
-import com.latyr.api.service.UrlNormalizationService;
+import com.latyr.api.mapper.*;
+import com.latyr.api.service.*;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.time.Instant;
+import org.mockito.ArgumentCaptor;
 import java.util.*;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class CaptureServiceTest {
-
-    private CaptureMapper captureMapper;
-    private ExtractedEntityMapper extractedEntityMapper;
-    private IngestionJobMapper ingestionJobMapper;
-    private SubscriptionQuotaService quotaService;
-    private UrlNormalizationService urlNormalizationService;
-    private CanonicalDeduplicationService deduplicationService;
-    private com.latyr.api.worker.IngestionQueueWorker queueWorker;
-
-    private CaptureService captureService;
+    private final CaptureMapper captures = mock(CaptureMapper.class);
+    private final ExtractedEntityMapper entities = mock(ExtractedEntityMapper.class);
+    private final IngestionJobMapper jobs = mock(IngestionJobMapper.class);
+    private final CaptureQuotaLedger quota = mock(CaptureQuotaLedger.class);
+    private final UrlNormalizationService urls = mock(UrlNormalizationService.class);
+    private final CanonicalDeduplicationService sources = mock(CanonicalDeduplicationService.class);
+    private final IngestionEventOutbox events = mock(IngestionEventOutbox.class);
+    private final UUID userId = UUID.randomUUID();
+    private final CanonicalSource source = new CanonicalSource();
+    private CaptureService service;
+    private static final String URL = "https://www.instagram.com/reel/C8xyz123/";
 
     @BeforeEach
     void setUp() {
-        captureMapper = Mockito.mock(CaptureMapper.class);
-        extractedEntityMapper = Mockito.mock(ExtractedEntityMapper.class);
-        ingestionJobMapper = Mockito.mock(IngestionJobMapper.class);
-        quotaService = Mockito.mock(SubscriptionQuotaService.class);
-        urlNormalizationService = new UrlNormalizationService();
-        deduplicationService = Mockito.mock(CanonicalDeduplicationService.class);
-        queueWorker = Mockito.mock(com.latyr.api.worker.IngestionQueueWorker.class);
-
-        captureService = new CaptureService(
-                captureMapper,
-                extractedEntityMapper,
-                ingestionJobMapper,
-                quotaService,
-                urlNormalizationService,
-                deduplicationService,
-                queueWorker
-        );
+        source.setId(UUID.randomUUID());
+        source.setSourceType(SourceType.INSTAGRAM_REEL);
+        source.setAiAnalysisCache(new HashMap<>());
+        when(urls.getCanonicalUrlHash(anyString())).thenReturn("canonical-hash");
+        when(sources.getOrCreateCanonicalSource(eq("canonical-hash"), any(), anyString())).thenReturn(source);
+        service = new CaptureService(captures, entities, jobs, quota, urls, sources, events);
     }
 
     @Test
-    @DisplayName("Cache Miss: Should enqueue IngestionJob and return status PENDING")
-    void testCreateUrlCapture_CacheMiss() {
-        UUID userId = UUID.randomUUID();
-        CreateCaptureRequest request = new CreateCaptureRequest("https://www.instagram.com/reel/C8xyz123/?igsh=abc", ContentType.URL, null);
-        String canonicalHash = urlNormalizationService.getCanonicalUrlHash(request.url());
-
-        when(deduplicationService.findCachedSource(canonicalHash)).thenReturn(Optional.empty());
-
-        CanonicalSource canonicalSource = new CanonicalSource();
-        canonicalSource.setId(UUID.randomUUID());
-        canonicalSource.setCanonicalUrlHash(canonicalHash);
-        when(deduplicationService.getOrCreateCanonicalSource(eq(canonicalHash), eq(SourceType.INSTAGRAM_REEL), eq(request.url())))
-                .thenReturn(canonicalSource);
-
-        CaptureResponse response = captureService.createUrlCapture(userId, request);
-
-        assertNotNull(response);
+    void pendingAdmissionReservesWithoutChargingAndUsesOnlyDurableQueue() {
+        CaptureResponse response = service.createUrlCapture(userId, new CreateCaptureRequest(URL, ContentType.URL, "my personal caption"));
         assertEquals(CaptureStatus.PENDING, response.status());
-        verify(quotaService, times(1)).verifyAndIncrementQuota(userId);
-        verify(captureMapper, times(1)).insert(any(Capture.class));
-        verify(ingestionJobMapper, times(1)).insert(any(IngestionJob.class));
+        verify(quota).lockAdmission(userId);
+        verify(quota).reserveCapture(userId, source.getId(), response.id());
+        verify(quota, never()).finalizeCapture(any());
+        ArgumentCaptor<IngestionJob> job = ArgumentCaptor.forClass(IngestionJob.class);
+        verify(jobs).insert(job.capture());
+        assertEquals(Map.of("url", URL), job.getValue().getPayload());
+        verifyNoInteractions(events);
     }
 
     @Test
-    @DisplayName("Cache Hit: Should immediately complete capture, copy entities, and skip IngestionJob")
-    void testCreateUrlCapture_CacheHit() {
-        UUID userId = UUID.randomUUID();
-        CreateCaptureRequest request = new CreateCaptureRequest("https://www.instagram.com/reel/C8xyz123/", ContentType.URL, null);
-        String canonicalHash = urlNormalizationService.getCanonicalUrlHash(request.url());
+    void sameUserReshareReturnsExistingCaptureEvenAtQuotaCap() {
+        Capture existing = new Capture();
+        existing.setId(UUID.randomUUID());
+        existing.setUserId(userId);
+        existing.setCanonicalSourceId(source.getId());
+        existing.setStatus(CaptureStatus.COMPLETED);
+        when(captures.findByUserIdAndCanonicalSourceId(userId, source.getId())).thenReturn(Optional.of(existing));
+        CaptureResponse response = service.createUrlCapture(userId, new CreateCaptureRequest(URL, ContentType.URL, null));
+        assertEquals(existing.getId(), response.id());
+        verify(quota, never()).reserveCapture(any(), any(), any());
+        verify(quota, never()).finalizeCapture(any());
+        verify(captures, never()).insert(any());
+        verifyNoInteractions(jobs, events);
+    }
 
-        CanonicalSource cachedSource = new CanonicalSource();
-        cachedSource.setId(UUID.randomUUID());
-        cachedSource.setCanonicalUrlHash(canonicalHash);
-
-        Map<String, Object> aiCache = new HashMap<>();
-        aiCache.put("intent", "WATCH");
-        aiCache.put("category", "Entertainment");
-        aiCache.put("original_caption", "5 movies to watch");
-        aiCache.put("audio_transcript", "Here are 5 movies...");
-        aiCache.put("notification_copies", List.of("Movie recommendation for your weekend"));
-        aiCache.put("entities", List.of(
-                Map.of("title", "Dark", "entity_type", "TV_SHOW", "action_cta", "WATCH")
-        ));
-        cachedSource.setAiAnalysisCache(aiCache);
-
-        when(deduplicationService.findCachedSource(canonicalHash)).thenReturn(Optional.of(cachedSource));
-
-        CaptureResponse response = captureService.createUrlCapture(userId, request);
-
-        assertNotNull(response);
+    @Test
+    void reusedAnalysisChargesNewUserOnceAndPreservesFields() {
+        Map<String,Object> cache = usefulCache();
+        source.setAiAnalysisCache(cache);
+        CaptureResponse response = service.createUrlCapture(userId, new CreateCaptureRequest(URL, ContentType.URL, "private override"));
         assertEquals(CaptureStatus.COMPLETED, response.status());
-        assertEquals(Intent.WATCH, response.intent());
-        assertEquals("Entertainment", response.category());
-
-        verify(quotaService, times(1)).verifyAndIncrementQuota(userId);
-        verify(captureMapper, times(1)).insert(any(Capture.class));
-        verify(extractedEntityMapper, times(1)).insert(any(ExtractedEntity.class));
-        verify(ingestionJobMapper, never()).insert(any(IngestionJob.class)); // $0 AI cost!
+        assertEquals("Source title", response.title());
+        assertEquals("Source summary", response.summary());
+        assertEquals("Series", response.subCategory());
+        assertEquals("Source caption", response.originalCaption());
+        assertEquals("https://images.example.test/thumb.png", response.thumbnailUrl());
+        verify(quota).reserveCapture(userId, source.getId(), response.id());
+        verify(quota).finalizeCapture(response.id());
+        verify(entities).insert(any());
+        verify(events).append(eq(userId), eq("CAPTURE_COMPLETED"), argThat(p -> response.id().equals(p.get("capture_id"))));
+        verify(jobs, never()).insert(any());
     }
 
     @Test
-    @DisplayName("F16 Outbound policy: rejects restricted/internal destinations on createUrlCapture")
-    void testCreateUrlCapture_RestrictedDestination_ThrowsException() {
-        UUID userId = UUID.randomUUID();
-        CreateCaptureRequest request = new CreateCaptureRequest("http://127.0.0.1:8080/internal", ContentType.URL, null);
-
-        LatyrException ex = assertThrows(LatyrException.class, () ->
-                captureService.createUrlCapture(userId, request)
-        );
-
-        assertEquals("RESTRICTED_DESTINATION", ex.getErrorCode());
-        verify(captureMapper, never()).insert(any(Capture.class));
-        verify(ingestionJobMapper, never()).insert(any(IngestionJob.class));
+    void summaryOnlyCacheDoesNotQualifyAsSuccessfulCapture() {
+        source.setAiAnalysisCache(Map.of("summary", "Useful sounding summary", "intent", "WATCH", "entities", List.of()));
+        CaptureResponse response = service.createUrlCapture(userId, new CreateCaptureRequest(URL, ContentType.URL, null));
+        assertEquals(CaptureStatus.PENDING, response.status());
+        verify(quota, never()).finalizeCapture(any());
+        verify(jobs).insert(any());
     }
 
     @Test
-    @DisplayName("F11 Privacy: image captures are partitioned by userId to guarantee owner-private isolation")
-    void testCreateImageCapture_OwnerPrivateIsolation() {
-        UUID user1 = UUID.randomUUID();
-        UUID user2 = UUID.randomUUID();
-        byte[] imageBytes = "my-private-screenshot-bytes".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    void imageHashIncludesOwnerAndFitsDatabaseColumn() {
+        UrlNormalizationService realUrls = new UrlNormalizationService();
+        byte[] bytes = "private pixels".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        String hash = realUrls.computeSha256(userId + ":" + realUrls.computeSha256(bytes));
+        when(sources.getOrCreateCanonicalSource(eq(hash), eq(SourceType.IMAGE), anyString())).thenReturn(source);
+        source.setSourceType(SourceType.IMAGE);
+        CaptureService realHashService = new CaptureService(captures, entities, jobs, quota, realUrls, sources, events);
+        CaptureResponse response = realHashService.createImageCapture(userId, bytes, "screen.png");
+        assertEquals(CaptureStatus.PENDING, response.status());
+        assertEquals(64, hash.length());
+        assertNotEquals(hash, realUrls.computeSha256(UUID.randomUUID() + ":" + realUrls.computeSha256(bytes)));
+        verify(sources).getOrCreateCanonicalSource(hash, SourceType.IMAGE, "screen.png");
+    }
 
-        String rawSha = urlNormalizationService.computeSha256(imageBytes);
-        String user1Hash = user1 + ":" + rawSha;
-        String user2Hash = user2 + ":" + rawSha;
+    @Test
+    void emptyImageRejectedBeforeQuotaOrSourceWrites() {
+        LatyrException error = assertThrows(LatyrException.class, () -> service.createImageCapture(userId, new byte[0], "empty.png"));
+        assertEquals("INVALID_IMAGE", error.getErrorCode());
+        verifyNoInteractions(quota, captures, jobs);
+    }
 
-        assertNotEquals(user1Hash, user2Hash, "Image hashes across different users must never collide");
+    @Test
+    void internalUrlRejectedBeforeQuotaOrSourceWrites() {
+        CaptureService realUrlService = new CaptureService(captures, entities, jobs, quota, new UrlNormalizationService(), sources, events);
+        LatyrException error = assertThrows(LatyrException.class, () -> realUrlService.createUrlCapture(userId,
+                new CreateCaptureRequest("http://127.0.0.1/private", ContentType.URL, null)));
+        assertEquals("RESTRICTED_DESTINATION", error.getErrorCode());
+        verifyNoInteractions(quota, captures, jobs);
+    }
 
-        CanonicalSource cs1 = new CanonicalSource();
-        cs1.setId(UUID.randomUUID());
-        cs1.setCanonicalUrlHash(user1Hash);
+    @Test
+    void cachedCoreWithoutEnrichmentQueuesOnlyEnrichmentRecovery() {
+        Map<String,Object> cache = usefulCache();
+        cache.remove("enrichment_status");
+        source.setAiAnalysisCache(cache);
+        CaptureResponse response = service.createUrlCapture(userId, new CreateCaptureRequest(URL, ContentType.URL, null));
+        assertEquals(CaptureStatus.COMPLETED, response.status());
+        ArgumentCaptor<IngestionJob> job = ArgumentCaptor.forClass(IngestionJob.class);
+        verify(jobs).insert(job.capture());
+        assertEquals(Boolean.TRUE, job.getValue().getPayload().get("enrichment_only"));
+        verify(quota).finalizeCapture(response.id());
+    }
 
-        when(deduplicationService.findCachedSource(user1Hash)).thenReturn(Optional.empty());
-        when(deduplicationService.getOrCreateCanonicalSource(eq(user1Hash), eq(SourceType.IMAGE), any()))
-                .thenReturn(cs1);
+    @Test
+    void originalCaptureEntitiesCannotBeEdited() {
+        LatyrException error = assertThrows(LatyrException.class, () -> service.updateEntity(userId, UUID.randomUUID(), null));
+        assertEquals("CAPTURE_IMMUTABLE", error.getErrorCode());
+        assertEquals(405, error.getHttpStatus().value());
+        verifyNoInteractions(entities, captures);
+    }
 
-        CaptureResponse resp1 = captureService.createImageCapture(user1, imageBytes, "screen.png");
-        assertNotNull(resp1);
-        assertEquals(CaptureStatus.PENDING, resp1.status());
-
-        verify(deduplicationService, times(1)).findCachedSource(user1Hash);
-        verify(deduplicationService, never()).findCachedSource(user2Hash);
+    private Map<String,Object> usefulCache() {
+        Map<String,Object> cache = new HashMap<>();
+        cache.put("intent", "WATCH");
+        cache.put("enrichment_status", "ENRICHED");
+        cache.put("category", "Entertainment");
+        cache.put("sub_category", "Series");
+        cache.put("title", "Source title");
+        cache.put("summary", "Source summary");
+        cache.put("original_caption", "Source caption");
+        cache.put("thumbnail_url", "https://images.example.test/thumb.png");
+        cache.put("entities", List.of(Map.of("title", "Dark", "entity_type", "TV_SHOW", "action_cta", "WATCH")));
+        return cache;
     }
 }

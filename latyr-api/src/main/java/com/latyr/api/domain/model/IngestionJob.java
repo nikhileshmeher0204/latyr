@@ -12,6 +12,11 @@ public class IngestionJob {
 
     private UUID id;
     private UUID captureId;
+    private UUID canonicalSourceId;
+    private UUID leaseToken;
+    private Instant leaseExpiresAt;
+    private Instant nextAttemptAt;
+    private boolean recoveryAmbiguous;
     private UUID userId;
     private SourceType sourceType;
     private Map<String, Object> payload = new HashMap<>();
@@ -37,6 +42,17 @@ public class IngestionJob {
 
     public UUID getCaptureId() { return captureId; }
     public void setCaptureId(UUID captureId) { this.captureId = captureId; }
+
+    public UUID getCanonicalSourceId() { return canonicalSourceId; }
+    public void setCanonicalSourceId(UUID canonicalSourceId) { this.canonicalSourceId = canonicalSourceId; }
+    public UUID getLeaseToken() { return leaseToken; }
+    public void setLeaseToken(UUID leaseToken) { this.leaseToken = leaseToken; }
+    public Instant getLeaseExpiresAt() { return leaseExpiresAt; }
+    public void setLeaseExpiresAt(Instant leaseExpiresAt) { this.leaseExpiresAt = leaseExpiresAt; }
+    public Instant getNextAttemptAt() { return nextAttemptAt; }
+    public void setNextAttemptAt(Instant nextAttemptAt) { this.nextAttemptAt = nextAttemptAt; }
+    public boolean isRecoveryAmbiguous() { return recoveryAmbiguous; }
+    public void setRecoveryAmbiguous(boolean recoveryAmbiguous) { this.recoveryAmbiguous = recoveryAmbiguous; }
 
     public UUID getUserId() { return userId; }
     public void setUserId(UUID userId) { this.userId = userId; }

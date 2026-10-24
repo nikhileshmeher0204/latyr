@@ -20,7 +20,7 @@ import java.util.Map;
 @MappedJdbcTypes(JdbcType.OTHER)
 public class JsonbTypeHandler extends BaseTypeHandler<Map<String, Object>> {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
     private static final TypeReference<HashMap<String, Object>> TYPE_REF = new TypeReference<>() {};
 
     @Override

@@ -28,6 +28,10 @@ public record GitHubRepoDetailsDTO(
         @JsonProperty("archived") boolean isArchived,
         @JsonProperty("fork") boolean isFork
 ) {
+    public GitHubRepoDetailsDTO {
+        topics = topics == null ? List.of() : List.copyOf(topics);
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record OwnerDTO(
             @JsonProperty("login") String login,

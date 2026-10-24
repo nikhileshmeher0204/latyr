@@ -1,5 +1,8 @@
 package com.latyr.api.integration;
 
+import com.latyr.api.client.OmdbCatalog;
+import com.latyr.api.exception.ProviderOperationException;
+import static com.latyr.api.exception.ProviderOperationException.Outcome.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -24,7 +27,7 @@ import java.util.*;
  * awards, directors, writers, and full cast metadata.
  */
 @Component
-public class OmdbClient {
+public class OmdbClient implements OmdbCatalog {
 
     private static final Logger log = LoggerFactory.getLogger(OmdbClient.class);
 
@@ -37,7 +40,7 @@ public class OmdbClient {
 
     public OmdbClient(
             @Value("${latyr.enrichment.omdb.api-key:}") String apiKey,
-            @Value("${latyr.enrichment.omdb.base-url:http://www.omdbapi.com}") String baseUrl,
+            @Value("${latyr.enrichment.omdb.base-url:https://www.omdbapi.com}") String baseUrl,
             @Value("${latyr.enrichment.omdb.connect-timeout-ms:1500}") int connectTimeoutMs,
             @Value("${latyr.enrichment.omdb.read-timeout-ms:1500}") int readTimeoutMs) {
         this.apiKey = apiKey != null ? apiKey.trim() : "";
@@ -62,8 +65,9 @@ public class OmdbClient {
      * Fetch authentic IMDb metadata using an exact IMDb ID (e.g. "tt13229894").
      * 100% deterministic with zero title-clash ambiguity.
      */
-    public Optional<OmdbMovieResponse> getByImdbId(String imdbId) {
-        if (!isConfigured() || imdbId == null || imdbId.isBlank()) {
+    public Optional<OmdbCatalog.OmdbMovieResponse> getByImdbId(String imdbId) {
+        if (!isConfigured()) throw new ProviderOperationException("OMDB_NOT_CONFIGURED", PERMANENT);
+        if (imdbId == null || imdbId.isBlank()) {
             return Optional.empty();
         }
 
@@ -76,22 +80,26 @@ public class OmdbClient {
 
             OmdbMovieResponse response = objectMapper.readValue(json, OmdbMovieResponse.class);
             if (response != null && response.isSuccess()) {
-                return Optional.of(response);
+                return Optional.of(toCatalog(response));
             } else {
-                log.debug("OMDb returned non-successful response for IMDb ID {}: {}", trimmedId, response != null ? response.error : "null");
-                return Optional.empty();
+                return missingOrFailure(response);
             }
-        } catch (Exception e) {
-            log.warn("Failed to query OMDb by IMDb ID '{}': {}", trimmedId, e.getMessage());
-            return Optional.empty();
+        } catch (ProviderOperationException failure) {
+            throw failure;
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new ProviderOperationException("OMDB_INTERRUPTED", RETRYABLE);
+        } catch (Exception failure) {
+            throw new ProviderOperationException("OMDB_UNAVAILABLE", RETRYABLE);
         }
     }
 
     /**
      * Fetch metadata by exact title and optional year as a secondary fallback.
      */
-    public Optional<OmdbMovieResponse> getByTitle(String title, Integer year) {
-        if (!isConfigured() || title == null || title.isBlank()) {
+    public Optional<OmdbCatalog.OmdbMovieResponse> getByTitle(String title, Integer year) {
+        if (!isConfigured()) throw new ProviderOperationException("OMDB_NOT_CONFIGURED", PERMANENT);
+        if (title == null || title.isBlank()) {
             return Optional.empty();
         }
 
@@ -111,13 +119,24 @@ public class OmdbClient {
 
             OmdbMovieResponse response = objectMapper.readValue(json, OmdbMovieResponse.class);
             if (response != null && response.isSuccess()) {
-                return Optional.of(response);
+                return Optional.of(toCatalog(response));
             }
-            return Optional.empty();
-        } catch (Exception e) {
-            log.warn("Failed to query OMDb by title '{}': {}", title, e.getMessage());
-            return Optional.empty();
+            return missingOrFailure(response);
+        } catch (ProviderOperationException failure) {
+            throw failure;
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new ProviderOperationException("OMDB_INTERRUPTED", RETRYABLE);
+        } catch (Exception failure) {
+            throw new ProviderOperationException("OMDB_UNAVAILABLE", RETRYABLE);
         }
+    }
+
+    private Optional<OmdbCatalog.OmdbMovieResponse> missingOrFailure(OmdbMovieResponse response) {
+        String error = response != null && response.error != null ? response.error.toLowerCase(Locale.ROOT) : "";
+        if (error.contains("not found")) return Optional.empty();
+        throw new ProviderOperationException(error.contains("api key") ? "OMDB_AUTH_FAILED" : "OMDB_UNAVAILABLE",
+                error.contains("api key") ? PERMANENT : RETRYABLE);
     }
 
     private String executeGet(String url) throws Exception {
@@ -133,26 +152,54 @@ public class OmdbClient {
 
         if (status == 200) {
             return response.body();
-        } else if (status == 401 || status == 403) {
-            log.error("OMDb API authorization failed. Check API key.");
-            return null;
-        } else if (status == 429) {
-            log.warn("OMDb API rate limit encountered.");
-            return null;
-        } else {
-            log.warn("OMDb request returned HTTP status {}: {}", status, response.body());
+        } else if (status == 404) {
             return null;
         }
+        throw new ProviderOperationException("OMDB_HTTP_" + status,
+                status == 429 || status >= 500 ? RETRYABLE : PERMANENT);
     }
 
     private String encode(String text) {
         return URLEncoder.encode(text, StandardCharsets.UTF_8);
     }
 
+    private static OmdbCatalog.OmdbMovieResponse toCatalog(OmdbMovieResponse raw) {
+        if (raw == null) return null;
+        return new OmdbCatalog.OmdbMovieResponse(
+            raw.title,
+            raw.year,
+            raw.rated,
+            raw.released,
+            raw.runtime,
+            raw.genre,
+            raw.director,
+            raw.writer,
+            raw.actors,
+            raw.plot,
+            raw.language,
+            raw.country,
+            raw.awards,
+            raw.poster,
+            raw.ratings == null ? List.of() : raw.ratings.stream().filter(Objects::nonNull).map(OmdbClient::toCatalog).toList(),
+            raw.metascore,
+            raw.imdbRating,
+            raw.imdbVotes,
+            raw.imdbId,
+            raw.type,
+            raw.boxOffice);
+    }
+
+    private static OmdbCatalog.OmdbRating toCatalog(OmdbRating raw) {
+        if (raw == null) return null;
+        return new OmdbCatalog.OmdbRating(
+            raw.source,
+            raw.value);
+    }
+
     // --- OMDb DTOs ---
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class OmdbMovieResponse {
+    private static class OmdbMovieResponse {
         @JsonProperty("Title") public String title;
         @JsonProperty("Year") public String year;
         @JsonProperty("Rated") public String rated;
@@ -245,7 +292,7 @@ public class OmdbClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class OmdbRating {
+    private static class OmdbRating {
         @JsonProperty("Source") public String source;
         @JsonProperty("Value") public String value;
     }

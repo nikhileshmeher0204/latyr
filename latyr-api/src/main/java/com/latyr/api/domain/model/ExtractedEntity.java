@@ -11,6 +11,7 @@ public class ExtractedEntity {
 
     private UUID id;
     private UUID captureId;
+    private int extractionIndex;
     private EntityType entityType;
     private String title;
     private String description;
@@ -36,6 +37,9 @@ public class ExtractedEntity {
 
     public UUID getCaptureId() { return captureId; }
     public void setCaptureId(UUID captureId) { this.captureId = captureId; }
+
+    public int getExtractionIndex() { return extractionIndex; }
+    public void setExtractionIndex(int extractionIndex) { this.extractionIndex = extractionIndex; }
 
     public EntityType getEntityType() { return entityType; }
     public void setEntityType(EntityType entityType) { this.entityType = entityType; }

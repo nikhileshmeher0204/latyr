@@ -3,6 +3,7 @@ package com.latyr.api.config;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.genai.Client;
+import com.google.genai.types.HttpOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,9 @@ public class GoogleGenAIConfig {
 
     @Value("${firebase.config.path:${FIREBASE_CONFIG_PATH:}}")
     private String firebaseConfigPath;
+
+    @Value("${google.genai.timeout-ms:90000}")
+    private int timeoutMs = 90000;
 
     @Bean
     public GoogleCredentials googleCredentials() throws IOException {
@@ -65,9 +69,11 @@ public class GoogleGenAIConfig {
 
     @Bean(destroyMethod = "close")
     public Client googleGenAiClient(GoogleCredentials credentials) {
+        if (timeoutMs < 1000) throw new IllegalArgumentException("AI timeout must be at least one second");
+        HttpOptions httpOptions = HttpOptions.builder().timeout(timeoutMs).build();
         if (apiKey != null && !apiKey.trim().isEmpty()) {
             log.info("Initializing Google GenAI SDK Client in Gemini Developer mode using API Key");
-            return Client.builder().apiKey(apiKey.trim()).build();
+            return Client.builder().apiKey(apiKey.trim()).httpOptions(httpOptions).build();
         }
 
         String effectiveProjectId = null;
@@ -89,6 +95,7 @@ public class GoogleGenAIConfig {
         log.info("Initializing Google GenAI SDK Client in Vertex AI mode (project: {}, location: {})", effectiveProjectId, location);
         Client.Builder builder = Client.builder()
                 .vertexAI(true)
+                .httpOptions(httpOptions)
                 .project(effectiveProjectId)
                 .location(location);
 

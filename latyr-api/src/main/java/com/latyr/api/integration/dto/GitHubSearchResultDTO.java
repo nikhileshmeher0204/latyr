@@ -14,6 +14,10 @@ public record GitHubSearchResultDTO(
         @JsonProperty("incomplete_results") boolean incompleteResults,
         @JsonProperty("items") List<ItemDTO> items
 ) {
+    public GitHubSearchResultDTO {
+        items = items == null ? List.of() : List.copyOf(items);
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record ItemDTO(
             @JsonProperty("id") long id,

@@ -18,9 +18,9 @@
     "semantic_hash": "ab50dd89da7da2346b28003352eeeeeb"
   },
   "latyr-api/pom.xml": {
-    "mtime": 1792831570.1867023,
-    "seen": 1792832367.0737915,
-    "ast_hash": "47c86449b2fce2c8060b210eea5afb97",
+    "mtime": 1792851422.1308846,
+    "seen": 1792854609.0506518,
+    "ast_hash": "4f965111feae191219fb2d76b3286874",
     "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/LatyrApiApplication.java": {
@@ -36,10 +36,10 @@
     "semantic_hash": "d3df6c657e4a89a21edda5c2449a34b7"
   },
   "latyr-api/src/main/java/com/latyr/api/adapter/ApifyScraperAdapter.java": {
-    "mtime": 1790948882.6752934,
-    "seen": 1792777450.6780808,
-    "ast_hash": "37fb6359c013db076b085ff29f9618e0",
-    "semantic_hash": "37fb6359c013db076b085ff29f9618e0"
+    "mtime": 1792851954.3981268,
+    "seen": 1792854609.0506518,
+    "ast_hash": "19d6ea73f65c4bd1264938db9da1be30",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/adapter/DefaultEntityEnrichmentAdapter.java": {
     "mtime": 1790948882.676294,
@@ -54,16 +54,16 @@
     "semantic_hash": "93ecc83635b88adf43da1c187dc714ba"
   },
   "latyr-api/src/main/java/com/latyr/api/adapter/EphemeralMediaStreamer.java": {
-    "mtime": 1790948882.677301,
-    "seen": 1792777450.6780808,
-    "ast_hash": "45891fc67781ad1d05145c4d2c817069",
-    "semantic_hash": "45891fc67781ad1d05145c4d2c817069"
+    "mtime": 1792851957.7592618,
+    "seen": 1792854609.0506518,
+    "ast_hash": "4b4ce3655396cb1a07bc689741a33ac2",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/adapter/GoogleGenAIAdapter.java": {
-    "mtime": 1792268786.2221632,
-    "seen": 1792777450.6780808,
-    "ast_hash": "8a3d9baa33186760c42a9ed10f8ff856",
-    "semantic_hash": "8a3d9baa33186760c42a9ed10f8ff856"
+    "mtime": 1792851804.0586972,
+    "seen": 1792854609.0506518,
+    "ast_hash": "c31e895e1a08e42b5f62c03385baf171",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/adapter/ScraperProvider.java": {
     "mtime": 1790948882.6783016,
@@ -72,16 +72,16 @@
     "semantic_hash": "b99de5d4bef82defa46226e29337acc1"
   },
   "latyr-api/src/main/java/com/latyr/api/adapter/enrichment/CompositeEntityEnricher.java": {
-    "mtime": 1792268786.225168,
-    "seen": 1792777450.6780808,
-    "ast_hash": "503ad113ceecfbf542117c637a4d9a76",
-    "semantic_hash": "503ad113ceecfbf542117c637a4d9a76"
+    "mtime": 1792852462.804476,
+    "seen": 1792854609.0506518,
+    "ast_hash": "77eabc6ee9f985904f53766a9f3d2e44",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/adapter/enrichment/EntertainmentEntityEnricher.java": {
-    "mtime": 1792435056.4036026,
-    "seen": 1792777450.6780808,
-    "ast_hash": "0b901cda602f42b673dc422ea303f433",
-    "semantic_hash": "0b901cda602f42b673dc422ea303f433"
+    "mtime": 1792852418.7102985,
+    "seen": 1792854609.0506518,
+    "ast_hash": "78075f2dea76ae778ed79e252f1378f1",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/adapter/enrichment/EntityEnricher.java": {
     "mtime": 1792268786.22817,
@@ -90,10 +90,10 @@
     "semantic_hash": "e3872339579102b784b1c25ada4cde1a"
   },
   "latyr-api/src/main/java/com/latyr/api/adapter/enrichment/GitHubEntityEnricher.java": {
-    "mtime": 1792268786.23017,
-    "seen": 1792777450.6780808,
-    "ast_hash": "47af040a5e48a5c01a09db9db2ff539d",
-    "semantic_hash": "47af040a5e48a5c01a09db9db2ff539d"
+    "mtime": 1792852418.7112849,
+    "seen": 1792854609.0506518,
+    "ast_hash": "f013a37f492c3a796ec10b8b48266cfc",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/adapter/enrichment/StreamingBrandCatalog.java": {
     "mtime": 1792435056.405118,
@@ -114,15 +114,15 @@
     "semantic_hash": "9830e9cec64da544cb919bdb4e974d0a"
   },
   "latyr-api/src/main/java/com/latyr/api/config/AsyncConfig.java": {
-    "mtime": 1787561456.7745893,
-    "seen": 1792777450.6780808,
-    "ast_hash": "5d60fb399512a08c08c80d7826dff740",
-    "semantic_hash": "5d60fb399512a08c08c80d7826dff740"
+    "mtime": 1792851422.12988,
+    "seen": 1792854609.0506518,
+    "ast_hash": "e02e0d9c26c2d93f1a0f7a01098654f4",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/config/GoogleGenAIConfig.java": {
-    "mtime": 1792831408.5645587,
-    "seen": 1792832367.0737915,
-    "ast_hash": "cc6e520e952d3196ebfcc853ce8acfd0",
+    "mtime": 1792852442.6874146,
+    "seen": 1792854609.0506518,
+    "ast_hash": "6c83877e71dcde226cc1560fe426dc51",
     "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/config/JacksonConfig.java": {
@@ -144,10 +144,10 @@
     "semantic_hash": "6ed003f2013e414c947f5b1cf3f155b7"
   },
   "latyr-api/src/main/java/com/latyr/api/config/typehandler/JsonbTypeHandler.java": {
-    "mtime": 1787546588.081357,
-    "seen": 1792777450.6780808,
-    "ast_hash": "7d4f4d770e093fcad14bd5538148571e",
-    "semantic_hash": "7d4f4d770e093fcad14bd5538148571e"
+    "mtime": 1792851569.160213,
+    "seen": 1792854609.0506518,
+    "ast_hash": "f117fdaf8e0cfe6a656fda63d6be2ee5",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/config/typehandler/StringArrayTypeHandler.java": {
     "mtime": 1787546591.8192372,
@@ -162,10 +162,10 @@
     "semantic_hash": "a1a6f2965c92d1304fe35aba129faa51"
   },
   "latyr-api/src/main/java/com/latyr/api/controller/CaptureController.java": {
-    "mtime": 1787551532.4711063,
-    "seen": 1792777450.6780808,
-    "ast_hash": "ba3b5f21e120c066fcfc3ed57cf58443",
-    "semantic_hash": "ba3b5f21e120c066fcfc3ed57cf58443"
+    "mtime": 1792852584.3826141,
+    "seen": 1792854609.0506518,
+    "ast_hash": "25eeb60939e8ebd6564ecd82d4f05015",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/controller/CaptureStreamController.java": {
     "mtime": 1787562524.428682,
@@ -210,10 +210,10 @@
     "semantic_hash": "3c69efeb9fb5b8a15c5590c5a0023af0"
   },
   "latyr-api/src/main/java/com/latyr/api/domain/enums/CaptureStatus.java": {
-    "mtime": 1787546237.9466422,
-    "seen": 1792777450.6780808,
-    "ast_hash": "b8a759aaa48593ef71ffbd8a7e046b02",
-    "semantic_hash": "b8a759aaa48593ef71ffbd8a7e046b02"
+    "mtime": 1792851414.5106795,
+    "seen": 1792854609.0506518,
+    "ast_hash": "4a6b1f1b408a62a9b8684faa358df147",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/domain/enums/ContentType.java": {
     "mtime": 1787546237.9575374,
@@ -300,16 +300,16 @@
     "semantic_hash": "0cccf41ed0b7acd325b48569bd9d298c"
   },
   "latyr-api/src/main/java/com/latyr/api/domain/model/ExtractedEntity.java": {
-    "mtime": 1792182170.320534,
-    "seen": 1792777450.6780808,
-    "ast_hash": "94d1641380d65760541acd03775ac0d5",
-    "semantic_hash": "94d1641380d65760541acd03775ac0d5"
+    "mtime": 1792852200.8892684,
+    "seen": 1792854609.0506518,
+    "ast_hash": "ca1c9194f0666cf51295e88ddb2d6ad2",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/domain/model/IngestionJob.java": {
-    "mtime": 1787546656.5158393,
-    "seen": 1792777450.6780808,
-    "ast_hash": "878193a8eefa2cb770d8577de56cba91",
-    "semantic_hash": "878193a8eefa2cb770d8577de56cba91"
+    "mtime": 1792851306.8948102,
+    "seen": 1792854609.0506518,
+    "ast_hash": "169bfc35cf792080637df2a740e2decc",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/domain/model/NotificationLog.java": {
     "mtime": 1787546651.187896,
@@ -402,10 +402,10 @@
     "semantic_hash": "ebbd059c65370a6dd997521f73695292"
   },
   "latyr-api/src/main/java/com/latyr/api/exception/GlobalExceptionHandler.java": {
-    "mtime": 1792182170.322636,
-    "seen": 1792777450.6780808,
-    "ast_hash": "ba8708b1874e6c16a1cecbd2841886ef",
-    "semantic_hash": "ba8708b1874e6c16a1cecbd2841886ef"
+    "mtime": 1792841477.9239173,
+    "seen": 1792850943.8368826,
+    "ast_hash": "f3c71414912d328cac600f7e30ddd089",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/exception/LatyrException.java": {
     "mtime": 1787546238.2436438,
@@ -414,10 +414,10 @@
     "semantic_hash": "3390297990446b4983095b636e182d60"
   },
   "latyr-api/src/main/java/com/latyr/api/exception/QuotaExceededException.java": {
-    "mtime": 1787546238.2588658,
-    "seen": 1792777450.6780808,
-    "ast_hash": "10d0dde7d9080f96a382435fc324f26b",
-    "semantic_hash": "10d0dde7d9080f96a382435fc324f26b"
+    "mtime": 1792841477.9249156,
+    "seen": 1792850943.8368826,
+    "ast_hash": "9e603c90afd4e0ae4b5928466c53e1d0",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/exception/ResourceNotFoundException.java": {
     "mtime": 1787546238.2588658,
@@ -432,22 +432,22 @@
     "semantic_hash": "e1e8f061440de5ed3bdf487a23a83bbc"
   },
   "latyr-api/src/main/java/com/latyr/api/integration/OmdbClient.java": {
-    "mtime": 1792182170.3231747,
-    "seen": 1792777450.6780808,
-    "ast_hash": "45558d877a80c935e94a7ac222b15f2d",
-    "semantic_hash": "45558d877a80c935e94a7ac222b15f2d"
+    "mtime": 1792852533.5902681,
+    "seen": 1792854609.0506518,
+    "ast_hash": "551f5bef42d40f25979193e6dd8c52f0",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/integration/RestGitHubClient.java": {
-    "mtime": 1792268786.2331688,
-    "seen": 1792777450.6780808,
-    "ast_hash": "54e002db3af0604705d32d6928d8ce51",
-    "semantic_hash": "54e002db3af0604705d32d6928d8ce51"
+    "mtime": 1792852593.1994033,
+    "seen": 1792854609.0506518,
+    "ast_hash": "ec679ddcf6efb84f8cabb6754152a4ef",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/integration/TmdbClient.java": {
-    "mtime": 1792435056.4112153,
-    "seen": 1792777450.6780808,
-    "ast_hash": "beb0aefa3331e564124c3755826adb3f",
-    "semantic_hash": "beb0aefa3331e564124c3755826adb3f"
+    "mtime": 1792852593.1994033,
+    "seen": 1792854609.0506518,
+    "ast_hash": "6a9296aaa75b41b12211422e67b12ee5",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/integration/WeatherIntegrationClient.java": {
     "mtime": 1790948882.692356,
@@ -456,16 +456,16 @@
     "semantic_hash": "94f61c59080f7af02d2d8be651cac504"
   },
   "latyr-api/src/main/java/com/latyr/api/integration/dto/GitHubRepoDetailsDTO.java": {
-    "mtime": 1792268786.235443,
-    "seen": 1792777450.6780808,
-    "ast_hash": "8a8554308ea3e9591e9ca981f8f35642",
-    "semantic_hash": "8a8554308ea3e9591e9ca981f8f35642"
+    "mtime": 1792852531.427751,
+    "seen": 1792854609.0506518,
+    "ast_hash": "5542e5f9a2945320b9526bb3e90e701b",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/integration/dto/GitHubSearchResultDTO.java": {
-    "mtime": 1792268786.2374468,
-    "seen": 1792777450.6780808,
-    "ast_hash": "d9ddd333dd0cc8c6377d0397c49e5a9b",
-    "semantic_hash": "d9ddd333dd0cc8c6377d0397c49e5a9b"
+    "mtime": 1792852531.4297593,
+    "seen": 1792854609.0506518,
+    "ast_hash": "4dc1e4e278c63bf07e80e14bdff83d6a",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/mapper/CanonicalSourceMapper.java": {
     "mtime": 1791466914.4315786,
@@ -480,10 +480,10 @@
     "semantic_hash": "c1b51ed2a4864f9d6c1f82be376776e9"
   },
   "latyr-api/src/main/java/com/latyr/api/mapper/CaptureMapper.java": {
-    "mtime": 1791466914.4315786,
-    "seen": 1792777450.6780808,
-    "ast_hash": "2990d10cb83c0cd538d19e6b55895ef5",
-    "semantic_hash": "2990d10cb83c0cd538d19e6b55895ef5"
+    "mtime": 1792851837.4514105,
+    "seen": 1792854609.0506518,
+    "ast_hash": "e3c5814edf6ba0558e0ea62d423aa7ce",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/mapper/CollectionMapper.java": {
     "mtime": 1787547096.1464336,
@@ -492,16 +492,16 @@
     "semantic_hash": "d63924b01944f1a54934474e8459bc64"
   },
   "latyr-api/src/main/java/com/latyr/api/mapper/ExtractedEntityMapper.java": {
-    "mtime": 1792182170.3247736,
-    "seen": 1792777450.6780808,
-    "ast_hash": "102e5312a6c417ccdfc964c020abe5d0",
-    "semantic_hash": "102e5312a6c417ccdfc964c020abe5d0"
+    "mtime": 1792854578.1736698,
+    "seen": 1792854609.0506518,
+    "ast_hash": "446d232aca2a1fb96d5708ef97c26890",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/mapper/IngestionJobMapper.java": {
-    "mtime": 1790948882.6958659,
-    "seen": 1792777450.6780808,
-    "ast_hash": "4fa53675454a5a51d3659209d49747ed",
-    "semantic_hash": "4fa53675454a5a51d3659209d49747ed"
+    "mtime": 1792852308.5644965,
+    "seen": 1792854609.0506518,
+    "ast_hash": "ecd91e8498ec1897dbee1c7ff552d45d",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/mapper/NotificationLogMapper.java": {
     "mtime": 1787564096.7933435,
@@ -528,10 +528,10 @@
     "semantic_hash": "b3198d5083fb176ac1fe457abf25b9ea"
   },
   "latyr-api/src/main/java/com/latyr/api/mapper/UserSubscriptionMapper.java": {
-    "mtime": 1787547074.7982292,
-    "seen": 1792777450.6780808,
-    "ast_hash": "07698c004623b54dadfda3a8751cc71f",
-    "semantic_hash": "07698c004623b54dadfda3a8751cc71f"
+    "mtime": 1792851954.1135159,
+    "seen": 1792854609.0506518,
+    "ast_hash": "ffc7218e3211c61ddeac0416035659d7",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/scheduler/ResurfacingScheduler.java": {
     "mtime": 1787564096.7983441,
@@ -558,34 +558,34 @@
     "semantic_hash": "222f262cbda469f92c367c0c6ca43a96"
   },
   "latyr-api/src/main/java/com/latyr/api/security/FirebaseAuthFilter.java": {
-    "mtime": 1792831569.636977,
-    "seen": 1792832367.0737915,
-    "ast_hash": "ddf196a381836a418f3ccbf768c53733",
+    "mtime": 1792841477.925915,
+    "seen": 1792850943.8368826,
+    "ast_hash": "c38e247920262cd2fc9c0cf03deaeef3",
     "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/security/FirebaseConfig.java": {
-    "mtime": 1792831408.0963013,
-    "seen": 1792832367.0737915,
+    "mtime": 1792841477.925915,
+    "seen": 1792850943.8368826,
     "ast_hash": "e44e9ef16b3315a592df7af0627965cf",
     "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/security/SecurityConfig.java": {
-    "mtime": 1792831569.1636944,
-    "seen": 1792832367.0737915,
+    "mtime": 1792841477.9274187,
+    "seen": 1792850943.8368826,
     "ast_hash": "2ddc134a9d5c1dc37ec95e7450c72638",
     "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/service/CanonicalDeduplicationService.java": {
-    "mtime": 1791466914.4325874,
-    "seen": 1792777450.6780808,
-    "ast_hash": "5619a7837a0ce4aad445eb8b3c95a036",
-    "semantic_hash": "5619a7837a0ce4aad445eb8b3c95a036"
+    "mtime": 1792851450.1442375,
+    "seen": 1792854609.0506518,
+    "ast_hash": "c4033cfdd8d60d0462e43146033925a4",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/service/CaptureService.java": {
-    "mtime": 1791466914.4335866,
-    "seen": 1792777450.6780808,
-    "ast_hash": "ba1e8873cb236440f29060ae15d6908d",
-    "semantic_hash": "ba1e8873cb236440f29060ae15d6908d"
+    "mtime": 1792852220.5366075,
+    "seen": 1792854609.0506518,
+    "ast_hash": "e4d4365592110868effc3c3433987649",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/service/FcmService.java": {
     "mtime": 1790948882.704886,
@@ -594,34 +594,34 @@
     "semantic_hash": "9695b3f49f233018737f773f828bf434"
   },
   "latyr-api/src/main/java/com/latyr/api/service/FirebaseStorageService.java": {
-    "mtime": 1790948882.7058918,
-    "seen": 1792777450.6780808,
-    "ast_hash": "39f41d82e69af744e42d02969dd75604",
-    "semantic_hash": "39f41d82e69af744e42d02969dd75604"
+    "mtime": 1792851675.3264146,
+    "seen": 1792854609.0506518,
+    "ast_hash": "3ddebd01ec4cb62ab7ddb2587acbefbf",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/service/IngestionPipelineService.java": {
-    "mtime": 1792182170.3263564,
-    "seen": 1792777450.6780808,
-    "ast_hash": "f97cc8dffd870880a2a3dc8163904d33",
-    "semantic_hash": "f97cc8dffd870880a2a3dc8163904d33"
+    "mtime": 1792852589.4436705,
+    "seen": 1792854609.0506518,
+    "ast_hash": "02d742b48018b606e3b868da4bf3c21a",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/service/SseNotificationService.java": {
-    "mtime": 1787562524.4327288,
-    "seen": 1792777450.6780808,
-    "ast_hash": "21d1b6054bbf86d82dced961dd10f8d9",
-    "semantic_hash": "21d1b6054bbf86d82dced961dd10f8d9"
+    "mtime": 1792851476.367315,
+    "seen": 1792854609.0506518,
+    "ast_hash": "e80802c6cad5530ff3f37d5ee73cd8b3",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/service/SubscriptionQuotaService.java": {
-    "mtime": 1790948882.7078972,
-    "seen": 1792777450.6780808,
-    "ast_hash": "7e6b7934f04a17046ae4d94bb1a09eec",
-    "semantic_hash": "7e6b7934f04a17046ae4d94bb1a09eec"
+    "mtime": 1792851954.1120071,
+    "seen": 1792854609.0506518,
+    "ast_hash": "40ee06cb94a60eba7ae50a7ddc9c45c4",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/service/UrlNormalizationService.java": {
-    "mtime": 1787551532.4806418,
-    "seen": 1792777450.6780808,
-    "ast_hash": "25d4989537e9cd9979cb1a53a10fac96",
-    "semantic_hash": "25d4989537e9cd9979cb1a53a10fac96"
+    "mtime": 1792841477.9316332,
+    "seen": 1792850943.8378875,
+    "ast_hash": "a505275b502b9369a47fe3c3ae55ce6c",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/service/UserService.java": {
     "mtime": 1787548162.5659876,
@@ -641,17 +641,11 @@
     "ast_hash": "3ae9f4347f26e4cb8b4f8a989775e84c",
     "semantic_hash": "3ae9f4347f26e4cb8b4f8a989775e84c"
   },
-  "latyr-api/src/main/java/com/latyr/api/worker/EntityEnrichmentRetryWorker.java": {
-    "mtime": 1792268786.239962,
-    "seen": 1792777450.6780808,
-    "ast_hash": "038c584838a9502c655bec41873f7c15",
-    "semantic_hash": "038c584838a9502c655bec41873f7c15"
-  },
   "latyr-api/src/main/java/com/latyr/api/worker/IngestionQueueWorker.java": {
-    "mtime": 1790948882.7092807,
-    "seen": 1792777450.6780808,
-    "ast_hash": "2fa4571dd4083779363333a9c48b3988",
-    "semantic_hash": "2fa4571dd4083779363333a9c48b3988"
+    "mtime": 1792851777.413661,
+    "seen": 1792854609.0506518,
+    "ast_hash": "6ee390b3ac1331d3d7374450bd39eca0",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/resources/db/migration/V1__init_schema.sql": {
     "mtime": 1787520339.327631,
@@ -708,10 +702,10 @@
     "semantic_hash": "9ff48d7a1a81c87c964214382a513e50"
   },
   "latyr-api/src/test/java/com/latyr/api/CaptureServiceTest.java": {
-    "mtime": 1790948882.7324722,
-    "seen": 1792777450.6780808,
-    "ast_hash": "f6f00473961293ca4474e121c3da73ed",
-    "semantic_hash": "f6f00473961293ca4474e121c3da73ed"
+    "mtime": 1792851719.5378294,
+    "seen": 1792854609.0506518,
+    "ast_hash": "453a2da748eba52aeaec7c342324ad32",
+    "semantic_hash": ""
   },
   "latyr-api/src/test/java/com/latyr/api/CaptureStreamControllerTest.java": {
     "mtime": 1787562524.4363463,
@@ -726,10 +720,10 @@
     "semantic_hash": "4a058c9e380124f35c80adabddb468fc"
   },
   "latyr-api/src/test/java/com/latyr/api/EntertainmentEntityEnricherTest.java": {
-    "mtime": 1792182170.3303623,
-    "seen": 1792777450.6780808,
-    "ast_hash": "4eb38a6f3e2eea5c05c317873bf7cf20",
-    "semantic_hash": "4eb38a6f3e2eea5c05c317873bf7cf20"
+    "mtime": 1792852436.648366,
+    "seen": 1792854609.0506518,
+    "ast_hash": "24da903bf7c34e65d677040fac978567",
+    "semantic_hash": ""
   },
   "latyr-api/src/test/java/com/latyr/api/EphemeralMediaStreamerTest.java": {
     "mtime": 1790948882.7340431,
@@ -750,16 +744,16 @@
     "semantic_hash": "8bd6249e68aa8245a11b512c368004b2"
   },
   "latyr-api/src/test/java/com/latyr/api/GoogleGenAIAdapterTest.java": {
-    "mtime": 1790948882.7353272,
-    "seen": 1792777450.6780808,
-    "ast_hash": "4fba5cae6faba8d563edb045720fa3fc",
-    "semantic_hash": "4fba5cae6faba8d563edb045720fa3fc"
+    "mtime": 1792852017.5346124,
+    "seen": 1792854609.0506518,
+    "ast_hash": "6294f7aa3a59175bd6f2fc7ca175dd70",
+    "semantic_hash": ""
   },
   "latyr-api/src/test/java/com/latyr/api/IngestionPipelineServiceTest.java": {
-    "mtime": 1790948882.7363744,
-    "seen": 1792777450.6780808,
-    "ast_hash": "23821dda66195bc2c820c3916fd8f654",
-    "semantic_hash": "23821dda66195bc2c820c3916fd8f654"
+    "mtime": 1792851864.7243874,
+    "seen": 1792854609.0506518,
+    "ast_hash": "92b11f4aef5325c7a295a782987dbac9",
+    "semantic_hash": ""
   },
   "latyr-api/src/test/java/com/latyr/api/LatyrApiApplicationTests.java": {
     "mtime": 1787546238.2749915,
@@ -786,16 +780,16 @@
     "semantic_hash": "b4328622e7bb50e5cab146194cf6c2d2"
   },
   "latyr-api/src/test/java/com/latyr/api/SubscriptionQuotaServiceTest.java": {
-    "mtime": 1787564096.865867,
-    "seen": 1792777450.6780808,
-    "ast_hash": "def6e5fbaebb0d1ea09aeb27e44e3e3e",
-    "semantic_hash": "def6e5fbaebb0d1ea09aeb27e44e3e3e"
+    "mtime": 1792851954.1140213,
+    "seen": 1792854609.0506518,
+    "ast_hash": "8940860c56eaba69cb44a3211d330be3",
+    "semantic_hash": ""
   },
   "latyr-api/src/test/java/com/latyr/api/UrlNormalizationServiceTest.java": {
-    "mtime": 1787551532.4826615,
-    "seen": 1792777450.6780808,
-    "ast_hash": "49646f83860f352a8284a921fa6466c0",
-    "semantic_hash": "49646f83860f352a8284a921fa6466c0"
+    "mtime": 1792841477.9346278,
+    "seen": 1792850943.8378875,
+    "ast_hash": "23b81b43fe3b16908c815645b46c349a",
+    "semantic_hash": ""
   },
   "latyr-api/src/test/java/com/latyr/api/UserControllerTest.java": {
     "mtime": 1787549140.7753792,
@@ -822,10 +816,10 @@
     "semantic_hash": "7da113978d4ffd5132651674b4f1be50"
   },
   "latyr-app/android/app/src/main/kotlin/com/latyr/latyr_app/MainActivity.kt": {
-    "mtime": 1790948882.741742,
-    "seen": 1792777450.6780808,
-    "ast_hash": "eeac712732f75f5960ea2146821b6891",
-    "semantic_hash": "eeac712732f75f5960ea2146821b6891"
+    "mtime": 1792841477.9386544,
+    "seen": 1792850943.8378875,
+    "ast_hash": "3f0b15178e7f7d6eb6afd4b4b7fd3784",
+    "semantic_hash": ""
   },
   "latyr-app/android/build.gradle.kts": {
     "mtime": 1787517855.1564996,
@@ -876,10 +870,10 @@
     "semantic_hash": "0c3e86af131f6a9e547c80b5ed058914"
   },
   "latyr-app/lib/app.dart": {
-    "mtime": 1792182170.331361,
-    "seen": 1792777450.6780808,
-    "ast_hash": "c095f062f3242c7a7a22746221d8abb8",
-    "semantic_hash": "c095f062f3242c7a7a22746221d8abb8"
+    "mtime": 1792841477.9446747,
+    "seen": 1792850943.8378875,
+    "ast_hash": "692a16a9ca63c64e14f20afa56b3486e",
+    "semantic_hash": ""
   },
   "latyr-app/lib/config/app_properties.dart": {
     "mtime": 1791358735.7140844,
@@ -894,10 +888,10 @@
     "semantic_hash": "56073b9f15fa6f7b226e061b6a6cc0d7"
   },
   "latyr-app/lib/core/database/app_database.dart": {
-    "mtime": 1791466914.492657,
-    "seen": 1792777450.6780808,
-    "ast_hash": "a982112b5231935a1a736270664090e9",
-    "semantic_hash": "a982112b5231935a1a736270664090e9"
+    "mtime": 1792850882.5246382,
+    "seen": 1792850943.8378875,
+    "ast_hash": "6df2fa4f717974a843e7c8c7302157ea",
+    "semantic_hash": ""
   },
   "latyr-app/lib/core/database/app_database.g.dart": {
     "mtime": 1791466914.4936574,
@@ -948,15 +942,15 @@
     "semantic_hash": "6009f1821b0b1c4eecfa72c6e9eedf37"
   },
   "latyr-app/lib/core/network/auth_interceptor.dart": {
-    "mtime": 1792831889.0070548,
-    "seen": 1792832367.0737915,
+    "mtime": 1792841477.9466617,
+    "seen": 1792850943.8378875,
     "ast_hash": "10c37767c36609b37fba5e14ecf3a1f0",
     "semantic_hash": ""
   },
   "latyr-app/lib/core/network/sse_client.dart": {
-    "mtime": 1792831889.0223858,
-    "seen": 1792832367.0737915,
-    "ast_hash": "8f31f2ef84df381959de1ef9c87a4330",
+    "mtime": 1792841477.9486735,
+    "seen": 1792850943.8378875,
+    "ast_hash": "3c4e1e83bf427d684ce09e976dba996e",
     "semantic_hash": ""
   },
   "latyr-app/lib/core/services/color_extraction_service.dart": {
@@ -972,9 +966,9 @@
     "semantic_hash": "1c7422e389986c689ea91fd3c8519ff4"
   },
   "latyr-app/lib/core/services/share_intent_service.dart": {
-    "mtime": 1792832187.921249,
-    "seen": 1792832367.0737915,
-    "ast_hash": "38c1c471fe9103ccf3cd8300d78873f0",
+    "mtime": 1792841477.949574,
+    "seen": 1792850943.8378875,
+    "ast_hash": "3164d28361fa94a8121f3939a824101b",
     "semantic_hash": ""
   },
   "latyr-app/lib/core/services/sync_service.dart": {
@@ -1008,10 +1002,10 @@
     "semantic_hash": "5ec29afa9ac7bc7f44754e1ed8c05783"
   },
   "latyr-app/lib/core/widgets/latyr_capture_card.dart": {
-    "mtime": 1791466914.500659,
-    "seen": 1792777450.6780808,
-    "ast_hash": "946e5860d611566e2d46128dab99d06a",
-    "semantic_hash": "946e5860d611566e2d46128dab99d06a"
+    "mtime": 1792852150.4690857,
+    "seen": 1792854609.0506518,
+    "ast_hash": "67fd7546aabc5b52eb7044d9e7655ac2",
+    "semantic_hash": ""
   },
   "latyr-app/lib/core/widgets/latyr_expandable_text.dart": {
     "mtime": 1792182170.3333619,
@@ -1050,9 +1044,9 @@
     "semantic_hash": "33fc612653ca8e212806c85cbaec3869"
   },
   "latyr-app/lib/features/capture/data/capture_repository.dart": {
-    "mtime": 1792832187.2425728,
-    "seen": 1792832367.0737915,
-    "ast_hash": "ef3e36702138da875c39990b8cfcf7fd",
+    "mtime": 1792852239.942695,
+    "seen": 1792854609.0506518,
+    "ast_hash": "00a7e4d730cb4645cc801a05dd6c0d17",
     "semantic_hash": ""
   },
   "latyr-app/lib/features/capture/domain/entity_metadata/book_metadata.dart": {
@@ -1110,9 +1104,9 @@
     "semantic_hash": "ceb9e5fdc446ea3712d8865484de2329"
   },
   "latyr-app/lib/features/capture/presentation/capture_providers.dart": {
-    "mtime": 1792831889.0344706,
-    "seen": 1792832367.0737915,
-    "ast_hash": "c28d4a589c9a6730b5ca4717d56fc3ae",
+    "mtime": 1792841477.9577093,
+    "seen": 1792850943.8378875,
+    "ast_hash": "11bcc0dd04113135f7a17e6d9768cd94",
     "semantic_hash": ""
   },
   "latyr-app/lib/features/collections/domain/collection_models.dart": {
@@ -1146,10 +1140,10 @@
     "semantic_hash": "50fe389e82b2b3fef49db97d025106af"
   },
   "latyr-app/lib/features/feed/presentation/screens/capture_detail_screen.dart": {
-    "mtime": 1792182170.336445,
-    "seen": 1792777450.6780808,
-    "ast_hash": "890137ff7064217879cdd66a845d336d",
-    "semantic_hash": "890137ff7064217879cdd66a845d336d"
+    "mtime": 1792852150.4700813,
+    "seen": 1792854609.0506518,
+    "ast_hash": "e5f99792f5023e264aa17700fd7e2c76",
+    "semantic_hash": ""
   },
   "latyr-app/lib/features/feed/presentation/screens/entertainment_detail_screen.dart": {
     "mtime": 1792435056.442252,
@@ -1200,10 +1194,10 @@
     "semantic_hash": "3536a46b3bd3dee21a23b970d64cddec"
   },
   "latyr-app/lib/features/home/presentation/home_screen.dart": {
-    "mtime": 1792435056.4527955,
-    "seen": 1792777450.6780808,
-    "ast_hash": "96425198763e2db02b16ace6a8488242",
-    "semantic_hash": "96425198763e2db02b16ace6a8488242"
+    "mtime": 1792841477.9602418,
+    "seen": 1792850943.8378875,
+    "ast_hash": "d5ba4cf5bf16271b27d7d35d5485332a",
+    "semantic_hash": ""
   },
   "latyr-app/lib/features/home/presentation/widgets/app_switcher_scroll_physics.dart": {
     "mtime": 1792435056.4547975,
@@ -1266,10 +1260,10 @@
     "semantic_hash": "078290c98d2015d70f2de2c853a04c67"
   },
   "latyr-app/lib/main.dart": {
-    "mtime": 1791358735.7135785,
-    "seen": 1792777450.6780808,
-    "ast_hash": "e26dc6fb742e9e46af1ad7411d97340f",
-    "semantic_hash": "e26dc6fb742e9e46af1ad7411d97340f"
+    "mtime": 1792841477.9622443,
+    "seen": 1792850943.8378875,
+    "ast_hash": "d6cfe286451f7aa3a15822753387d185",
+    "semantic_hash": ""
   },
   "latyr-app/lib/shared/widgets/ambient_mesh_background.dart": {
     "mtime": 1791358735.7749617,
@@ -1350,21 +1344,21 @@
     "semantic_hash": "55092a1941a5f2f127601d888e1399b5"
   },
   "latyr-app/test/core/database/app_database_test.dart": {
-    "mtime": 1787562524.5063925,
-    "seen": 1792777450.6780808,
-    "ast_hash": "e34d0e0966ad74be6a09334a4f7b40a1",
-    "semantic_hash": "e34d0e0966ad74be6a09334a4f7b40a1"
+    "mtime": 1792841477.9652367,
+    "seen": 1792850943.8378875,
+    "ast_hash": "539f26bb2ea740440fb1f1b6489e0b6b",
+    "semantic_hash": ""
   },
   "latyr-app/test/core/network/auth_interceptor_test.dart": {
-    "mtime": 1792832090.8398347,
-    "seen": 1792832367.0737915,
+    "mtime": 1792841477.9662495,
+    "seen": 1792850943.8378875,
     "ast_hash": "edfcce97d10f968036e088c406298ab6",
     "semantic_hash": ""
   },
   "latyr-app/test/features/capture/capture_repository_test.dart": {
-    "mtime": 1792832120.707903,
-    "seen": 1792832367.0737915,
-    "ast_hash": "cd2ab527e61ec97dc809ee361dfea121",
+    "mtime": 1792841477.9752896,
+    "seen": 1792850943.8378875,
+    "ast_hash": "e9233c0d2c575d5af9ed1772d9f74c25",
     "semantic_hash": ""
   },
   "latyr-app/test/features/capture/entity_metadata_test.dart": {
@@ -1386,10 +1380,10 @@
     "semantic_hash": "6c18c5da10c19bb5ac0c9f01d4c9546c"
   },
   "latyr-app/test/widget_test.dart": {
-    "mtime": 1792435056.4649408,
-    "seen": 1792777450.6780808,
-    "ast_hash": "a40a7136096e7083b36673c5a8576cb3",
-    "semantic_hash": "a40a7136096e7083b36673c5a8576cb3"
+    "mtime": 1792841477.9762864,
+    "seen": 1792850943.8378875,
+    "ast_hash": "ccaba0da8e76f706bc9bfcba1ae4862a",
+    "semantic_hash": ""
   },
   "latyr-app/test/widgets/summary_lexer_test.dart": {
     "mtime": 1791039044.1638234,
@@ -1404,8 +1398,8 @@
     "semantic_hash": "203a921bdfac6cc592cc65021042d8b4"
   },
   "README.md": {
-    "mtime": 1792832341.7824574,
-    "seen": 1792832367.0737915,
+    "mtime": 1792841477.8822682,
+    "seen": 1792850943.8378875,
     "ast_hash": "b6c94c4f765e2814e4276bf75d46b999",
     "semantic_hash": ""
   },
@@ -1440,27 +1434,27 @@
     "semantic_hash": "f7ee1b402881509d197f34963e569927"
   },
   "latyr-app/pubspec.yaml": {
-    "mtime": 1792268786.2652297,
-    "seen": 1792777450.6780808,
-    "ast_hash": "41ecc5c07749d1e78c0bd4b2f327a406",
-    "semantic_hash": "41ecc5c07749d1e78c0bd4b2f327a406"
+    "mtime": 1792841477.9642372,
+    "seen": 1792850943.8378875,
+    "ast_hash": "183181068cc183886ba6fde8855717d9",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/client/FirebaseIdentityTokenVerifier.java": {
-    "mtime": 1792830931.9078155,
-    "seen": 1792831011.1709166,
-    "ast_hash": "08fbee7ad107fa5ec4b0fff12c01e5a4",
+    "mtime": 1792841477.919911,
+    "seen": 1792850943.8368826,
+    "ast_hash": "afe992b2977672cc6fe65f5699fb4778",
     "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/client/IdentityTokenVerifier.java": {
-    "mtime": 1792830931.3061688,
-    "seen": 1792831011.1709166,
-    "ast_hash": "6872b01a0970be9995f7f15aee8f0fbb",
+    "mtime": 1792841477.920917,
+    "seen": 1792850943.8368826,
+    "ast_hash": "f3622d61e355162228d77174d103985e",
     "semantic_hash": ""
   },
   "latyr-api/src/test/java/com/latyr/api/security/FirebaseSecurityChainTest.java": {
-    "mtime": 1792831450.941906,
-    "seen": 1792832367.0737915,
-    "ast_hash": "59a5f1bcdd9edaf51abacb9e0f07e42b",
+    "mtime": 1792841477.9366262,
+    "seen": 1792850943.8378875,
+    "ast_hash": "0e7244a1ab646645d6be99a8601c524c",
     "semantic_hash": ""
   },
   "latryl home screen.jpeg": {
@@ -2064,45 +2058,309 @@
     "semantic_hash": ""
   },
   "latyr-api/scripts/verify-resource-packaging.ps1": {
-    "mtime": 1792831570.7162342,
-    "seen": 1792832367.0737915,
-    "ast_hash": "a3bd271796a28fbe379da44e416fe2d0",
+    "mtime": 1792841477.9158497,
+    "seen": 1792850943.8368826,
+    "ast_hash": "0cc46ad1b496fa0f361083eb8c255ae6",
     "semantic_hash": ""
   },
   "latyr-api/src/test/java/com/latyr/api/RemovedDiagnosticRoutesTest.java": {
-    "mtime": 1792831414.4097643,
-    "seen": 1792832367.0737915,
-    "ast_hash": "c82a24bd0331d71425f02e086e94674b",
+    "mtime": 1792841477.9346278,
+    "seen": 1792850943.8378875,
+    "ast_hash": "518173440f004d3e033088053b609b68",
     "semantic_hash": ""
   },
   "latyr-app/lib/core/network/authentication_required_exception.dart": {
-    "mtime": 1792831813.705068,
-    "seen": 1792832367.0737915,
-    "ast_hash": "ab33212695af6ea731780259dc7a8638",
+    "mtime": 1792841477.9476626,
+    "seen": 1792850943.8378875,
+    "ast_hash": "7b1a2a70644e0a189c9734a17a606e37",
     "semantic_hash": ""
   },
   "latyr-app/test/core/network/recording_http_adapter.dart": {
-    "mtime": 1792831889.0465138,
-    "seen": 1792832367.0737915,
-    "ast_hash": "d07d3fd04d0586ad5734b06ca3844af3",
+    "mtime": 1792841477.9662495,
+    "seen": 1792850943.8378875,
+    "ast_hash": "3fc95d01e6e92685d08ffaa8fafb0581",
     "semantic_hash": ""
   },
   "latyr-app/test/core/network/share_auth_test.dart": {
-    "mtime": 1792832168.1701293,
-    "seen": 1792832367.0737915,
-    "ast_hash": "3925ab977ee3b128bcd2bef6b5e3f256",
+    "mtime": 1792841477.9677627,
+    "seen": 1792850943.8378875,
+    "ast_hash": "354873628937796666a1aac4a8ef8867",
     "semantic_hash": ""
   },
   "latyr-app/test/core/network/sse_auth_test.dart": {
-    "mtime": 1792831889.0470948,
-    "seen": 1792832367.0737915,
-    "ast_hash": "0733546b5de01b20f44dc5f6108352c8",
+    "mtime": 1792841477.968282,
+    "seen": 1792850943.8378875,
+    "ast_hash": "c029fbde7ec9836be489501740c674a1",
     "semantic_hash": ""
   },
   "latyr-app/test/features/capture/token_provider_test.dart": {
-    "mtime": 1792831889.0605054,
-    "seen": 1792832367.0737915,
-    "ast_hash": "4a591e4d402c1cc308da5861c3b5524c",
+    "mtime": 1792841477.9762864,
+    "seen": 1792850943.8378875,
+    "ast_hash": "cfb74325e05f965ccfba9217406b3969",
+    "semantic_hash": ""
+  },
+  "latyr-app/android/app/src/main/kotlin/com/latyr/latyr_app/ShareDeliveryState.kt": {
+    "mtime": 1792841477.9386544,
+    "seen": 1792850943.8378875,
+    "ast_hash": "da905f335bc1929a57d5ddd6e0981458",
+    "semantic_hash": ""
+  },
+  "latyr-app/android/app/src/test/kotlin/com/latyr/latyr_app/ShareDeliveryStateCheck.kt": {
+    "mtime": 1792841477.9436636,
+    "seen": 1792850943.8378875,
+    "ast_hash": "c9d04f2f8af5aa32c204c9e117b5f40c",
+    "semantic_hash": ""
+  },
+  "latyr-app/lib/features/auth/data/firebase_auth_gateway.dart": {
+    "mtime": 1792841477.9521923,
+    "seen": 1792850943.8378875,
+    "ast_hash": "84484fcb4c12ca22711af57a93cfcdcc",
+    "semantic_hash": ""
+  },
+  "latyr-app/lib/features/auth/domain/auth_gateway.dart": {
+    "mtime": 1792841477.953205,
+    "seen": 1792850943.8378875,
+    "ast_hash": "e4354e629493d2df6bd68c59c704867d",
+    "semantic_hash": ""
+  },
+  "latyr-app/lib/features/auth/presentation/auth_gate.dart": {
+    "mtime": 1792841477.9541996,
+    "seen": 1792850943.8378875,
+    "ast_hash": "1d80df4952ff05e32a9816bcf99f40a7",
+    "semantic_hash": ""
+  },
+  "latyr-app/lib/features/auth/presentation/auth_providers.dart": {
+    "mtime": 1792841477.9552014,
+    "seen": 1792850943.8378875,
+    "ast_hash": "983c8879c8a0685b2291e1491fd1c2e5",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/features/auth/app_auth_boundary_test.dart": {
+    "mtime": 1792841477.9692984,
+    "seen": 1792850943.8378875,
+    "ast_hash": "8b06e94092b3dc558bfaf1c0d8cef6a2",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/features/auth/auth_controller_test.dart": {
+    "mtime": 1792841477.97129,
+    "seen": 1792850943.8378875,
+    "ast_hash": "422eb8481002cf921ee944dfde90c950",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/features/auth/auth_gate_test.dart": {
+    "mtime": 1792841477.9722896,
+    "seen": 1792850943.8378875,
+    "ast_hash": "41d6cbdb4bd1d35cb42afda674c39f66",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/features/auth/fake_auth_gateway.dart": {
+    "mtime": 1792841477.9732904,
+    "seen": 1792850943.8378875,
+    "ast_hash": "2e7f99b23715fd6ea3d7e4a1575cc316",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/features/auth/firebase_auth_gateway_test.dart": {
+    "mtime": 1792841477.974287,
+    "seen": 1792850943.8378875,
+    "ast_hash": "efc94b50bb3941ea827cada51876f7b8",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/features/capture/remote_capture_correlation_test.dart": {
+    "mtime": 1792850929.290991,
+    "seen": 1792850943.8378875,
+    "ast_hash": "f00ea65ae7fbe8396d5a993de4089018",
+    "semantic_hash": ""
+  },
+  "latyr-api/scripts/phase3-postgres.ps1": {
+    "mtime": 1792851318.3638537,
+    "seen": 1792854609.0506518,
+    "ast_hash": "706a648b1cd35238a1be1f5b2aafae76",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/adapter/ThumbnailStorage.java": {
+    "mtime": 1792851675.323419,
+    "seen": 1792854609.0506518,
+    "ast_hash": "546d816e348c101aa73faa6ad5cc50f6",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/client/OmdbCatalog.java": {
+    "mtime": 1792852533.5918243,
+    "seen": 1792854609.0506518,
+    "ast_hash": "8ca8d884b03911153585d1ce6406a1bd",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/client/TmdbCatalog.java": {
+    "mtime": 1792852533.5902681,
+    "seen": 1792854609.0506518,
+    "ast_hash": "8553efa3c08525ec0c3f8502bbc65d6b",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/domain/model/CaptureQuotaReservation.java": {
+    "mtime": 1792851375.197525,
+    "seen": 1792854609.0506518,
+    "ast_hash": "8906eec18614c323952fe851024342c7",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/domain/model/IngestionOutboxEvent.java": {
+    "mtime": 1792851476.3632972,
+    "seen": 1792854609.0506518,
+    "ast_hash": "d1506906e524545e4652616c9f31044a",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/domain/model/IngestionStageCheckpoint.java": {
+    "mtime": 1792851424.3248541,
+    "seen": 1792854609.0506518,
+    "ast_hash": "5d7c00a5b737efef69bc16769310f5ec",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/exception/AnalysisOutcomeUnknownException.java": {
+    "mtime": 1792851424.32837,
+    "seen": 1792854609.0506518,
+    "ast_hash": "b2a1bb828be26bc80a2090adb1787382",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/exception/IngestionLeaseLostException.java": {
+    "mtime": 1792851424.3273609,
+    "seen": 1792854609.0506518,
+    "ast_hash": "d639934928fa47ad4a7f6dfa8dee85dc",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/exception/ProviderOperationException.java": {
+    "mtime": 1792851414.5091631,
+    "seen": 1792854609.0506518,
+    "ast_hash": "d0f6a943b1a6e46bb75ffc972d8cb379",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/mapper/CaptureQuotaLedgerMapper.java": {
+    "mtime": 1792851375.1985228,
+    "seen": 1792854609.0506518,
+    "ast_hash": "15f47fc55c200111fc414458393b4b0f",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/mapper/IngestionOutboxMapper.java": {
+    "mtime": 1792851751.8738358,
+    "seen": 1792854609.0506518,
+    "ast_hash": "f5566eae95bc9a5cfc0690ef8f6762ee",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/mapper/IngestionStageMapper.java": {
+    "mtime": 1792851751.8722847,
+    "seen": 1792854609.0506518,
+    "ast_hash": "e8f18092a6772be4cebae21fa2f9e9a1",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/service/CaptureAnalysisCodec.java": {
+    "mtime": 1792851675.3193655,
+    "seen": 1792854609.0506518,
+    "ast_hash": "4e9a9c69c9abefe31503b95e3cfdb9e5",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/service/CaptureQuotaLedger.java": {
+    "mtime": 1792851888.5692358,
+    "seen": 1792854609.0506518,
+    "ast_hash": "7b089ff2cdbedfdb6bae168e78e93d72",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/service/CaptureSuccessPolicy.java": {
+    "mtime": 1792852586.8156397,
+    "seen": 1792854609.0506518,
+    "ast_hash": "e0a285565596a6707d66e28cef11644a",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/service/DurableIngestionStore.java": {
+    "mtime": 1792851529.1328416,
+    "seen": 1792854609.0506518,
+    "ast_hash": "ccab4f13ef6a6c480c7d4d6d2569ef20",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/service/IngestionEventOutbox.java": {
+    "mtime": 1792851476.3642967,
+    "seen": 1792854609.0506518,
+    "ast_hash": "d0bae17b4f0f7f403a6e5bd5c6300a61",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/worker/IngestionOutboxWorker.java": {
+    "mtime": 1792851751.8768463,
+    "seen": 1792854609.0506518,
+    "ast_hash": "9ad30c1e016cbd3803a8a851b10ffa95",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/resources/db/migration/V10__recover_legacy_enrichment_jobs.sql": {
+    "mtime": 1792851636.3363261,
+    "seen": 1792854609.0506518,
+    "ast_hash": "3c62b51fccb6de199732235318876c55",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/resources/db/migration/V8__durable_ingestion.sql": {
+    "mtime": 1792852308.5634956,
+    "seen": 1792854609.0506518,
+    "ast_hash": "4d6c4f6fdc134cd08555b4cd070f88d4",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/resources/db/migration/V9__capture_quota_ledger.sql": {
+    "mtime": 1792851375.1963885,
+    "seen": 1792854609.0506518,
+    "ast_hash": "c9003b5deb5e4a9e8eef075533781122",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/CanonicalDeduplicationServiceTest.java": {
+    "mtime": 1792851793.6080227,
+    "seen": 1792854609.0506518,
+    "ast_hash": "db8a02df56fcafee86723d8ef6c079fe",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/CaptureAdmissionPostgresTest.java": {
+    "mtime": 1792851972.275344,
+    "seen": 1792854609.0506518,
+    "ast_hash": "bccbf54275dfc32fadfd43d858d343ea",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/CaptureSuccessPolicyTest.java": {
+    "mtime": 1792852017.5411382,
+    "seen": 1792854609.0506518,
+    "ast_hash": "bbc14dfe6036cdef2a2f685d3b44f709",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/DurableIngestionMigrationPostgresTest.java": {
+    "mtime": 1792852241.0522623,
+    "seen": 1792854609.0506518,
+    "ast_hash": "7e3dd1866cc056cacebcff374e00082c",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/DurableIngestionPostgresTest.java": {
+    "mtime": 1792852308.5665302,
+    "seen": 1792854609.0506518,
+    "ast_hash": "1f3803e57e45e9fef1f27267007cee27",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/IngestionPipelinePostgresTest.java": {
+    "mtime": 1792854140.1739388,
+    "seen": 1792854609.0506518,
+    "ast_hash": "f466b2372ff2b290f3bfae6e98ec2789",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/IngestionQueueWorkerTest.java": {
+    "mtime": 1792851858.2143514,
+    "seen": 1792854609.0506518,
+    "ast_hash": "0564be5a93cf0bc5f595f275a4b38da8",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/LegacyEnrichmentMigrationTest.java": {
+    "mtime": 1792854299.1147444,
+    "seen": 1792854609.0506518,
+    "ast_hash": "f1bb8c8536c5844c734bcb41ec6c37e1",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/support/PostgresTestDatabase.java": {
+    "mtime": 1792851569.1613066,
+    "seen": 1792854609.0506518,
+    "ast_hash": "664df4a280f0bca02149bbf3b7423894",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/features/capture/partial_capture_test.dart": {
+    "mtime": 1792852114.5771985,
+    "seen": 1792854609.0506518,
+    "ast_hash": "4813ea04a6b37419db95d37211dcbf16",
     "semantic_hash": ""
   }
 }

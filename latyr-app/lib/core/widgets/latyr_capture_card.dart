@@ -161,7 +161,9 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
-                        (widget.capture.subCategory ?? widget.capture.category ?? 'Moment').toUpperCase(),
+                        (widget.capture.status == 'PARTIAL'
+                            ? 'Partial capture'
+                            : widget.capture.subCategory ?? widget.capture.category ?? 'Moment').toUpperCase(),
                         style: LTypography.roundedEyebrow.copyWith(
                           fontSize: 9.5,
                           color: textColor.withValues(alpha: 0.85),

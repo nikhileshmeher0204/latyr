@@ -16,6 +16,7 @@ public interface ExtractedEntityMapper {
     @Results(id = "ExtractedEntityResult", value = {
         @Result(property = "id", column = "id"),
         @Result(property = "captureId", column = "capture_id"),
+        @Result(property = "extractionIndex", column = "extraction_index"),
         @Result(property = "entityType", column = "entity_type"),
         @Result(property = "title", column = "title"),
         @Result(property = "description", column = "description"),
@@ -30,29 +31,19 @@ public interface ExtractedEntityMapper {
     })
     Optional<ExtractedEntity> findById(@Param("id") UUID id);
 
-    @Select("SELECT * FROM extracted_entities WHERE capture_id = #{captureId} ORDER BY created_at ASC")
+    @Select("SELECT * FROM extracted_entities WHERE capture_id = #{captureId} ORDER BY extraction_index ASC, id ASC")
     @ResultMap("ExtractedEntityResult")
     List<ExtractedEntity> findByCaptureId(@Param("captureId") UUID captureId);
 
-    @Select("""
-        SELECT * FROM extracted_entities
-        WHERE enrichment_status = 'PENDING'
-          AND next_retry_at <= CURRENT_TIMESTAMP
-        ORDER BY created_at ASC
-        LIMIT #{limit}
-        FOR UPDATE SKIP LOCKED
-    """)
-    @ResultMap("ExtractedEntityResult")
-    List<ExtractedEntity> fetchPendingForEnrichment(@Param("limit") int limit);
-
     @Insert("""
         INSERT INTO extracted_entities (
-            id, capture_id, entity_type, title, description, external_url, action_cta, 
+            id, capture_id, extraction_index, entity_type, title, description, external_url, action_cta,
             metadata, enrichment_status, retry_count, next_retry_at, enrichment_error, created_at
         )
         VALUES (
             COALESCE(#{id}, gen_random_uuid()),
             #{captureId},
+            #{extractionIndex},
             #{entityType},
             #{title},
             #{description},

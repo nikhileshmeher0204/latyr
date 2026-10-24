@@ -11,10 +11,6 @@ import com.latyr.api.mapper.CaptureMapper;
 import com.latyr.api.mapper.ExtractedEntityMapper;
 import com.latyr.api.mapper.IngestionJobMapper;
 import com.latyr.api.util.UrlSourceClassifier;
-import com.latyr.api.worker.IngestionQueueWorker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,185 +20,112 @@ import java.util.*;
 @Service
 public class CaptureService {
 
-    private static final Logger log = LoggerFactory.getLogger(CaptureService.class);
-
     private final CaptureMapper captureMapper;
     private final ExtractedEntityMapper extractedEntityMapper;
     private final IngestionJobMapper ingestionJobMapper;
-    private final SubscriptionQuotaService quotaService;
+    private final CaptureQuotaLedger quotaLedger;
     private final UrlNormalizationService urlNormalizationService;
     private final CanonicalDeduplicationService deduplicationService;
-    private final IngestionQueueWorker queueWorker;
+    private final IngestionEventOutbox eventOutbox;
 
     public CaptureService(
             CaptureMapper captureMapper,
             ExtractedEntityMapper extractedEntityMapper,
             IngestionJobMapper ingestionJobMapper,
-            SubscriptionQuotaService quotaService,
+            CaptureQuotaLedger quotaLedger,
             UrlNormalizationService urlNormalizationService,
             CanonicalDeduplicationService deduplicationService,
-            @Lazy IngestionQueueWorker queueWorker) {
+            IngestionEventOutbox eventOutbox) {
         this.captureMapper = captureMapper;
         this.extractedEntityMapper = extractedEntityMapper;
         this.ingestionJobMapper = ingestionJobMapper;
-        this.quotaService = quotaService;
+        this.quotaLedger = quotaLedger;
         this.urlNormalizationService = urlNormalizationService;
         this.deduplicationService = deduplicationService;
-        this.queueWorker = queueWorker;
+        this.eventOutbox = eventOutbox;
     }
 
     @Transactional
     public CaptureResponse createUrlCapture(UUID userId, CreateCaptureRequest request) {
-        // 1. Enforce monthly quota
-        quotaService.verifyAndIncrementQuota(userId);
-
-        // 2. Extract first URL if dirty share text & normalize URL
         String rawUrl = request.url();
         String extractedUrl = UrlSourceClassifier.extractFirstUrl(rawUrl);
         String effectiveUrl = extractedUrl != null ? extractedUrl : (rawUrl != null ? rawUrl.trim() : "");
         urlNormalizationService.validateOutboundUrl(effectiveUrl);
         String normalizedUrl = UrlSourceClassifier.normalizeUrl(effectiveUrl);
-
-        // Canonicalize URL and compute SHA-256 hash
         String canonicalHash = urlNormalizationService.getCanonicalUrlHash(normalizedUrl);
         SourceType sourceType = UrlSourceClassifier.classify(effectiveUrl);
 
-        // 2.5 Prevent duplicate spam from network retries or simultaneous shares
-        Optional<IngestionJob> activeJob = ingestionJobMapper.findActiveJobForUrl(userId, effectiveUrl);
-        if (activeJob.isPresent()) {
-            log.info("User {} already has an active processing job for URL: {}. Returning existing capture.", userId, effectiveUrl);
-            Optional<Capture> existingCapture = captureMapper.findById(activeJob.get().getCaptureId());
-            if (existingCapture.isPresent()) {
-                return CaptureResponse.fromModel(existingCapture.get(), "Capture is currently processing.");
-            }
-        }
-
-        // 3. Check 30-day deduplication cache
-        Optional<CanonicalSource> cachedSourceOpt = deduplicationService.findCachedSource(canonicalHash);
-
-        if (cachedSourceOpt.isPresent()) {
-            CanonicalSource cachedSource = cachedSourceOpt.get();
-            // Check if user already captured this URL/source
-            Optional<Capture> existingUserCapture = captureMapper.findByUserIdAndCanonicalSourceId(userId, cachedSource.getId());
-            if (existingUserCapture.isPresent()) {
-                log.info("User {} already has capture {} for canonical source {}. Returning existing.", userId, existingUserCapture.get().getId(), cachedSource.getId());
-                return CaptureResponse.fromModel(existingUserCapture.get(), "Capture already exists.");
-            }
-
-            // CACHE HIT: Instant completion with $0 AI cost
-            Capture completedCapture = buildCompletedCaptureFromCache(userId, cachedSource, ContentType.URL);
-            captureMapper.insert(completedCapture);
-
-            copyEntitiesFromCache(completedCapture.getId(), cachedSource.getAiAnalysisCache());
-            log.info("Completed URL capture {} for user {} from deduplication cache", completedCapture.getId(), userId);
-
-            return CaptureResponse.fromModel(completedCapture, "Capture processed immediately from deduplication cache.");
-        }
-
-        // CACHE MISS: Enqueue async ingestion job
-        CanonicalSource canonicalSource = deduplicationService.getOrCreateCanonicalSource(canonicalHash, sourceType, effectiveUrl);
-
-        Capture capture = new Capture();
-        capture.setId(UUID.randomUUID());
-        capture.setUserId(userId);
-        capture.setCanonicalSourceId(canonicalSource.getId());
-        capture.setSourceType(sourceType);
-        capture.setContentType(ContentType.URL);
-        capture.setStatus(CaptureStatus.PENDING);
-        capture.setCreatedAt(Instant.now());
-        capture.setUpdatedAt(Instant.now());
-        captureMapper.insert(capture);
-
-        IngestionJob job = new IngestionJob();
-        job.setId(UUID.randomUUID());
-        job.setCaptureId(capture.getId());
-        job.setUserId(userId);
-        job.setSourceType(sourceType);
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("url", effectiveUrl);
-        payload.put("canonical_hash", canonicalHash);
-        if (request.caption() != null && !request.caption().isBlank()) {
-            payload.put("caption", request.caption());
-        }
-        job.setPayload(payload);
-        job.setStatus(JobStatus.PENDING);
-        job.setAttemptCount(0);
-        job.setMaxAttempts(3);
-        job.setCreatedAt(Instant.now());
-        job.setUpdatedAt(Instant.now());
-        ingestionJobMapper.insert(job);
-
-        // Trigger immediate async processing on Loom virtual thread
-        if (queueWorker != null) {
-            queueWorker.triggerAsync(job);
-        }
-
-        log.info("Enqueued ingestion job {} for capture {} (user {})", job.getId(), capture.getId(), userId);
-        return CaptureResponse.fromModel(capture, "Capture queued for asynchronous AI analysis.");
+        quotaLedger.lockAdmission(userId);
+        CanonicalSource source = deduplicationService.getOrCreateCanonicalSource(canonicalHash, sourceType, effectiveUrl);
+        // Public analysis must be determined by the source, never a user's share caption.
+        return admitCapture(userId, source, ContentType.URL, Map.of("url", effectiveUrl));
     }
 
     @Transactional
     public CaptureResponse createImageCapture(UUID userId, byte[] imageBytes, String originalFilename) {
-        // 1. Enforce monthly quota
-        quotaService.verifyAndIncrementQuota(userId);
-
-        // 2. Compute SHA-256 byte checksum partitioned by userId (F11 owner-private isolation)
-        String imageHash = userId + ":" + urlNormalizationService.computeSha256(imageBytes);
-
-        // 3. Check deduplication cache
-        Optional<CanonicalSource> cachedSourceOpt = deduplicationService.findCachedSource(imageHash);
-
-        if (cachedSourceOpt.isPresent()) {
-            CanonicalSource cachedSource = cachedSourceOpt.get();
-            Capture completedCapture = buildCompletedCaptureFromCache(userId, cachedSource, ContentType.IMAGE);
-            captureMapper.insert(completedCapture);
-
-            copyEntitiesFromCache(completedCapture.getId(), cachedSource.getAiAnalysisCache());
-            log.info("Completed image capture {} for user {} from deduplication cache", completedCapture.getId(), userId);
-
-            return CaptureResponse.fromModel(completedCapture, "Screenshot processed immediately from deduplication cache.");
+        if (imageBytes == null || imageBytes.length == 0) {
+            throw new com.latyr.api.exception.LatyrException("Image cannot be empty", "INVALID_IMAGE",
+                    org.springframework.http.HttpStatus.BAD_REQUEST);
         }
+        // Owner partition remains a fixed-length SHA-256 value accepted by the schema.
+        String imageHash = urlNormalizationService.computeSha256(userId + ":" + urlNormalizationService.computeSha256(imageBytes));
+        String filename = originalFilename != null ? originalFilename : "screenshot.png";
+        quotaLedger.lockAdmission(userId);
+        CanonicalSource source = deduplicationService.getOrCreateCanonicalSource(imageHash, SourceType.IMAGE, filename);
+        return admitCapture(userId, source, ContentType.IMAGE, Map.of(
+                "image_base64", Base64.getEncoder().encodeToString(imageBytes), "filename", filename));
+    }
 
-        // CACHE MISS: Enqueue async image processing job
-        CanonicalSource canonicalSource = deduplicationService.getOrCreateCanonicalSource(imageHash, SourceType.IMAGE, originalFilename != null ? originalFilename : "screenshot.png");
-
-        Capture capture = new Capture();
-        capture.setId(UUID.randomUUID());
-        capture.setUserId(userId);
-        capture.setCanonicalSourceId(canonicalSource.getId());
-        capture.setSourceType(SourceType.IMAGE);
-        capture.setContentType(ContentType.IMAGE);
-        capture.setStatus(CaptureStatus.PENDING);
-        capture.setCreatedAt(Instant.now());
-        capture.setUpdatedAt(Instant.now());
+    private CaptureResponse admitCapture(UUID userId, CanonicalSource source, ContentType contentType, Map<String, Object> payload) {
+        Optional<Capture> existing = captureMapper.findByUserIdAndCanonicalSourceId(userId, source.getId());
+        if (existing.isPresent()) {
+            return CaptureResponse.fromModel(existing.get(), "Capture already exists.");
+        }
+        boolean completed = CaptureSuccessPolicy.isUsefulCache(source.getAiAnalysisCache());
+        Capture capture = completed ? buildCompletedCaptureFromCache(userId, source, contentType) : new Capture();
+        if (!completed) {
+            capture.setId(UUID.randomUUID());
+            capture.setUserId(userId);
+            capture.setCanonicalSourceId(source.getId());
+            capture.setSourceType(source.getSourceType());
+            capture.setContentType(contentType);
+            capture.setStatus(CaptureStatus.PENDING);
+        }
         captureMapper.insert(capture);
+        quotaLedger.reserveCapture(userId, source.getId(), capture.getId());
+        if (completed) {
+            List<ExtractedEntityResponse> entities = copyEntitiesFromCache(capture.getId(), source.getAiAnalysisCache());
+            quotaLedger.finalizeCapture(capture.getId());
+            Map<String, Object> event = new HashMap<>();
+            event.put("capture_id", capture.getId());
+            event.put("status", "COMPLETED");
+            event.put("intent", capture.getIntent().name());
+            event.put("category", capture.getCategory());
+            event.put("sub_category", capture.getSubCategory());
+            event.put("title", capture.getTitle());
+            event.put("summary", capture.getSummary());
+            event.put("thumbnail_url", capture.getThumbnailUrl());
+            event.put("original_caption", capture.getOriginalCaption());
+            event.put("audio_transcript", capture.getAudioTranscript());
+            event.put("source_type", capture.getSourceType().name());
+            event.put("entities", entities);
+            eventOutbox.append(userId, "CAPTURE_COMPLETED", event);
+            if (!"ENRICHED".equals(source.getAiAnalysisCache().get("enrichment_status"))) {
+                Map<String, Object> enrichmentPayload = new HashMap<>(payload);
+                enrichmentPayload.put("enrichment_only", true);
+                enqueue(capture, source, enrichmentPayload);
+            }
+            return CaptureResponse.fromModel(capture, "Capture processed from existing analysis.");
+        }
+        enqueue(capture, source, payload);
+        // Only the durable poller claims work, after this transaction has committed.
+        return CaptureResponse.fromModel(capture, "Capture queued for asynchronous AI analysis.");
+    }
 
-        IngestionJob job = new IngestionJob();
+    private void enqueue(Capture capture, CanonicalSource source, Map<String, Object> payload) {
+        IngestionJob job = new IngestionJob(capture.getId(), capture.getUserId(), source.getSourceType(), payload);
         job.setId(UUID.randomUUID());
-        job.setCaptureId(capture.getId());
-        job.setUserId(userId);
-        job.setSourceType(SourceType.IMAGE);
-        job.setStatus(JobStatus.PENDING);
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("filename", originalFilename != null ? originalFilename : "screenshot.png");
-        payload.put("image_hash", imageHash);
-        if (imageBytes != null && imageBytes.length > 0) {
-            payload.put("image_base64", Base64.getEncoder().encodeToString(imageBytes));
-        }
-        job.setPayload(payload);
-        job.setAttemptCount(0);
-        job.setMaxAttempts(3);
-        job.setCreatedAt(Instant.now());
-        job.setUpdatedAt(Instant.now());
         ingestionJobMapper.insert(job);
-
-        // Trigger immediate async processing on Loom virtual thread
-        if (queueWorker != null) {
-            queueWorker.triggerAsync(job);
-        }
-
-        log.info("Enqueued screenshot ingestion job {} for capture {} (user {})", job.getId(), capture.getId(), userId);
-        return CaptureResponse.fromModel(capture, "Screenshot queued for asynchronous AI OCR and analysis.");
     }
 
     @Transactional(readOnly = true)
@@ -246,36 +169,8 @@ public class CaptureService {
 
     @Transactional
     public ExtractedEntityResponse updateEntity(UUID userId, UUID entityId, UpdateEntityRequest request) {
-        ExtractedEntity entity = extractedEntityMapper.findById(entityId)
-                .orElseThrow(() -> new ResourceNotFoundException("Entity not found with ID: " + entityId));
-
-        // Verify user owns the parent capture
-        captureMapper.findByIdAndUserId(entity.getCaptureId(), userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Entity not found or unauthorized"));
-
-        if (request.title() != null && !request.title().trim().isEmpty()) {
-            entity.setTitle(request.title().trim());
-        }
-        if (request.description() != null) {
-            entity.setDescription(request.description().trim());
-        }
-        if (request.externalUrl() != null) {
-            entity.setExternalUrl(request.externalUrl().trim());
-        }
-        if (request.actionCta() != null) {
-            entity.setActionCta(request.actionCta());
-        }
-        if (request.entityType() != null) {
-            entity.setEntityType(request.entityType());
-        }
-        if (request.metadata() != null) {
-            entity.setMetadata(request.metadata());
-        }
-
-        extractedEntityMapper.update(entity);
-        log.info("User {} updated entity {}", userId, entityId);
-
-        return ExtractedEntityResponse.fromModel(entity);
+        throw new com.latyr.api.exception.LatyrException("Capture analysis cannot be edited", "CAPTURE_IMMUTABLE",
+                org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @SuppressWarnings("unchecked")
@@ -297,7 +192,11 @@ public class CaptureService {
             } catch (Exception ignored) {}
         }
 
-        capture.setCategory((String) cache.getOrDefault("category", "General"));
+        capture.setCategory((String) cache.get("category"));
+        capture.setSubCategory((String) cache.get("sub_category"));
+        capture.setTitle((String) cache.get("title"));
+        capture.setSummary((String) cache.get("summary"));
+        capture.setThumbnailUrl((String) cache.get("thumbnail_url"));
         capture.setOriginalCaption((String) cache.get("original_caption"));
         capture.setAudioTranscript((String) cache.get("audio_transcript"));
 
@@ -318,7 +217,8 @@ public class CaptureService {
     }
 
     @SuppressWarnings("unchecked")
-    private void copyEntitiesFromCache(UUID captureId, Map<String, Object> cache) {
+    private List<ExtractedEntityResponse> copyEntitiesFromCache(UUID captureId, Map<String, Object> cache) {
+        List<ExtractedEntityResponse> copied = new ArrayList<>();
         Object entitiesObj = cache.get("entities");
         if (entitiesObj instanceof List<?> entitiesList) {
             for (Object item : entitiesList) {
@@ -362,9 +262,13 @@ public class CaptureService {
                     }
 
                     entity.setCreatedAt(Instant.now());
+                    entity.setExtractionIndex(copied.size());
+                    entity.setEnrichmentStatus("ENRICHED".equals(cache.get("enrichment_status")) ? "ENRICHED" : "PENDING");
                     extractedEntityMapper.insert(entity);
+                    copied.add(ExtractedEntityResponse.fromModel(entity));
                 }
             }
         }
+        return copied;
     }
 }

@@ -42,6 +42,14 @@ public class SseNotificationService {
     }
 
     public void emitCaptureEvent(UUID userId, String eventType, Object payload) {
+        sendEvent(userId, eventType, payload, false);
+    }
+
+    public void emitOutboxEvent(UUID userId, String eventType, Object payload) {
+        sendEvent(userId, eventType, payload, true);
+    }
+
+    private void sendEvent(UUID userId, String eventType, Object payload, boolean reportFailure) {
         List<SseEmitter> emitters = userEmitters.get(userId);
         if (emitters == null || emitters.isEmpty()) {
             log.debug("No active SSE connections for user {}", userId);
@@ -63,6 +71,9 @@ public class SseNotificationService {
         }
 
         emitters.removeAll(failedEmitters);
+        if (reportFailure && !failedEmitters.isEmpty()) {
+            throw new IllegalStateException("SSE delivery failed");
+        }
     }
 
     /**

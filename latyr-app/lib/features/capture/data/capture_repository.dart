@@ -71,9 +71,10 @@ class CaptureRepository {
         if (!_hasCaptureSession) return;
         final rawCaption = event.data['original_caption']?.toString();
         if (existing == null && rawCaption != null && rawCaption.isNotEmpty) {
-          existing = await db.getCaptureByUrl(rawCaption);
+          existing = await db.getUniqueUnboundUrlCapture(rawCaption);
         }
-        if (existing != null && existing.status != 'PROCESSING') {
+        if (existing != null &&
+            (existing.status == 'PENDING' || existing.status == 'PENDING_SYNC')) {
           if (!_hasCaptureSession) return;
           await db.updateCapture(
             LocalCapturesCompanion(
@@ -90,7 +91,7 @@ class CaptureRepository {
         if (!_hasCaptureSession) return;
         final rawCaption = event.data['original_caption']?.toString();
         if (existing == null && rawCaption != null && rawCaption.isNotEmpty) {
-          existing = await db.getCaptureByUrl(rawCaption);
+          existing = await db.getUniqueUnboundUrlCapture(rawCaption);
         }
 
         final entities = event.data['entities'];
@@ -179,7 +180,8 @@ class CaptureRepository {
             }
           }
         }
-      } else if (event.eventType == 'CAPTURE_FAILED') {
+      } else if (event.eventType == 'CAPTURE_FAILED' ||
+          event.eventType == 'CAPTURE_PARTIAL') {
         final existing = await db.getCaptureByServerId(captureId);
         if (!_hasCaptureSession) return;
         if (existing != null) {
@@ -187,11 +189,11 @@ class CaptureRepository {
             LocalCapturesCompanion(
               id: Value(existing.id),
               serverCaptureId: Value(captureId),
-              status: const Value('FAILED'),
+              status: Value(event.eventType == 'CAPTURE_PARTIAL' ? 'PARTIAL' : 'FAILED'),
               updatedAt: Value(DateTime.now()),
             ),
           );
-          debugPrint('[CaptureRepo] Updated capture ${existing.id} to FAILED via SSE');
+          debugPrint('[CaptureRepo] Applied terminal event ${event.eventType} to capture ${existing.id}');
         }
       }
       } catch (_) {
@@ -223,8 +225,10 @@ class CaptureRepository {
     if (existingLocal != null) {
       _requireCaptureSession();
       debugPrint('Existing local capture found for URL: ${existingLocal.id} (status: ${existingLocal.status})');
-      // If already COMPLETED or PROCESSING, do not re-insert or double-process
-      if (existingLocal.status == 'COMPLETED' || existingLocal.status == 'PROCESSING') {
+      // Completed/partial captures are immutable and must not be resubmitted.
+      if (existingLocal.status == 'COMPLETED' ||
+          existingLocal.status == 'PROCESSING' ||
+          existingLocal.status == 'PARTIAL') {
         return existingLocal;
       }
     }
@@ -264,7 +268,8 @@ class CaptureRepository {
         final serverId = data['id']?.toString();
         final serverStatus = data['status']?.toString();
         final serverSourceType = data['source_type']?.toString();
-        final status = response.statusCode == 200 ? 'COMPLETED' : (serverStatus ?? 'PROCESSING');
+        final status = serverStatus ??
+            (response.statusCode == 200 ? 'COMPLETED' : 'PROCESSING');
         await db.updateCapture(
           LocalCapturesCompanion(
             id: Value(localId),
@@ -306,7 +311,8 @@ class CaptureRepository {
           if (!_hasCaptureSession) return;
           final data = response.data;
           final serverId = data?['id']?.toString();
-          final status = response.statusCode == 200 ? 'COMPLETED' : 'PROCESSING';
+          final status = data?['status']?.toString() ??
+              (response.statusCode == 200 ? 'COMPLETED' : 'PROCESSING');
 
           await db.updateCapture(
             LocalCapturesCompanion(
@@ -349,7 +355,7 @@ class CaptureRepository {
               if (!_hasCaptureSession) return;
               final rawCaption = raw['original_caption']?.toString();
               if (existing == null && rawCaption != null) {
-                existing = await db.getCaptureByUrl(rawCaption);
+                existing = await db.getUniqueUnboundUrlCapture(rawCaption);
               }
               final id = existing?.id ?? _uuid.v4();
 
@@ -503,12 +509,13 @@ class CaptureRepository {
                 updatedAt: Value(DateTime.now()),
               ),
             );
-          } else if (serverStatus == 'FAILED' && item.status != 'FAILED') {
+          } else if ((serverStatus == 'FAILED' || serverStatus == 'PARTIAL') &&
+              item.status != serverStatus) {
             await db.updateCapture(
               LocalCapturesCompanion(
                 id: Value(item.id),
                 serverCaptureId: Value(item.serverCaptureId),
-                status: const Value('FAILED'),
+                status: Value(serverStatus!),
                 updatedAt: Value(DateTime.now()),
               ),
             );
