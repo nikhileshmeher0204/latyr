@@ -8,6 +8,8 @@ import com.latyr.api.domain.model.*;
 import com.latyr.api.dto.ExtractedEntityResponse;
 import com.latyr.api.exception.*;
 import com.latyr.api.mapper.*;
+import com.latyr.api.event.AssetUploadRequestedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,14 +30,23 @@ public class IngestionPipelineService {
     private final ThumbnailStorage thumbnails;
     private final CaptureQuotaLedger quota;
     private final IngestionEventOutbox events;
+    private final ApplicationEventPublisher eventPublisher;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public IngestionPipelineService(DurableIngestionStore store, CaptureMapper captures, CanonicalSourceMapper sources,
+            ExtractedEntityMapper entities, ScraperProvider scraper, EphemeralMediaStreamer media, AIProvider ai,
+            EntityEnrichmentProvider enricher, ThumbnailStorage thumbnails, CaptureQuotaLedger quota,
+            IngestionEventOutbox events, ApplicationEventPublisher eventPublisher) {
+        this.store = store; this.captures = captures; this.sources = sources; this.entities = entities;
+        this.scraper = scraper; this.media = media; this.ai = ai; this.enricher = enricher;
+        this.thumbnails = thumbnails; this.quota = quota; this.events = events; this.eventPublisher = eventPublisher;
+    }
 
     public IngestionPipelineService(DurableIngestionStore store, CaptureMapper captures, CanonicalSourceMapper sources,
             ExtractedEntityMapper entities, ScraperProvider scraper, EphemeralMediaStreamer media, AIProvider ai,
             EntityEnrichmentProvider enricher, ThumbnailStorage thumbnails, CaptureQuotaLedger quota,
             IngestionEventOutbox events) {
-        this.store = store; this.captures = captures; this.sources = sources; this.entities = entities;
-        this.scraper = scraper; this.media = media; this.ai = ai; this.enricher = enricher;
-        this.thumbnails = thumbnails; this.quota = quota; this.events = events;
+        this(store, captures, sources, entities, scraper, media, ai, enricher, thumbnails, quota, events, null);
     }
 
     public void processJob(IngestionJob job) {
@@ -154,7 +165,16 @@ public class IngestionPipelineService {
         if (scraped == null || (blank(scraped.caption()) && blank(scraped.audioUrl())))
             throw new ProviderOperationException("NO_SOURCE_CONTENT", ProviderOperationException.Outcome.PERMANENT);
         input.put("caption", scraped.caption()); input.put("audio_url", scraped.audioUrl());
-        input.put("thumbnail_url", thumbnails.uploadImageFromUrl(scraped.thumbnailUrl(), job.getCaptureId()));
+        input.put("thumbnail_url", scraped.thumbnailUrl());
+        if (eventPublisher != null && scraped.thumbnailUrl() != null && !scraped.thumbnailUrl().isBlank()) {
+            eventPublisher.publishEvent(new AssetUploadRequestedEvent(
+                    scraped.thumbnailUrl(),
+                    "captures/thumbnails",
+                    job.getCaptureId() + ".jpg",
+                    AssetUploadRequestedEvent.AssetType.CAPTURE_THUMBNAIL,
+                    job.getCaptureId()
+            ));
+        }
         input.put("duration_sec", scraped.durationSec());
         return input;
     }

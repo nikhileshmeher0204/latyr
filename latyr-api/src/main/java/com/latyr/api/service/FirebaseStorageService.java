@@ -1,9 +1,10 @@
 package com.latyr.api.service;
 
-import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.cloud.StorageClient;
+import com.latyr.api.adapter.AssetStorage;
+import com.latyr.api.adapter.ThumbnailStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +17,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 @Service
-public class FirebaseStorageService implements com.latyr.api.adapter.ThumbnailStorage {
+public class FirebaseStorageService implements AssetStorage, ThumbnailStorage {
 
     private static final Logger log = LoggerFactory.getLogger(FirebaseStorageService.class);
 
@@ -31,23 +32,24 @@ public class FirebaseStorageService implements com.latyr.api.adapter.ThumbnailSt
                 .build();
     }
 
-    /**
-     * Downloads an image from the provided source URL and uploads it to Firebase Storage.
-     * Returns the permanent public access URL.
-     * If Firebase Storage is not configured or upload fails, falls back gracefully to sourceUrl.
-     */
-    public String uploadImageFromUrl(String sourceUrl, UUID captureId) {
+    @Override
+    public String uploadAssetFromUrl(String sourceUrl, String targetFolder, String fileName) {
         if (sourceUrl == null || sourceUrl.isBlank()) {
             return null;
         }
 
+        if (bucketName == null || bucketName.isBlank()) {
+            log.info("Storage bucket not configured (local dev); skipping cloud asset upload for {}/{}", targetFolder, fileName);
+            return null;
+        }
+
         if (FirebaseApp.getApps().isEmpty()) {
-            log.info("Firebase App not initialized; returning source URL as thumbnail fallback: {}", sourceUrl);
-            return sourceUrl;
+            log.info("Firebase App not initialized; skipping cloud asset upload for {}/{}", targetFolder, fileName);
+            return null;
         }
 
         try {
-            log.info("Downloading thumbnail image from URL: {}", sourceUrl);
+            log.info("Downloading asset from URL: {}", sourceUrl);
             byte[] imageBytes = webClient.get()
                     .uri(sourceUrl)
                     .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
@@ -56,33 +58,39 @@ public class FirebaseStorageService implements com.latyr.api.adapter.ThumbnailSt
                     .block(Duration.ofSeconds(15));
 
             if (imageBytes == null || imageBytes.length == 0) {
-                log.warn("Empty image downloaded from URL: {}", sourceUrl);
-                return sourceUrl;
+                log.warn("Empty asset downloaded from URL: {}", sourceUrl);
+                return null;
             }
 
-            Bucket bucket;
-            if (bucketName != null && !bucketName.isBlank()) {
-                bucket = StorageClient.getInstance().bucket(bucketName.trim());
-            } else {
-                bucket = StorageClient.getInstance().bucket();
-            }
-
+            Bucket bucket = StorageClient.getInstance().bucket(bucketName.trim());
             if (bucket == null) {
-                log.warn("No default bucket found on Firebase Storage; returning sourceUrl");
-                return sourceUrl;
+                log.warn("Bucket '{}' not found on Firebase Storage", bucketName);
+                return null;
             }
 
-            String objectName = "captures/" + captureId + "/thumbnail.jpg";
-            bucket.create(objectName, imageBytes, "image/jpeg");
-            log.info("Successfully uploaded thumbnail to Firebase Storage: {}", objectName);
+            String cleanFolder = targetFolder.replaceAll("^/+", "").replaceAll("/+$", "");
+            String objectName = cleanFolder.isEmpty() ? fileName : cleanFolder + "/" + fileName;
+
+            String contentType = fileName.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
+            bucket.create(objectName, imageBytes, contentType);
+            log.info("Successfully uploaded asset to Firebase Storage: {}", objectName);
 
             String encodedPath = URLEncoder.encode(objectName, StandardCharsets.UTF_8);
             String actualBucket = bucket.getName();
             return String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media", actualBucket, encodedPath);
 
         } catch (Exception e) {
-            log.warn("Failed to upload image to Firebase Storage for capture {}: {}. Falling back to sourceUrl.", captureId, e.getMessage());
-            return sourceUrl;
+            log.warn("Failed to upload asset to Firebase Storage ({}/{}): {}", targetFolder, fileName, e.getMessage());
+            return null;
         }
+    }
+
+    @Override
+    public String uploadImageFromUrl(String sourceUrl, UUID captureId) {
+        if (sourceUrl == null || sourceUrl.isBlank()) {
+            return null;
+        }
+        String permanentUrl = uploadAssetFromUrl(sourceUrl, "captures/" + captureId, "thumbnail.jpg");
+        return permanentUrl != null ? permanentUrl : sourceUrl;
     }
 }

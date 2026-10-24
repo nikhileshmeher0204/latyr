@@ -149,6 +149,14 @@ public interface CaptureMapper {
     """)
     int update(Capture capture);
 
+    @Update("""
+        UPDATE captures
+        SET thumbnail_url = #{thumbnailUrl},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    """)
+    int updateThumbnailUrl(@Param("id") UUID id, @Param("thumbnailUrl") String thumbnailUrl);
+
     @Delete("DELETE FROM captures WHERE id = #{id}")
     int deleteById(@Param("id") UUID id);
 }

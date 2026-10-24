@@ -197,6 +197,20 @@ class CaptureRepository {
           );
           debugPrint('[CaptureRepo] Applied terminal event ${event.eventType} to capture ${existing.id}');
         }
+      } else if (event.eventType == 'CAPTURE_UPDATED') {
+        final existing = await db.getCaptureByServerId(captureId);
+        if (!_hasCaptureSession) return;
+        final newThumbnailUrl = event.data['thumbnail_url']?.toString();
+        if (existing != null && newThumbnailUrl != null && newThumbnailUrl.isNotEmpty) {
+          await db.updateCapture(
+            LocalCapturesCompanion(
+              id: Value(existing.id),
+              thumbnailUrl: Value(newThumbnailUrl),
+              updatedAt: Value(DateTime.now()),
+            ),
+          );
+          debugPrint('[CaptureRepo] Updated capture ${existing.id} thumbnail via CAPTURE_UPDATED SSE');
+        }
       }
       } catch (_) {
         if (_hasCaptureSession) debugPrint('Capture stream update could not be applied.');

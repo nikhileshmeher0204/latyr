@@ -59,6 +59,14 @@ public interface CanonicalSourceMapper {
     """)
     int update(CanonicalSource source);
 
+    @Update("""
+        UPDATE canonical_sources
+        SET thumbnail_url = #{thumbnailUrl},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    """)
+    int updateThumbnailUrl(@Param("id") UUID id, @Param("thumbnailUrl") String thumbnailUrl);
+
     @Delete("DELETE FROM canonical_sources WHERE id = #{id}")
     int deleteById(@Param("id") UUID id);
 }
