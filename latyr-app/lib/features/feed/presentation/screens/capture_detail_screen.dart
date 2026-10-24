@@ -390,20 +390,33 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
                     size: 20,
                   ),
                 ),
-                LatyrAppBar.actionButton(
+                LatyrAppBar.actionPill(
                   isDark: isDark,
                   onPressed: () => _openSourceUrl(capture.originalUrl),
-                  child: source != null
-                      ? CaptureSourceIcon(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if (source != null)
+                        CaptureSourceIcon(
                           source: source,
-                          size: 19,
+                          size: 17,
                           color: textColor,
                         )
-                      : Icon(
-                          CupertinoIcons.arrow_up_right,
+                      else
+                        Icon(
+                          CupertinoIcons.globe,
+                          size: 17,
                           color: textColor,
-                          size: 19,
                         ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        CupertinoIcons.chevron_forward,
+                        color: textColor.withValues(alpha: 0.8),
+                        size: 14.0,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

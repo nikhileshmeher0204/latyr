@@ -426,6 +426,44 @@ class LatyrAppBar extends StatelessWidget {
       ),
     );
   }
+
+  /// Helper factory for uniform frosted capsule / pill action buttons (e.g. source deeplink with right arrow).
+  static Widget actionPill({
+    required Widget child,
+    required VoidCallback onPressed,
+    required bool isDark,
+    EdgeInsetsGeometry padding = const EdgeInsets.symmetric(horizontal: 10),
+  }) {
+    final cardBg = isDark
+        ? const Color(0xCC1C1C1E)
+        : CupertinoColors.white.withValues(alpha: 0.95);
+    final borderColor = isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white;
+
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+      child: Container(
+        height: 42,
+        padding: padding,
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(21),
+          border: Border.all(
+            color: borderColor,
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Center(child: child),
+      ),
+    );
+  }
 }
 
 /// Internal wrapper preserving a typed reference to the parent [LatyrAppBar]
