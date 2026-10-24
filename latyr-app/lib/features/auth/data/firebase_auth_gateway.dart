@@ -15,6 +15,9 @@ class FirebaseAuthGateway implements AuthGateway {
   @override
   Future<void> initialize() async {
     if (Firebase.apps.isEmpty) await Firebase.initializeApp();
+    try {
+      await getAuth().authStateChanges().first.timeout(const Duration(seconds: 2));
+    } catch (_) {}
   }
 
   @override
@@ -26,7 +29,9 @@ class FirebaseAuthGateway implements AuthGateway {
       (user) {
         final currentGeneration = ++generation;
         final uid = user == null || user.isAnonymous ? null : user.uid;
-        if (uid == null || uid != observedUid) sink.add(null);
+        if (uid == null || (observedUid != null && uid != observedUid)) {
+          sink.add(null);
+        }
         observedUid = uid;
         if (uid == null) return;
         unawaited(() async {

@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:latyr_app/core/network/authentication_required_exception.dart';
 
 class ShareIntentService {
   static const _channel = MethodChannel('com.latyr.latyr_app/share');
-  final bool Function() canCapture;
+  final FutureOr<bool> Function() canCapture;
   final Future<void> Function(String url, {String? caption}) captureUrl;
   final void Function() onAuthenticationRequired;
   bool _disposed = false;
@@ -39,7 +40,7 @@ class ShareIntentService {
 
   Future<void> _handleSharedText(String text) async {
     if (_disposed) return;
-    if (!canCapture()) {
+    if (!await canCapture()) {
       onAuthenticationRequired();
       return;
     }
@@ -65,8 +66,8 @@ class ShareIntentService {
         _lastHandledUrl = null;
         _lastHandledAt = null;
         if (!_disposed) onAuthenticationRequired();
-      } catch (_) {
-        debugPrint('Shared capture could not be saved.');
+      } catch (e, st) {
+        debugPrint('Error capturing shared URL: $e\n$st');
       }
     }
   }

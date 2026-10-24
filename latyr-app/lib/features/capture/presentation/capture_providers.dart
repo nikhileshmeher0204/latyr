@@ -125,7 +125,18 @@ final shareSignInNoticeProvider = StateProvider<bool>((ref) => false);
 
 final shareIntentServiceProvider = Provider<ShareIntentService>((ref) {
   final service = ShareIntentService(
-    canCapture: () => ref.read(authenticatedUserIdProvider) != null,
+    canCapture: () async {
+      var authState = ref.read(authControllerProvider);
+      if (authState.phase == AuthPhase.initializing) {
+        try {
+          await ref.read(authControllerProvider.notifier)
+              .stream
+              .firstWhere((s) => s.phase != AuthPhase.initializing)
+              .timeout(const Duration(seconds: 4));
+        } catch (_) {}
+      }
+      return ref.read(authenticatedUserIdProvider) != null;
+    },
     captureUrl: (url, {caption}) async {
       if (ref.read(authenticatedUserIdProvider) == null) {
         throw const AuthenticationRequiredException();
