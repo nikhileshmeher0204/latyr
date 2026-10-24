@@ -76,6 +76,66 @@ void main() {
         ),
       );
     });
+
+    testWidgets('persistent hero transition cross-fades smoothly between routes without type errors', (tester) async {
+      await tester.pumpWidget(
+        CupertinoApp(
+          home: Builder(
+            builder: (context) {
+              return CupertinoPageScaffold(
+                child: Column(
+                  children: [
+                    const LatyrAppBar(
+                      title: 'Page One',
+                      isDark: false,
+                      scaffoldBgColor: CupertinoColors.white,
+                    ),
+                    CupertinoButton(
+                      child: const Text('Push Next'),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => const CupertinoPageScaffold(
+                              child: LatyrAppBar(
+                                title: 'Page Two',
+                                isDark: true,
+                                scaffoldBgColor: CupertinoColors.black,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      );
+
+      expect(find.text('PAGE ONE'), findsOneWidget);
+
+      // Trigger navigation
+      await tester.tap(find.text('Push Next'));
+
+      // Pump mid-flight to exercise flightShuttleBuilder
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
+      // Complete transition
+      await tester.pumpAndSettle();
+
+      expect(find.text('PAGE TWO'), findsOneWidget);
+
+      // Pop route to exercise reverse flightShuttleBuilder
+      await tester.tap(find.byIcon(CupertinoIcons.back));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PAGE ONE'), findsOneWidget);
+    });
   });
 
   group('LatyrScaffold Tests', () {

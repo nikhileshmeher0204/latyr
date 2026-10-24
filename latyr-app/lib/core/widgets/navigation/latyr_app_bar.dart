@@ -56,6 +56,10 @@ class LatyrAppBar extends StatelessWidget {
     return Hero(
       tag: kLatyrPersistentAppBarHeroTag,
       flightShuttleBuilder: _buildFlightShuttle,
+      placeholderBuilder: (context, heroSize, child) => SizedBox(
+        width: heroSize.width,
+        height: heroSize.height,
+      ),
       child: navWidget,
     );
   }
@@ -230,8 +234,30 @@ class LatyrAppBar extends StatelessWidget {
     BuildContext fromHeroContext,
     BuildContext toHeroContext,
   ) {
-    final fromWidget = (fromHeroContext.widget as Hero).child as LatyrAppBar;
-    final toWidget = (toHeroContext.widget as Hero).child as LatyrAppBar;
+    Widget extractChild(BuildContext heroContext) {
+      final widget = heroContext.widget;
+      if (widget is Hero) {
+        return widget.child;
+      }
+      return widget;
+    }
+
+    final fromChild = extractChild(fromHeroContext);
+    final toChild = extractChild(toHeroContext);
+
+    // If either child is an empty placeholder, return the non-empty one directly
+    final isFromEmpty = fromChild is SizedBox && fromChild.child == null;
+    final isToEmpty = toChild is SizedBox && toChild.child == null;
+
+    if (isFromEmpty && isToEmpty) {
+      return const SizedBox.shrink();
+    }
+    if (isFromEmpty) {
+      return toChild;
+    }
+    if (isToEmpty) {
+      return fromChild;
+    }
 
     // Use curved animation for natural, fluid iOS timing
     final curved = CurvedAnimation(
@@ -243,71 +269,24 @@ class LatyrAppBar extends StatelessWidget {
       animation: curved,
       builder: (context, _) {
         final t = curved.value;
-        // Interpolate background scaffold color to prevent abrupt tint cuts
-        final blendedScaffoldBg = Color.lerp(
-          fromWidget.scaffoldBgColor,
-          toWidget.scaffoldBgColor,
-          t,
-        )!;
-
-        final isTargetDark = t > 0.5 ? toWidget.isDark : fromWidget.isDark;
-
-        return Directionality(
-          textDirection: TextDirection.ltr,
-          child: Stack(
-            children: [
-              // 1. Persistent Blur & Tint
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: LatyrAppBar(
-                  title: '',
-                  isDark: isTargetDark,
-                  scaffoldBgColor: blendedScaffoldBg,
-                  enableBlur: fromWidget.enableBlur || toWidget.enableBlur,
-                  isPersistent: false,
-                ),
-              ),
-
-              // 2. Cross-fading From AppBar (Title & Actions fade out)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Opacity(
-                  opacity: (1.0 - t).clamp(0.0, 1.0),
-                  child: LatyrAppBar(
-                    title: fromWidget.title,
-                    titleLeading: fromWidget.titleLeading,
-                    actions: fromWidget.actions,
-                    isDark: fromWidget.isDark,
-                    scaffoldBgColor: blendedScaffoldBg,
-                    enableBlur: false,
-                    isPersistent: false,
+        return IgnorePointer(
+          child: Directionality(
+            textDirection: Directionality.maybeOf(flightContext) ?? TextDirection.ltr,
+            child: Stack(
+              fit: StackFit.passthrough,
+              children: [
+                if (t < 1.0)
+                  Opacity(
+                    opacity: (1.0 - t).clamp(0.0, 1.0),
+                    child: fromChild,
                   ),
-                ),
-              ),
-
-              // 3. Cross-fading To AppBar (Title & Actions fade in)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Opacity(
-                  opacity: t.clamp(0.0, 1.0),
-                  child: LatyrAppBar(
-                    title: toWidget.title,
-                    titleLeading: toWidget.titleLeading,
-                    actions: toWidget.actions,
-                    isDark: toWidget.isDark,
-                    scaffoldBgColor: blendedScaffoldBg,
-                    enableBlur: false,
-                    isPersistent: false,
+                if (t > 0.0)
+                  Opacity(
+                    opacity: t.clamp(0.0, 1.0),
+                    child: toChild,
                   ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
