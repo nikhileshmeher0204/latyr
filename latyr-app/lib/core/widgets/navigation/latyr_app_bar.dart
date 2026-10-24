@@ -290,9 +290,14 @@ class LatyrAppBar extends StatelessWidget {
     final fromChild = extractChild(fromHeroContext);
     final toChild = extractChild(toHeroContext);
 
+    // Normalize transition progress to always go 0.0 -> 1.0 from source to destination.
+    // In Flutter, push animation goes 0.0 -> 1.0, while pop animation goes 1.0 -> 0.0.
+    final isPop = flightDirection == HeroFlightDirection.pop;
+    final progressAnimation = isPop ? ReverseAnimation(animation) : animation;
+
     // Use curved animation for natural, fluid iOS timing
     final curved = CurvedAnimation(
-      parent: animation,
+      parent: progressAnimation,
       curve: Curves.easeInOutCubic,
     );
 
