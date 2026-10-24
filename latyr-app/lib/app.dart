@@ -3,17 +3,21 @@ import 'dart:ui' as dart_ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:latyr_app/core/theme/app_theme.dart';
 import 'package:latyr_app/features/collections/presentation/collections_screen.dart';
 import 'package:latyr_app/features/home/presentation/home_screen.dart';
 import 'package:latyr_app/features/search/presentation/search_screen.dart';
+import 'package:latyr_app/features/auth/presentation/auth_gate.dart';
+import 'package:latyr_app/features/capture/presentation/capture_providers.dart';
 
-class LatyrApp extends StatelessWidget {
+class LatyrApp extends ConsumerWidget {
   const LatyrApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final uid = ref.watch(authenticatedUserIdProvider);
     return CupertinoApp(
       title: 'Latyr',
       debugShowCheckedModeBanner: false,
@@ -28,11 +32,54 @@ class LatyrApp extends StatelessWidget {
             letterSpacing: -0.15,
             decoration: TextDecoration.none,
           ),
-          child: child ?? const SizedBox.shrink(),
+          child: Stack(children: [
+            AuthGate(signedInBuilder: (_) => KeyedSubtree(
+              key: ValueKey(uid), child: child ?? const SizedBox.shrink(),
+            )),
+            const _ShareSignInNotice(),
+          ]),
         );
       },
-      home: const LatyrTabNavigationScreen(),
+      home: const _AuthenticatedHome(),
     );
+  }
+}
+
+class _AuthenticatedHome extends ConsumerWidget {
+  const _AuthenticatedHome();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(syncServiceProvider);
+    return LatyrTabNavigationScreen(
+      key: ValueKey(ref.watch(authenticatedUserIdProvider)),
+    );
+  }
+}
+
+class _ShareSignInNotice extends ConsumerWidget {
+  const _ShareSignInNotice();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(shareSignInNoticeProvider)) return const SizedBox.shrink();
+    final signedIn = ref.watch(authenticatedUserIdProvider) != null;
+    return Positioned(top: 0, left: 0, right: 0, child: SafeArea(
+      child: CupertinoPopupSurface(child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(children: [
+          Expanded(child: Semantics(liveRegion: true, child: Text(
+            signedIn ? 'Nothing was queued. Please share the content again.'
+                : 'Sign in to use Latyr, then share again. Nothing was queued.',
+          ))),
+          CupertinoButton(
+            onPressed: () => ref.read(shareSignInNoticeProvider.notifier).state = false,
+            child: Semantics(label: 'Dismiss sign-in notice',
+              child: const Icon(CupertinoIcons.clear)),
+          ),
+        ]),
+      )),
+    ));
   }
 }
 

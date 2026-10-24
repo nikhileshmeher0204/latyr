@@ -1,134 +1,130 @@
-# Graph Report - latyr  (2026-10-23)
+# Graph Report - latyr  (2026-10-24)
 
 ## Corpus Check
-- cluster-only mode — file stats not available
+- 248 files · ~1,696,795 words
+- Verdict: corpus is large enough that graph structure adds value.
+- Unclassified: 57 file(s) not represented in the graph (top: (none) 9, .properties 8, .xml 7)
 
 ## Summary
-- 3212 nodes · 6446 edges · 171 communities (107 shown, 64 thin omitted)
-- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 744 edges (avg confidence: 0.85)
-- Token usage: unmeasured (Codex semantic extraction; agent usage counters unavailable). No external model API calls.
+- 2907 nodes · 5968 edges · 156 communities (95 shown, 61 thin omitted)
+- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 647 edges (avg confidence: 0.85)
+- Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d71d192e`
+- Built from commit: `5520a0a2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- package:flutter/cupertino.dart / package:latyr_app/core/design/latyr_typography.dart
-- api_client.dart
-- app_database.g.dart / actualTableName
-- entertainment_detail_screen.dart
-- ActionCTA
-- capture_detail_screen.dart / latyr_capture_card.dart
-- Language
-- sse_client.dart / api_client.dart
-- CanonicalSource / SourceType
-- latyr_colors.dart / amberBorder
-- Capture / .processJob()
-- ExtractedEntity / .processSinglePendingEntity()
-- latyr_progressive_blur.dart / LatyrProgressiveBlur
-- intent_detail_app_bar.dart / library_1x2_grid_widget.dart
-- latyr_spacing.dart / base
-- latyr_capture_card.dart
-- entity_cards.dart / StatelessWidget
-- org.springframework.stereotype.Component
-- latyr_typography.dart / body
-- app_colors.dart / alabaster
-- home_screen.dart / _HomeScreenState
-- capture_repository_test.dart
-- latyr_rich_summary.dart / static const double
-- UserSubscriptionHistory / .handleRevenueCatEvent()
-- .testResurfacing_FridayNightWindow
-- CaptureService.java
-- search_screen.dart / library_screen.dart
-- .createUrlCapture() / .testProcessJob_Success()
-- entertainment_metadata.dart / awards
-- filter_chip_bar.dart
-- glass_card.dart / apple_tv_badge.dart
-- CaptureResponse
-- where_to_watch_card.dart / WhereToWatchCard
-- JsonbTypeHandler.java / StringArrayTypeHandler.java
-- .processJob
-- UserCollection / UserCollectionMapper
-- CaptureService
-- User / .getOrProvisionUser()
-- ApifyScraperAdapter
-- org.junit.jupiter.api.Test / org.junit.jupiter.api.DisplayName
-- org.springframework.context.annotation.Configuration
-- V1__init_schema.sql / captures
-- Live visual verification showcase / Latyr Flutter package manifest
-- extracted_entity_model.dart / ExtractedEntityModel
-- app.dart / floating_nav_island.dart
-- CurrentUserArgumentResolver.java
-- CaptureControllerTest.java
-- share_intent_service.dart
-- State
-- github_repo_metadata.dart / audit
-- GitHubEntityEnricher / .enrich()
-- NotificationLog / .processUserResurfacing()
-- dominant_color_service.dart / accent
-- app_theme.dart / static const Color
-- capture_providers.dart / _CaptureDetailScreenState
-- com.fasterxml.jackson.databind.ObjectMapper / SecurityConfig.java
-- UserMapper
-- .buildEnrichedEntity() / StreamingPlatform
-- UserSubscription / .createDefaultFreeSubscription()
-- summary_token.dart / String get
-- OmdbClient / OmdbMovieResponse
-- FirebaseAuthFilter.java / PathNormalizationFilter.java
-- AppDelegate / .application()
-- CaptureCollection / CaptureCollectionMapper
-- CaptureMapper / .getUserCaptures()
-- capture_repository.dart
-- GoogleGenAIConfig.java
-- org.slf4j.Logger / GlobalExceptionHandler.java
-- CdnAssetStorageProvider
-- instant
-- sync_service.dart / dart:async
-- jakarta.servlet.http.HttpServletRequest / WeatherIntegrationClient
-- AuthenticatedUser
-- widget_test.dart
-- Collection / .Collection()
-- org.springframework.http.ResponseEntity
-- place_metadata.dart / address
-- TmdbClient / com.fasterxml.jackson.annotation.JsonIgnoreProperties
-- capture_source_icon.dart / CustomPainter
-- AsyncConfig.java
-- app_switcher_scroll_physics.dart / app_switcher_scroll_physics_test.dart
-- StreamingBrandCatalog
-- latyr_expandable_text.dart / LatyrExpandableText
-- book_metadata.dart
-- recipe_metadata.dart
-- home_providers.dart / apiClient
-- AIEntity / DefaultEntityEnrichmentAdapter
-- brand_registry.dart / brandColor
-- collections_providers.dart
-- MainActivity / .setIntent()
-- generic_entity_metadata.dart / Map
-- SseNotificationService
-- LatyrException
+- package:flutter/cupertino.dart
+- ExtractedEntity
+- app_database.dart
+- app_database.g.dart
 - CaptureServiceTest.java
-- Document
-- RestGitHubClient / .searchRepositories()
-- Document
-- Document
-- CollectionMapper / Select
-- .resolveArgument() / .setUp()
-- capture_source_classifier.dart / CaptureSourceClassifier
-- summary_lexer.dart / static final RegExp
-- org.junit.jupiter.api.BeforeEach
-- PagedResponse
-- github_language_colors.dart / static const Map
+- entertainment_detail_screen.dart
+- Language
+- glass_card.dart
+- capture_detail_screen.dart
+- CanonicalSource
+- collections_providers.dart
+- latyr_colors.dart
+- latyr_progressive_blur.dart
+- search_screen.dart
+- latyr_spacing.dart
+- entity_cards.dart
+- github_repo_detail_screen.dart
+- GitHubEntityEnricherTest.java
+- latyr_typography.dart
+- app_colors.dart
+- latyr_rich_summary.dart
+- EntertainmentEntityEnricher
+- entertainment_metadata.dart
+- UserSubscriptionHistory
+- .createUrlCapture
+- sse_auth_test.dart
+- where_to_watch_card.dart
+- filter_chip_bar.dart
+- Capture
+- capture_providers.dart
+- capture_repository.dart
+- CaptureService
+- NotificationLog
+- JsonbTypeHandler.java
+- WatchProviderCategory
+- UserCollection
+- home_screen.dart
+- sse_client.dart
+- .processJob
+- org.junit.jupiter.api.Test
+- TmdbClient
+- LatyrException
+- Live visual verification showcase / Latyr Flutter package manifest
+- SubscriptionQuotaService
+- V1__init_schema.sql
+- CurrentUserArgumentResolver
+- CaptureControllerTest.java
+- extracted_entity_model.dart
+- User
+- api_client.dart
+- intent_detail_app_bar.dart
+- github_repo_metadata.dart
+- AuthenticatedUser
+- movie_show_entity_card.dart
+- dominant_color_service.dart
+- SecurityConfig.java
+- FirebaseSecurityChainTest.java
+- org.springframework.http.ResponseEntity
+- app_theme.dart
+- collections
+- UserMapper
+- org.springframework.stereotype.Component
+- Intent
+- summary_token.dart
+- CaptureCollection
+- capture_repository_test.dart
+- GoogleGenAIConfig.java
+- AppDelegate
+- UserSubscription
+- instant
+- AIEntity
+- home_providers.dart
+- CaptureMapper
+- sync_service.dart
+- Collection
+- CaptureController.java
+- place_metadata.dart
+- capture_source_icon.dart
+- app_switcher_scroll_physics.dart
+- latyr_capture_card.dart
+- latyr_expandable_text.dart
+- String?
+- ApifyScraperAdapter
+- recipe_metadata.dart
+- brand_registry.dart
+- app.dart
+- List
+- library_1x2_grid_widget.dart
+- RestGitHubClient
+- State
+- CaptureStreamController.java
+- EntertainmentEntityEnricher
+- Intent
+- UrlNormalizationService
+- CollectionMapper
+- .resolveArgument
+- capture_source_classifier.dart
+- summary_lexer.dart
+- SubscriptionQuotaService
+- github_language_colors.dart
+- LocalCapture
+- token_provider_test.dart
+- app_properties.dart
+- watch_provider_category.dart
+- TypographyContext
+- LocalCaptures
 - Latyr backend REST API / Latyr Flutter mobile application
 - Orchestrated layered architecture / External adapter facades
-- JobStatus
-- LocalCapture / LocalCapturesCompanion
-- app_properties.dart / AppProperties
-- watch_provider_category.dart / code
-- library_1x2_grid_widget.dart
-- TypographyContext / BuildContext
 - iOS launch screen assets / Xcode asset catalog launch image customization
-- environment_config.dart
 - Flutter getting started resources / Latyr personal knowledge application
 - Graphify query-first workflow
 - PostgreSQL SKIP LOCKED worker queue
@@ -137,375 +133,385 @@
 - Share extension 300ms local write target
 - Stateless token authentication
 - Java 21 virtual threads
-- Dart Flutter DevTools extension settings
 - com.latyr:latyr-api
+- pill_badge.dart
+- WeatherIntegrationClient
+- floating_nav_island.dart
+- summary_action_handler.dart
+- apple_tv_badge.dart
+- Dart Flutter DevTools extension settings
+- LatyrException
+- streaming_branding.dart
+- RemovedDiagnosticRoutesTest.java
 - Document
-- Latyr — Database Design & Physical Data Model (Low-Level Design)
-- Latyr — Spring Boot Backend Architecture & Class Design (Low-Level Design)
-- Latyr — REST API Specifications & Interface Contracts (Low-Level Design)
-- Latyr — System Architecture Overview (High-Level Design)
-- Latyr — Queue Worker & Ingestion Engine Design (Low-Level Design)
-- Latyr — Flutter Mobile Client Architecture & Component Design (Low-Level Design)
+- color_extraction_service.dart
+- EntertainmentEntityEnricher.java
+- ResurfacingScheduler.java
+- EntityController
+- PagedResponse
 - Document
-- Document
-- Latyr — Product Requirements Document (PRD)
-- Latyr — Infrastructure & Unit Economics (High-Level Design)
-- Latyr — Security, Privacy & Compliance (High-Level Design)
-- Latyr — Data Flow & Processing Pipelines (High-Level Design)
-- Instagram Reel Feasibility Report
-- Latyr — Domain Models & High-Level Data Schema
-- Document
-- Drift SQLite
-- String?
-- RevenueCatWebhookController
-- user_collections
-- OmdbClient
-- Flutter Drift Client
+- org.slf4j.Logger
 
 ## God Nodes (most connected - your core abstractions)
 1. `Capture` - 73 edges
-2. `IngestionJob` - 43 edges
-3. `ExtractedEntity` - 42 edges
+2. `ExtractedEntity` - 42 edges
+3. `IngestionJob` - 42 edges
 4. `EntityType` - 36 edges
 5. `User` - 36 edges
-6. `TmdbClient` - 35 edges
-7. `EntertainmentEntityEnricher` - 34 edges
-8. `AuthenticatedUser` - 33 edges
-9. `CaptureMapper` - 33 edges
-10. `Language` - 32 edges
+6. `AIEntity` - 32 edges
+7. `EntertainmentEntityEnricher` - 32 edges
+8. `CanonicalSource` - 32 edges
+9. `UserSubscription` - 32 edges
+10. `TmdbClient` - 32 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `CaptureController` --conceptually_related_to--> `CaptureController`  [INFERRED]
-  05-implementation-roadmap/stage-03-ingestion-gateway-and-deduplication.md → latyr-api/src/main/java/com/latyr/api/controller/CaptureController.java
-- `IngestionJob` --conceptually_related_to--> `IngestionJob`  [INFERRED]
-  05-implementation-roadmap/stage-01-core-foundation-and-database.md → latyr-api/src/main/java/com/latyr/api/domain/model/IngestionJob.java
-- `UserController` --conceptually_related_to--> `UserController`  [INFERRED]
-  05-implementation-roadmap/stage-02-auth-and-user-management.md → latyr-api/src/main/java/com/latyr/api/controller/UserController.java
-- `StreamingPlatform` --conceptually_related_to--> `StreamingPlatform`  [INFERRED]
-  05-implementation-roadmap/stage-04-async-ingestion-engine.md → latyr-api/src/main/java/com/latyr/api/domain/enums/StreamingPlatform.java
-- `GlobalExceptionHandler` --conceptually_related_to--> `GlobalExceptionHandler`  [INFERRED]
-  05-implementation-roadmap/stage-01-core-foundation-and-database.md → latyr-api/src/main/java/com/latyr/api/exception/GlobalExceptionHandler.java
+- `Latyr owned progressive blur fragment shader` --semantically_similar_to--> `Pure progressive blur cinema hero architecture`  [INFERRED] [semantically similar]
+  latyr-app/pubspec.yaml → VISUAL_VERIFICATION_SHOWCASE.md
+- `Flutter runtime dependency catalog` --references--> `Riverpod AsyncNotifier and StateNotifier`  [EXTRACTED]
+  latyr-app/pubspec.yaml → AGENTS.md
+- `Flutter runtime dependency catalog` --references--> `Offline-first Drift SQLite caching`  [EXTRACTED]
+  latyr-app/pubspec.yaml → AGENTS.md
+- `GoogleGenAIAdapter` --implements--> `AIProvider`  [EXTRACTED]
+  latyr-api/src/main/java/com/latyr/api/adapter/GoogleGenAIAdapter.java → latyr-api/src/main/java/com/latyr/api/adapter/AIProvider.java
+- `AIAnalysisResult` --references--> `Intent`  [EXTRACTED]
+  latyr-api/src/main/java/com/latyr/api/adapter/AIProvider.java → latyr-api/src/main/java/com/latyr/api/domain/enums/Intent.java
 
 ## Import Cycles
 - None detected.
 
-## Communities (171 total, 64 thin omitted)
+## Communities (156 total, 61 thin omitted)
 
-### Community 0 - "package:flutter/cupertino.dart / package:latyr_app/core/design/latyr_typography.dart"
-Cohesion: 0.03
-Nodes (74): fromString, image, build, CaptureBannerWidget, onTap, build, categoryTag, ForYouCardWidget (+66 more)
+### Community 0 - "package:flutter/cupertino.dart"
+Cohesion: 0.06
+Nodes (38): build, CaptureBannerWidget, onTap, build, HomeMetricsWidget, onProcessingTap, processedCount, processingCount (+30 more)
 
-### Community 1 - "api_client.dart"
+### Community 2 - "app_database.dart"
+Cohesion: 0.04
+Nodes (39): _, custom, _sourceTypeMeta, toColumns, audioTranscript, category, contentType, createdAt (+31 more)
+
+### Community 3 - "app_database.g.dart"
+Cohesion: 0.04
+Nodes (52): actualTableName, _alias, aliasedName, allSchemaEntities, allTables, attachedDatabase, _audioTranscriptMeta, _categoryMeta (+44 more)
+
+### Community 4 - "CaptureServiceTest.java"
 Cohesion: 0.09
-Nodes (15): ApiClient, AuthInterceptor, ApiClient, createCapture, dio, getCaptureDetail, getCaptures, getWeatherContext (+7 more)
-
-### Community 2 - "app_database.g.dart / actualTableName"
-Cohesion: 0.03
-Nodes (91): _, actualTableName, _alias, aliasedName, allSchemaEntities, allTables, attachedDatabase, _audioTranscriptMeta (+83 more)
-
-### Community 3 - "entertainment_detail_screen.dart"
-Cohesion: 0.05
-Nodes (36): ExtractedEntityMetadataX, ExtractedEntityModel, _AppleTvImdbLinkTile, _AppleTvImdbLinkTileState, _AppleTvSynopsis, _AppleTvSynopsisState, build, _buildDetailRow (+28 more)
-
-### Community 4 - "ActionCTA"
-Cohesion: 0.08
 Nodes (19): ActionCTA, COOK, EXPLORE, OPEN_GITHUB, READ, REMEMBER, VISIT, WATCH (+11 more)
 
-### Community 5 - "capture_detail_screen.dart / latyr_capture_card.dart"
+### Community 5 - "entertainment_detail_screen.dart"
+Cohesion: 0.09
+Nodes (22): _AppleTvImdbLinkTile, _AppleTvImdbLinkTileState, build, _buildDetailRow, createState, entity, _fontFamily, imdbId (+14 more)
+
+### Community 6 - "Language"
+Cohesion: 0.17
+Nodes (8): AIAnalysisResult, TypeReference<Map<String, Object>>, Language, ENGLISH, HINDI, HINGLISH, ORIGINAL, UpdatePreferencesRequest
+
+### Community 7 - "glass_card.dart"
+Cohesion: 0.09
+Nodes (20): borderRadius, build, child, _controller, createState, customBorder, dispose, GlassCardVariant (+12 more)
+
+### Community 8 - "capture_detail_screen.dart"
 Cohesion: 0.08
 Nodes (24): apiClientProvider, appDatabaseProvider, build, _buildCaptureIntentsSection, _buildCardDecoration, _buildCuratedMediaCard, _buildMediaTextSection, _buildProcessingBanner (+16 more)
 
-### Community 6 - "Language"
-Cohesion: 0.05
-Nodes (32): AIProvider, ApifyScraperAdapter, Document, EntertainmentEntityEnricher, ENTITY_ENRICHED SSE, EntityEnrichmentRetryWorker, Gemini 2.5 Flash, GoogleGenAIAdapter (+24 more)
-
-### Community 7 - "sse_client.dart / api_client.dart"
-Cohesion: 0.08
-Nodes (19): _cancelToken, connect, data, _dio, disconnect, dispose, _eventController, events (+11 more)
-
-### Community 8 - "CanonicalSource / SourceType"
+### Community 9 - "CanonicalSource"
 Cohesion: 0.09
-Nodes (8): SourceType, IMAGE, INSTAGRAM_REEL, WEB_URL, YOUTUBE_SHORT, YOUTUBE_VIDEO, CanonicalSource, CreateCaptureRequest
+Nodes (7): SourceType, IMAGE, INSTAGRAM_REEL, WEB_URL, YOUTUBE_SHORT, YOUTUBE_VIDEO, CanonicalSource
 
-### Community 9 - "latyr_colors.dart / amberBorder"
+### Community 10 - "collections_providers.dart"
+Cohesion: 0.06
+Nodes (24): fromString, image, CategoryGroup, build, CategoryDetailScreen, categoryGroup, captures, capturesAsync (+16 more)
+
+### Community 11 - "latyr_colors.dart"
 Cohesion: 0.05
 Nodes (42): amberBorder, amberFill, ambientHoney, ambientWarmGlow, ambientWheat, brandAmber, brandAmberDark, brandAmberLight (+34 more)
 
-### Community 12 - "latyr_progressive_blur.dart / LatyrProgressiveBlur"
+### Community 12 - "latyr_progressive_blur.dart"
 Cohesion: 0.05
 Nodes (26): alwaysNeedsCompositing, begin, build, child, _configureShader, createRenderObject, createState, devicePixelRatio (+18 more)
 
-### Community 13 - "intent_detail_app_bar.dart / library_1x2_grid_widget.dart"
-Cohesion: 0.06
-Nodes (29): captures, categoryName, color, icon, SubCategoryGroup, subCategoryName, build, parentCategoryColor (+21 more)
+### Community 13 - "search_screen.dart"
+Cohesion: 0.08
+Nodes (22): captureListStreamProvider, _buildOverlappingFeed, build, _buildEmptyState, _buildEntityWidget, createState, _filters, LibraryScreen (+14 more)
 
-### Community 14 - "latyr_spacing.dart / base"
+### Community 14 - "latyr_spacing.dart"
 Cohesion: 0.05
 Nodes (38): base, blurCard, blurNav, brLG, brMD, brPill, brSheet, brSM (+30 more)
 
-### Community 15 - "latyr_capture_card.dart"
-Cohesion: 0.10
-Nodes (14): capture, cardColorFor, _cleanPreviewSummary, _computeIsDark, createState, didChangeDependencies, didUpdateWidget, _extractedColor (+6 more)
-
-### Community 16 - "entity_cards.dart / StatelessWidget"
+### Community 15 - "entity_cards.dart"
 Cohesion: 0.06
-Nodes (37): _DottedUnderlineText, _HandwrittenWavyText, EntertainmentDetailScreen, _MetascoreText, _RatingText, _RottenTomatoesText, _VibrantText, borderColor (+29 more)
+Nodes (38): _DottedUnderlineText, _HandwrittenWavyText, EntertainmentDetailScreen, _MaturityBadge, _MetascoreText, _RatingText, _RottenTomatoesText, _VibrantText (+30 more)
 
-### Community 17 - "org.springframework.stereotype.Component"
-Cohesion: 0.15
-Nodes (3): EphemeralMediaStreamer, GitHubSearchResultDTO, ResurfacingScheduler
+### Community 16 - "github_repo_detail_screen.dart"
+Cohesion: 0.11
+Nodes (12): ExtractedEntityMetadataX, ExtractedEntityModel, build, _buildAvatarFallback, _buildSpecRow, _copyToClipboard, entity, _fontFamily (+4 more)
 
-### Community 18 - "latyr_typography.dart / body"
+### Community 17 - "GitHubEntityEnricherTest.java"
+Cohesion: 0.18
+Nodes (8): GitHubEntityEnricher, GitHubRepoDetailsDTO, LicenseDTO, OwnerDTO, GitHubSearchResultDTO, ItemDTO, GitHubClient, GitHubEntityEnricherTest
+
+### Community 18 - "latyr_typography.dart"
 Cohesion: 0.05
 Nodes (36): body, buttonLabel, callout, caption1, caption1Bold, caption2, caption2Bold, eyebrow (+28 more)
 
-### Community 19 - "app_colors.dart / alabaster"
+### Community 19 - "app_colors.dart"
 Cohesion: 0.05
 Nodes (38): alabaster, alabasterBorder, alabasterGlass, amberBorder, amberGlow, amberSubtle, ambientHoney, ambientWarmGlow (+30 more)
 
-### Community 20 - "home_screen.dart / _HomeScreenState"
-Cohesion: 0.05
-Nodes (42): captureListStreamProvider, captureRepositoryProvider, homeStatsProvider, weatherProvider, _buildAnimatedCard, _buildBar, _buildBarChart, _buildCircleButton (+34 more)
-
-### Community 21 - "capture_repository_test.dart"
-Cohesion: 0.11
-Nodes (8): AppDatabase, CaptureRepository, db, main, db, main, repository, main
-
-### Community 22 - "latyr_rich_summary.dart / static const double"
+### Community 20 - "latyr_rich_summary.dart"
 Cohesion: 0.05
 Nodes (31): _amplitude, build, cardAccentColor, _clearRecognizers, color, createState, didUpdateWidget, dispose (+23 more)
 
-### Community 23 - "UserSubscriptionHistory / .handleRevenueCatEvent()"
-Cohesion: 0.09
-Nodes (6): SubscriptionEventType, CANCELLATION, DOWNGRADE, RENEWAL, UPGRADE, UserSubscriptionHistory
+### Community 21 - "EntertainmentEntityEnricher"
+Cohesion: 0.11
+Nodes (10): StreamingPlatform, APPLE_TV, DISNEY_HOTSTAR, NETFLIX, OTHER, PRIME_VIDEO, SONY_LIV, THEATRICAL (+2 more)
 
-### Community 25 - "CaptureService.java"
-Cohesion: 0.16
-Nodes (5): PlanTier, FREE, PRO, QuotaExceededException, ResourceNotFoundException
-
-### Community 26 - "search_screen.dart / library_screen.dart"
-Cohesion: 0.09
-Nodes (14): _buildEmptyState, _buildEntityWidget, createState, _filters, _selectedFilterIndex, _buildEntityCard, createState, dispose (+6 more)
-
-### Community 28 - "entertainment_metadata.dart / awards"
+### Community 22 - "entertainment_metadata.dart"
 Cohesion: 0.06
 Nodes (34): awards, backdropUrl, boxOffice, contentRating, country, director, durationOrSeasons, EntertainmentMetadata (+26 more)
 
-### Community 29 - "filter_chip_bar.dart"
-Cohesion: 0.05
-Nodes (36): _confirmReminder, handleAction, _handleGitHubAction, _handleMapsAction, _launchUriSafely, _launchWebUrl, _showReminderSheet, _showToast (+28 more)
+### Community 23 - "UserSubscriptionHistory"
+Cohesion: 0.09
+Nodes (6): SubscriptionEventType, CANCELLATION, DOWNGRADE, RENEWAL, UPGRADE, UserSubscriptionHistory
 
-### Community 31 - "glass_card.dart / apple_tv_badge.dart"
-Cohesion: 0.05
-Nodes (39): AmbientBackgroundMode, AmbientMeshBackground, build, _buildDarkBackground, _buildLightBackground, child, mode, borderRadius (+31 more)
+### Community 25 - "sse_auth_test.dart"
+Cohesion: 0.07
+Nodes (14): AuthInterceptor, onError, onRequest, TokenProvider, AuthenticationRequiredException, toString, main, close (+6 more)
 
-### Community 32 - "CaptureResponse"
-Cohesion: 0.14
-Nodes (4): CaptureController, EntityController, CaptureDetailResponse, CaptureResponse
+### Community 26 - "where_to_watch_card.dart"
+Cohesion: 0.07
+Nodes (29): brandColor, build, _buildCategoryRow, _buildFallbackInitial, _buildLogoContent, _buildSecondaryFallback, category, createState (+21 more)
 
-### Community 33 - "where_to_watch_card.dart / WhereToWatchCard"
-Cohesion: 0.04
-Nodes (44): clearCache, ColorExtractionService, extractDominantColor, getCachedColor, _inFlightCache, _performExtraction, _resolvedCache, actionLabel (+36 more)
+### Community 27 - "filter_chip_bar.dart"
+Cohesion: 0.06
+Nodes (29): build, _controller, createState, dispose, FilterChipBar, FilterChipItem, iconText, initState (+21 more)
 
-### Community 34 - "JsonbTypeHandler.java / StringArrayTypeHandler.java"
-Cohesion: 0.16
+### Community 29 - "capture_providers.dart"
+Cohesion: 0.11
+Nodes (16): auth, client, db, firebaseAuthProvider, repo, service, shareIntentServiceProvider, sseClientProvider (+8 more)
+
+### Community 31 - "capture_repository.dart"
+Cohesion: 0.11
+Nodes (17): SseClient, apiClient, captureUrl, checkProcessingCaptures, db, dispose, fetchRemoteFeed, hasActiveProcessingCaptures (+9 more)
+
+### Community 32 - "CaptureService"
+Cohesion: 0.11
+Nodes (6): CanonicalSourceMapper, IngestionJobMapper, CanonicalDeduplicationService, CaptureService, IngestionQueueWorker, CaptureServiceTest
+
+### Community 34 - "JsonbTypeHandler.java"
+Cohesion: 0.15
 Nodes (3): JsonbTypeHandler, StringArrayTypeHandler, UuidTypeHandler
 
-### Community 37 - "CaptureService"
-Cohesion: 0.13
-Nodes (14): EntityEnrichmentProvider, ScraperProvider, CanonicalSourceMapper, ExtractedEntityMapper, IngestionJobMapper, CanonicalDeduplicationService, CaptureService, FcmService (+6 more)
+### Community 35 - "WatchProviderCategory"
+Cohesion: 0.09
+Nodes (9): BrandMetadata, StreamingBrandCatalog, AssetStorageProvider, CdnAssetStorageProvider, WatchProviderCategory, BUY, FLATRATE, FREE (+1 more)
 
-### Community 39 - "ApifyScraperAdapter"
-Cohesion: 0.28
-Nodes (3): ApifyScraperAdapter, org.springframework.core.ParameterizedTypeReference<Map<String, Object>>, OgMetadata
+### Community 37 - "home_screen.dart"
+Cohesion: 0.05
+Nodes (37): build, captureRepositoryProvider, CaptureDetailScreen, build, homeStatsProvider, weatherProvider, build, _buildAnimatedCard (+29 more)
 
-### Community 40 - "org.junit.jupiter.api.Test / org.junit.jupiter.api.DisplayName"
+### Community 38 - "sse_client.dart"
+Cohesion: 0.08
+Nodes (19): _cancelToken, connect, data, _dio, disconnect, dispose, _eventController, events (+11 more)
+
+### Community 39 - ".processJob"
 Cohesion: 0.07
-Nodes (9): MarkupSanitizer, UrlSourceClassifier, ApifyScraperAdapterTest, EphemeralMediaStreamerTest, FcmServiceTest, GoogleGenAIAdapterTest, LatyrApiApplicationTests, MarkupSanitizerTest (+1 more)
+Nodes (6): JobStatus, COMPLETED, FAILED, PENDING, PROCESSING, IngestionJob
 
-### Community 42 - "V1__init_schema.sql / captures"
-Cohesion: 0.16
-Nodes (24): notification_logs, user_subscriptions, canonical_sources, captures, extracted_entities, idx_canonical_sources_hash, idx_captures_resurface, idx_captures_user_status_created (+16 more)
+### Community 40 - "org.junit.jupiter.api.Test"
+Cohesion: 0.07
+Nodes (9): UrlSourceClassifier, ApifyScraperAdapterTest, EntertainmentEntityEnricherTest, EphemeralMediaStreamerTest, GoogleGenAIAdapterTest, LatyrApiApplicationTests, SseNotificationServiceTest, MarkupSanitizerTest (+1 more)
+
+### Community 41 - "TmdbClient"
+Cohesion: 0.23
+Nodes (14): TmdbCast, TmdbClient, TmdbCountryWatchProviders, TmdbCredits, TmdbCrew, TmdbExternalIds, TmdbGenre, TmdbItem (+6 more)
 
 ### Community 43 - "Live visual verification showcase / Latyr Flutter package manifest"
 Cohesion: 0.09
 Nodes (21): Feature-First MVVM, Dynamic palette extraction and Brand Token Registry, Riverpod AsyncNotifier and StateNotifier, Pure stateless presentation renderers, Dart analyzer configuration, Flutter recommended analyzer lints, Flutter lint test and Drift build dependencies, Bundled icon assets (+13 more)
 
-### Community 44 - "extracted_entity_model.dart / ExtractedEntityModel"
+### Community 45 - "V1__init_schema.sql"
+Cohesion: 0.16
+Nodes (26): canonical_sources, capture_collections, captures, extracted_entities, idx_canonical_sources_hash, idx_captures_resurface, idx_captures_user_status_created, idx_extracted_entities_metadata_gin (+18 more)
+
+### Community 47 - "CaptureControllerTest.java"
+Cohesion: 0.11
+Nodes (5): CaptureControllerTest, HandlerMethodArgumentResolver, CaptureStreamControllerTest, CurrentUserArgumentResolver, UserControllerTest
+
+### Community 48 - "extracted_entity_model.dart"
 Cohesion: 0.08
 Nodes (16): actionCta, book, description, entertainment, entityType, externalUrl, fromJson, generic (+8 more)
 
-### Community 45 - "app.dart / floating_nav_island.dart"
-Cohesion: 0.10
-Nodes (13): build, _buildFloatingNavBar, _buildNavItem, createState, _currentIndex, dispose, initState, LatyrApp (+5 more)
+### Community 50 - "api_client.dart"
+Cohesion: 0.09
+Nodes (15): cdnBaseUrl, environment, EnvironmentConfig, isLocal, isProd, isUat, _rawApiUrl, ApiClient (+7 more)
 
-### Community 47 - "CaptureControllerTest.java"
-Cohesion: 0.18
-Nodes (3): CaptureControllerTest, CaptureStreamControllerTest, UserControllerTest
+### Community 51 - "intent_detail_app_bar.dart"
+Cohesion: 0.08
+Nodes (20): captures, categoryName, color, icon, SubCategoryGroup, subCategoryName, build, parentCategoryColor (+12 more)
 
-### Community 48 - "share_intent_service.dart"
-Cohesion: 0.17
-Nodes (9): captureRepository, _channel, dispose, _extractUrl, _handleSharedText, _init, _lastHandledAt, _lastHandledUrl (+1 more)
-
-### Community 49 - "State"
-Cohesion: 0.16
-Nodes (16): LatyrCaptureCard, _LatyrCaptureCardState, LatyrProgressiveBlur, _LatyrProgressiveBlurState, LatyrRichSummary, _LatyrRichSummaryState, _WatchProviderLogoButton, _WatchProviderLogoButtonState (+8 more)
-
-### Community 50 - "github_repo_metadata.dart / audit"
+### Community 52 - "github_repo_metadata.dart"
 Cohesion: 0.08
 Nodes (24): audit, avatarUrl, defaultBranch, forks, forksFormatted, formatCount, fromMap, fullName (+16 more)
 
-### Community 51 - "GitHubEntityEnricher / .enrich()"
-Cohesion: 0.22
-Nodes (7): GitHubEntityEnricher, GitHubRepoDetailsDTO, LicenseDTO, OwnerDTO, ItemDTO, GitHubClient, GitHubEntityEnricherTest
+### Community 53 - "AuthenticatedUser"
+Cohesion: 0.14
+Nodes (4): PlanTier, FREE, PRO, AuthenticatedUser
 
-### Community 53 - "dominant_color_service.dart / accent"
+### Community 54 - "movie_show_entity_card.dart"
 Cohesion: 0.09
-Nodes (19): accent, background, DominantPalette, extractDominantColor, extractPalette, fallback, getCachedPalette, getSeparatorColor (+11 more)
+Nodes (19): build, categoryTag, ForYouCardWidget, onOpen, posterUrl, subtitle, title, build (+11 more)
 
-### Community 54 - "app_theme.dart / static const Color"
+### Community 55 - "dominant_color_service.dart"
+Cohesion: 0.09
+Nodes (20): accent, background, DominantColorService, DominantPalette, extractDominantColor, extractPalette, fallback, getCachedPalette (+12 more)
+
+### Community 56 - "SecurityConfig.java"
+Cohesion: 0.09
+Nodes (5): AsyncConfig, JacksonConfig, LatyrApiApplication, SecurityConfig, TestConfiguration
+
+### Community 58 - "org.springframework.http.ResponseEntity"
+Cohesion: 0.15
+Nodes (3): CaptureController, UserController, UserProfileResponse
+
+### Community 60 - "app_theme.dart"
 Cohesion: 0.09
 Nodes (18): accent, AppTheme, background, border, cupertinoTheme, darkTheme, error, info (+10 more)
 
-### Community 55 - "capture_providers.dart / _CaptureDetailScreenState"
-Cohesion: 0.14
-Nodes (14): authAttempted, client, db, repo, service, shareIntentServiceProvider, sseClientProvider, sync (+6 more)
-
-### Community 57 - "UserMapper"
-Cohesion: 0.11
-Nodes (8): UserController, UserMapper, UserSubscriptionHistoryMapper, UserSubscriptionMapper, SubscriptionQuotaService, UserService, RevenueCatWebhookControllerTest, SubscriptionQuotaServiceTest
-
-### Community 58 - ".buildEnrichedEntity() / StreamingPlatform"
-Cohesion: 0.09
-Nodes (11): EntertainmentEntityEnricher, StreamingPlatform, APPLE_TV, DISNEY_HOTSTAR, NETFLIX, OTHER, PRIME_VIDEO, SONY_LIV (+3 more)
-
-### Community 61 - "summary_token.dart / String get"
-Cohesion: 0.10
-Nodes (17): actionPayload, actionScheme, actionType, hashCode, highlight, icon3d, iconName, italic (+9 more)
-
-### Community 62 - "OmdbClient / OmdbMovieResponse"
+### Community 61 - "collections"
 Cohesion: 0.22
 Nodes (4): OmdbClient, OmdbMovieResponse, OmdbRating, collections
 
-### Community 63 - "FirebaseAuthFilter.java / PathNormalizationFilter.java"
-Cohesion: 0.13
-Nodes (3): PathNormalizationFilter, PathNormalizationFilter, HttpServletRequestWrapper
+### Community 62 - "UserMapper"
+Cohesion: 0.18
+Nodes (3): UserMapper, ResurfacingScheduler, ResurfacingSchedulerTest
 
-### Community 64 - "AppDelegate / .application()"
+### Community 63 - "org.springframework.stereotype.Component"
+Cohesion: 0.10
+Nodes (6): FirebaseIdentityTokenVerifier, IdentityTokenVerifier, VerifiedIdentity, PathNormalizationFilter, HttpServletRequestWrapper, FirebaseAuthFilter
+
+### Community 65 - "summary_token.dart"
+Cohesion: 0.10
+Nodes (17): actionPayload, actionScheme, actionType, hashCode, highlight, icon3d, iconName, italic (+9 more)
+
+### Community 67 - "capture_repository_test.dart"
+Cohesion: 0.09
+Nodes (13): AppDatabase, db, main, main, calls, close, db, fetch (+5 more)
+
+### Community 68 - "GoogleGenAIConfig.java"
+Cohesion: 0.16
+Nodes (3): GoogleGenAIAdapter, GoogleGenAIConfig, FirebaseConfig
+
+### Community 69 - "AppDelegate"
 Cohesion: 0.12
 Nodes (6): Flutter, AppDelegate, SceneDelegate, RunnerTests, UIKit, XCTest
 
-### Community 67 - "capture_repository.dart"
-Cohesion: 0.12
-Nodes (14): apiClient, captureUrl, checkProcessingCaptures, db, dispose, fetchRemoteFeed, hasActiveProcessingCaptures, _initSseListener (+6 more)
+### Community 72 - "AIEntity"
+Cohesion: 0.18
+Nodes (4): AIEntity, DefaultEntityEnrichmentAdapter, EntityEnricher, DefaultEntityEnrichmentAdapterTest
 
-### Community 68 - "GoogleGenAIConfig.java"
-Cohesion: 0.12
-Nodes (3): GoogleGenAIConfig, JacksonConfig, FirebaseConfig
-
-### Community 69 - "org.slf4j.Logger / GlobalExceptionHandler.java"
-Cohesion: 0.20
-Nodes (3): ErrorResponse, ErrorResponse, GlobalExceptionHandler
-
-### Community 72 - "sync_service.dart / dart:async"
-Cohesion: 0.13
-Nodes (9): captureRepository, _connectivity, dispose, _feedSyncTimer, _processingTimer, _startListening, _startTimers, _subscription (+1 more)
-
-### Community 73 - "jakarta.servlet.http.HttpServletRequest / WeatherIntegrationClient"
-Cohesion: 0.25
-Nodes (5): ContextController, WeatherContextResponse, LocationData, WeatherData, WeatherIntegrationClient
-
-### Community 75 - "widget_test.dart"
-Cohesion: 0.14
-Nodes (6): SseClient, main, connect, dispose, main, _NoOpSseClient
-
-### Community 77 - "org.springframework.http.ResponseEntity"
-Cohesion: 0.14
-Nodes (3): AuthController, UserProfileResponse, CurrentUser
-
-### Community 78 - "place_metadata.dart / address"
-Cohesion: 0.12
-Nodes (15): address, city, country, fromMap, latitude, location, longitude, mapsUrl (+7 more)
-
-### Community 79 - "TmdbClient / com.fasterxml.jackson.annotation.JsonIgnoreProperties"
-Cohesion: 0.21
-Nodes (15): TmdbCast, TmdbClient, TmdbCountryWatchProviders, TmdbCredits, TmdbCrew, TmdbExternalIds, TmdbGenre, TmdbItem (+7 more)
-
-### Community 80 - "capture_source_icon.dart / CustomPainter"
-Cohesion: 0.14
-Nodes (13): CaptureSource, build, CaptureSourceIcon, color, _InstagramGlyphPainter, paint, shouldRepaint, size (+5 more)
-
-### Community 82 - "app_switcher_scroll_physics.dart / app_switcher_scroll_physics_test.dart"
-Cohesion: 0.13
-Nodes (8): applyPhysicsToUserOffset, applyTo, AppSwitcherScrollPhysics, createBallisticSimulation, _kOverScrollSpring, minFlickVelocity, velocityPerCard, main
-
-### Community 83 - "StreamingBrandCatalog"
-Cohesion: 0.22
-Nodes (3): BrandMetadata, StreamingBrandCatalog, AssetStorageProvider
-
-### Community 84 - "latyr_expandable_text.dart / LatyrExpandableText"
-Cohesion: 0.14
-Nodes (13): LatyrExpandableText, LatyrExpandableText, RoundedTextStyle, animationDuration, build, createState, _isExpanded, LatyrExpandableText (+5 more)
-
-### Community 85 - "book_metadata.dart"
-Cohesion: 0.14
-Nodes (12): author, BookMetadata, buyUrl, coverUrl, fromMap, genres, isbn, overview (+4 more)
-
-### Community 86 - "recipe_metadata.dart"
-Cohesion: 0.14
-Nodes (13): calories, cookTime, cuisine, difficulty, fromMap, imageUrl, ingredients, instructions (+5 more)
-
-### Community 87 - "home_providers.dart / apiClient"
+### Community 73 - "home_providers.dart"
 Cohesion: 0.14
 Nodes (13): apiClient, capturesToday, categoriesDiscovered, city, condition, db, fromJson, HomeStats (+5 more)
 
-### Community 88 - "AIEntity / DefaultEntityEnrichmentAdapter"
-Cohesion: 0.17
-Nodes (5): AIEntity, DefaultEntityEnrichmentAdapter, CompositeEntityEnricher, EntityEnricher, DefaultEntityEnrichmentAdapterTest
+### Community 74 - "CaptureMapper"
+Cohesion: 0.14
+Nodes (7): CaptureStatus, COMPLETED, FAILED, PENDING, PROCESSING, CaptureDetailResponse, CaptureMapper
 
-### Community 89 - "brand_registry.dart / brandColor"
+### Community 75 - "sync_service.dart"
+Cohesion: 0.07
+Nodes (20): captureRepository, _channel, dispose, _extractUrl, _handleSharedText, _init, _lastHandledAt, _lastHandledUrl (+12 more)
+
+### Community 78 - "place_metadata.dart"
+Cohesion: 0.12
+Nodes (15): address, city, country, fromMap, latitude, location, longitude, mapsUrl (+7 more)
+
+### Community 79 - "capture_source_icon.dart"
+Cohesion: 0.14
+Nodes (13): CaptureSource, build, CaptureSourceIcon, color, _InstagramGlyphPainter, paint, shouldRepaint, size (+5 more)
+
+### Community 80 - "app_switcher_scroll_physics.dart"
+Cohesion: 0.13
+Nodes (8): applyPhysicsToUserOffset, applyTo, AppSwitcherScrollPhysics, createBallisticSimulation, _kOverScrollSpring, minFlickVelocity, velocityPerCard, main
+
+### Community 81 - "latyr_capture_card.dart"
+Cohesion: 0.10
+Nodes (14): capture, cardColorFor, _cleanPreviewSummary, _computeIsDark, createState, didChangeDependencies, didUpdateWidget, _extractedColor (+6 more)
+
+### Community 82 - "latyr_expandable_text.dart"
+Cohesion: 0.15
+Nodes (11): RoundedTextStyle, animationDuration, build, createState, _isExpanded, LatyrExpandableText, _LatyrExpandableTextState, maxLines (+3 more)
+
+### Community 83 - "String?"
+Cohesion: 0.06
+Nodes (28): author, BookMetadata, buyUrl, coverUrl, fromMap, genres, isbn, overview (+20 more)
+
+### Community 84 - "ApifyScraperAdapter"
+Cohesion: 0.28
+Nodes (3): ApifyScraperAdapter, org.springframework.core.ParameterizedTypeReference<Map<String, Object>>, OgMetadata
+
+### Community 85 - "recipe_metadata.dart"
+Cohesion: 0.14
+Nodes (13): calories, cookTime, cuisine, difficulty, fromMap, imageUrl, ingredients, instructions (+5 more)
+
+### Community 86 - "brand_registry.dart"
 Cohesion: 0.15
 Nodes (12): brandColor, BrandRegistry, BrandToken, colorFromHex, iconColor, logoUrl, name, resolve (+4 more)
 
-### Community 90 - "collections_providers.dart"
-Cohesion: 0.07
-Nodes (23): CollectionsScreen, build, CategoryGroup, build, CategoryDetailScreen, categoryGroup, captures, capturesAsync (+15 more)
+### Community 87 - "app.dart"
+Cohesion: 0.10
+Nodes (13): build, _buildFloatingNavBar, _buildNavItem, createState, _currentIndex, dispose, initState, LatyrApp (+5 more)
 
-### Community 92 - "generic_entity_metadata.dart / Map"
+### Community 88 - "List"
 Cohesion: 0.17
 Nodes (9): category, confidenceScore, fromMap, GenericEntityMetadata, rawProperties, sourceDomain, summary, tags (+1 more)
 
-### Community 93 - "SseNotificationService"
-Cohesion: 0.20
-Nodes (4): CaptureStreamController, HealthController, SseNotificationService, SseNotificationServiceTest
+### Community 89 - "library_1x2_grid_widget.dart"
+Cohesion: 0.17
+Nodes (11): bgColor, build, color, icon, _IconBadge, isDark, Library1x2GridWidget, moviesCount (+3 more)
 
-### Community 95 - "CaptureServiceTest.java"
-Cohesion: 0.11
-Nodes (17): CaptureStatus, COMPLETED, FAILED, PENDING, PROCESSING, ContentType, IMAGE, TEXT (+9 more)
+### Community 92 - "State"
+Cohesion: 0.14
+Nodes (18): LatyrCaptureCard, _LatyrCaptureCardState, LatyrProgressiveBlur, _LatyrProgressiveBlurState, LatyrRichSummary, _LatyrRichSummaryState, _AppleTvSynopsis, _AppleTvSynopsisState (+10 more)
 
-### Community 97 - "Document"
-Cohesion: 0.23
-Nodes (11): SyncService, AppDatabase, Document, FcmService, GoRouter, LocalCaptures, Riverpod ProviderScope, Shared App Group Database (+3 more)
+### Community 93 - "CaptureStreamController.java"
+Cohesion: 0.22
+Nodes (3): CaptureStreamController, HealthController, ProbeController
 
-### Community 99 - "Document"
-Cohesion: 0.39
-Nodes (7): Cache Miss Job, CanonicalSourceService, Capture Retrieval, CaptureController, Document, Screenshot SHA256, URL Normalization
+### Community 95 - "Intent"
+Cohesion: 0.13
+Nodes (13): ContentType, IMAGE, TEXT, URL, Intent, BUY, COOK, EXPLORE (+5 more)
 
-### Community 100 - "Document"
-Cohesion: 0.43
-Nodes (6): Document, FcmService, ResurfacingScheduler, RevenueCatWebhookController, Silent Sync Notification, Subscription Audit History
+### Community 96 - "UrlNormalizationService"
+Cohesion: 0.17
+Nodes (3): CreateCaptureRequest, UrlNormalizationService, UrlNormalizationServiceTest
 
-### Community 104 - "capture_source_classifier.dart / CaptureSourceClassifier"
+### Community 100 - "capture_source_classifier.dart"
 Cohesion: 0.25
 Nodes (6): CaptureSourceClassifier, classify, extractFirstUrl, normalizeUrl, _trackingParams, _urlRegex
 
-### Community 105 - "summary_lexer.dart / static final RegExp"
+### Community 101 - "summary_lexer.dart"
 Cohesion: 0.25
 Nodes (5): _parseLinkTarget, stripMarkup, SummaryLexer, tokenize, _tokenRegex
 
-### Community 109 - "github_language_colors.dart / static const Map"
+### Community 102 - "SubscriptionQuotaService"
+Cohesion: 0.15
+Nodes (5): RevenueCatWebhookController, UserSubscriptionHistoryMapper, SubscriptionQuotaService, UserService, RevenueCatWebhookControllerTest
+
+### Community 103 - "github_language_colors.dart"
 Cohesion: 0.29
 Nodes (5): _colors, formatCount, formatRelativeTime, GitHubLanguageColors, resolve
+
+### Community 105 - "token_provider_test.dart"
+Cohesion: 0.12
+Nodes (10): _Auth, container, currentUser, error, getIdToken, isAnonymous, main, token (+2 more)
+
+### Community 106 - "app_properties.dart"
+Cohesion: 0.40
+Nodes (3): AppProperties, enableTopBlur, enableTopTint
+
+### Community 107 - "watch_provider_category.dart"
+Cohesion: 0.40
+Nodes (4): code, fromString, label, WatchProviderCategory
 
 ### Community 110 - "Latyr backend REST API / Latyr Flutter mobile application"
 Cohesion: 0.29
@@ -515,139 +521,65 @@ Nodes (7): Java Spring Boot PostgreSQL backend stack, Flutter pub get run and wi
 Cohesion: 0.47
 Nodes (4): Thin controllers, Immutable internal DTO records, MyBatis explicit SQL, Services and orchestrators
 
-### Community 112 - "JobStatus"
-Cohesion: 0.15
-Nodes (5): JobStatus, COMPLETED, FAILED, PENDING, PROCESSING
+### Community 136 - "pill_badge.dart"
+Cohesion: 0.12
+Nodes (14): AmbientBackgroundMode, AmbientMeshBackground, build, _buildDarkBackground, _buildLightBackground, child, mode, build (+6 more)
 
-### Community 115 - "app_properties.dart / AppProperties"
-Cohesion: 0.40
-Nodes (3): AppProperties, enableTopBlur, enableTopTint
+### Community 137 - "WeatherIntegrationClient"
+Cohesion: 0.24
+Nodes (5): ContextController, WeatherContextResponse, LocationData, WeatherData, WeatherIntegrationClient
 
-### Community 116 - "watch_provider_category.dart / code"
-Cohesion: 0.40
-Nodes (4): code, fromString, label, WatchProviderCategory
-
-### Community 117 - "library_1x2_grid_widget.dart"
+### Community 138 - "floating_nav_island.dart"
 Cohesion: 0.17
-Nodes (11): bgColor, build, color, icon, _IconBadge, isDark, Library1x2GridWidget, moviesCount (+3 more)
+Nodes (9): build, _buildNavItem, currentIndex, FloatingNavIsland, icon, isSelected, label, _NavPill (+1 more)
 
-### Community 121 - "environment_config.dart"
+### Community 139 - "summary_action_handler.dart"
+Cohesion: 0.17
+Nodes (10): _confirmReminder, handleAction, _handleGitHubAction, _handleMapsAction, _launchUriSafely, _launchWebUrl, _showReminderSheet, _showToast (+2 more)
+
+### Community 140 - "apple_tv_badge.dart"
 Cohesion: 0.18
-Nodes (7): cdnBaseUrl, environment, EnvironmentConfig, isLocal, isProd, isUat, _rawApiUrl
+Nodes (9): AppleTvBadge, AppleTvBadgeVariant, build, emoji, fontSize, icon, label, padding (+1 more)
+
+### Community 143 - "streaming_branding.dart"
+Cohesion: 0.18
+Nodes (8): actionLabel, brandColor, icon, launchStreamingOrSearch, name, resolve, StreamingBrand, textColor
 
 ### Community 146 - "Document"
-Cohesion: 0.09
-Nodes (21): Backend Stages, Document, Mobile Stages, Document, Flyway Migrations, GlobalExceptionHandler, IngestionJob, JPA Domain Entities (+13 more)
+Cohesion: 0.17
+Nodes (11): Apify Scraper, Document, Firebase Authentication, Flutter MVVM Riverpod Drift, Gemini Multimodal, Latyr Capture Understanding, MyBatis Explicit SQL, PostgreSQL Transactional Queue (+3 more)
 
-### Community 147 - "Latyr — Database Design & Physical Data Model (Low-Level Design)"
-Cohesion: 0.09
-Nodes (12): captures, Enrichment Queue Index, extracted_entities, Flyway, ingestion_jobs, JSONB GIN Index, Latyr — Database Design & Physical Data Model (Low-Level Design), user_subscription_history (+4 more)
-
-### Community 148 - "Latyr — Spring Boot Backend Architecture & Class Design (Low-Level Design)"
-Cohesion: 0.11
-Nodes (16): AIProvider, ApifyScraperAdapter, CaptureMapper, EntertainmentEntityEnricher, ExtractedEntityMapper, GoogleGenAIAdapter, IngestionPipelineService, IngestionQueueWorker (+8 more)
-
-### Community 149 - "Latyr — REST API Specifications & Interface Contracts (Low-Level Design)"
-Cohesion: 0.07
-Nodes (11): Capture Detail Endpoint, Entity Edit Endpoint, ENTITY_ENRICHED, Firebase Bearer Token, Image Upload Endpoint, Latyr — REST API Specifications & Interface Contracts (Low-Level Design), List Captures Endpoint, RevenueCat Webhook (+3 more)
-
-### Community 150 - "Latyr — System Architecture Overview (High-Level Design)"
-Cohesion: 0.14
-Nodes (11): Apify Adapter, Canonical URL Deduplication, Capture Ingestion Service, ErrorResponse, Gemini 2.5 Flash, GlobalExceptionHandler, Ingestion Pipeline Worker, Latyr — System Architecture Overview (High-Level Design) (+3 more)
-
-### Community 151 - "Latyr — Queue Worker & Ingestion Engine Design (Low-Level Design)"
-Cohesion: 0.09
-Nodes (13): Apify Reel Scraper, Entity Metadata JSONB, Ephemeral Audio Buffer, Exponential Backoff, GitHub Enrichment, Immediate Async Trigger, Ingestion Job State Machine, Latyr — Queue Worker & Ingestion Engine Design (Low-Level Design) (+5 more)
-
-### Community 152 - "Latyr — Flutter Mobile Client Architecture & Component Design (Low-Level Design)"
-Cohesion: 0.12
-Nodes (14): AppDatabase, CaptureCardWidget, CaptureFeedScreen, CaptureListController, CaptureModel, DominantColorService, EntityDetailScreen, Latyr — Flutter Mobile Client Architecture & Component Design (Low-Level Design) (+6 more)
+### Community 147 - "color_extraction_service.dart"
+Cohesion: 0.20
+Nodes (7): clearCache, ColorExtractionService, extractDominantColor, getCachedColor, _inFlightCache, _performExtraction, _resolvedCache
 
 ### Community 153 - "Document"
-Cohesion: 0.12
-Nodes (21): Document, Dynamic Entity Enrichment, EntityDetailScreen, Inline MORE Pill, JustWatch CDN Logos, Light Mode, Magazine Design Language, Pixel 9 UAT Verification (+13 more)
-
-### Community 154 - "Document"
-Cohesion: 0.18
-Nodes (12): Android Share Target, CaptureCardWidget, CaptureFeedScreen, CaptureListController, Document, GitHubRepoCardWidget, iOS Share Extension, MovieShowCardWidget (+4 more)
-
-### Community 155 - "Latyr — Product Requirements Document (PRD)"
-Cohesion: 0.09
-Nodes (8): Drift SQLite, ENTITY_ENRICHED, EntityDetailScreen, Hybrid Enrichment Engine, Latyr — Product Requirements Document (PRD), Native Share Extension, OMDb, TMDB
-
-### Community 156 - "Latyr — Infrastructure & Unit Economics (High-Level Design)"
-Cohesion: 0.13
-Nodes (13): Apify API, Async Worker Fleet, Blended Capture Cost, Canonical URL Deduplication, FCM, Latyr — Infrastructure & Unit Economics (High-Level Design), Object Storage, PostgreSQL (+5 more)
-
-### Community 157 - "Latyr — Security, Privacy & Compliance (High-Level Design)"
-Cohesion: 0.13
-Nodes (8): AuthenticatedUser, Derived Text in PostgreSQL, Firebase Authentication, Gemini 2.5 Flash, IMDb Attribution Policy, Latyr — Security, Privacy & Compliance (High-Level Design), RevenueCat, SecurityContextHolder
-
-### Community 158 - "Latyr — Data Flow & Processing Pipelines (High-Level Design)"
 Cohesion: 0.14
-Nodes (10): Canonical URL Cache, Drift Revalidation, EntityEnrichmentRetryWorker, Ephemeral Audio Buffer, Gemini 2.5 Flash, Latyr — Data Flow & Processing Pipelines (High-Level Design), OMDb Exact IMDb Lookup, SSE ENTITY_ENRICHED (+2 more)
+Nodes (13): Document, Dynamic Entity Enrichment, EntityDetailScreen, IMDb Destination Tile, Inline MORE Pill, JustWatch CDN Logos, LatyrExpandableText, Light Mode (+5 more)
 
-### Community 159 - "Instagram Reel Feasibility Report"
-Cohesion: 0.15
-Nodes (7): Apify Instagram Scraper, Caption Only Fallback, Gemini 1.5 Flash, Hinglish Whisper, Instagram oEmbed, Instagram Reel Feasibility Report, Visual Bookmark Fallback
-
-### Community 160 - "Latyr — Domain Models & High-Level Data Schema"
-Cohesion: 0.21
-Nodes (12): canonical_sources, capture_collections, captures, extracted_entities, Gemini 2.5 Flash, Latyr — Domain Models & High-Level Data Schema, OMDb, TMDB (+4 more)
-
-### Community 162 - "Document"
-Cohesion: 0.39
-Nodes (8): AuthenticatedUser, Document, Firebase Token Verification, FirebaseAuthFilter, QuotaExceededException, SubscriptionQuotaService, User Auto Provisioning, UserController
-
-### Community 164 - "Drift SQLite"
-Cohesion: 0.50
-Nodes (4): CaptureDetailScreen, Drift SQLite, FCM Background Handler, CaptureDetailScreen
-
-### Community 166 - "String?"
-Cohesion: 0.22
-Nodes (7): author, context, fromMap, QuoteMetadata, quoteText, sourceWork, year
-
-### Community 168 - "user_collections"
-Cohesion: 0.40
-Nodes (6): capture_collections, collections, user_collections, capture_collections, update_user_collections_modtime, user_collections
-
-### Community 169 - "OmdbClient"
-Cohesion: 0.50
-Nodes (4): EntityEnrichmentRetryWorker, OmdbClient, SSE ENTITY_ENRICHED, TmdbClient
-
-### Community 170 - "Flutter Drift Client"
-Cohesion: 0.67
-Nodes (3): Firebase Auth, Flutter Drift Client, Native Share Extension
+### Community 161 - "org.slf4j.Logger"
+Cohesion: 0.12
+Nodes (11): AIProvider, CompositeEntityEnricher, EntityEnrichmentProvider, EphemeralMediaStreamer, ScraperProvider, ExtractedEntityMapper, FirebaseStorageService, IngestionPipelineService (+3 more)
 
 ## Knowledge Gaps
-- **1075 isolated node(s):** `fromString`, `image`, `build`, `onTap`, `build` (+1070 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1574 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **64 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1069 isolated node(s):** `com.latyr:latyr-api`, `WATCH`, `OPEN_GITHUB`, `READ`, `COOK` (+1064 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1442 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **61 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `WatchProviderCategory` connect `Language` to `StreamingBrandCatalog`, `EntertainmentEntityEnricher.java`?**
-  _High betweenness centrality (0.088) - this node is a cross-community bridge._
-- **What connects `fromString`, `image`, `build` to the rest of the system?**
-  _1075 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `package:flutter/cupertino.dart / package:latyr_app/core/design/latyr_typography.dart` be split into smaller, more focused modules?**
-  _Cohesion score 0.03135964912280702 - nodes in this community are weakly interconnected._
-- **Why does `AppDatabase` connect `capture_repository_test.dart` to `Document`, `app_database.g.dart / actualTableName`, `capture_repository.dart`, `capture_providers.dart / _CaptureDetailScreenState`, `Latyr — Flutter Mobile Client Architecture & Component Design (Low-Level Design)`?**
-  _High betweenness centrality (0.050) - this node is a cross-community bridge._
-- **Should `api_client.dart` be split into smaller, more focused modules?**
-  _Cohesion score 0.09486166007905138 - nodes in this community are weakly interconnected._
-- **Why does `collections` connect `OmdbClient / OmdbMovieResponse` to `RestGitHubClient / .searchRepositories()`, `user_collections`, `AuthenticatedUser`, `org.junit.jupiter.api.BeforeEach`, `V1__init_schema.sql / captures`, `TmdbClient / com.fasterxml.jackson.annotation.JsonIgnoreProperties`, `GitHubEntityEnricher / .enrich()`, `AIEntity / DefaultEntityEnrichmentAdapter`, `.buildEnrichedEntity() / StreamingPlatform`?**
-  _High betweenness centrality (0.050) - this node is a cross-community bridge._
-- **Should `app_database.g.dart / actualTableName` be split into smaller, more focused modules?**
-  _Cohesion score 0.029290206648697213 - nodes in this community are weakly interconnected._
-
-## Scope and limitations
-
-Combined Latyr monorepo and C:/Users/nikhi/GitHub/latyr-docs: 242 code files scanned and all 31 documentation/configuration files read completely. Screenshots and media were excluded. Seven code/build/header files yielded no symbols. The repo tag `repo` identifies Latyr; `latyr-docs` identifies the documentation repository.
-
-77 documentation-to-code bridges match a documented name to a unique source-backed AST symbol. They are INFERRED (confidence 0.85); they do not establish that historical specifications match current behavior.
-
-Graph health warning: the raw monorepo extraction has 461 dangling-endpoint relationships, one missing-endpoint relationship, five self-loops, and 1,102 same-endpoint relationships subject to collapse in a directed graph. The documentation extraction has two dangling-endpoint relationships. Graphify may normalize or synthesize endpoints during build. Consult GRAPH_HEALTH.txt and the preserved raw .graphify_extract.json files for detail. This is a navigation aid with incomplete relationship coverage.
-
-Generated graphify-out/ files are in the working trees and have not been committed. Semantic token usage is unavailable, rather than zero.
+- **Why does `WatchProviderCategory` connect `WatchProviderCategory` to `EntertainmentEntityEnricher.java`?**
+  _High betweenness centrality (0.054) - this node is a cross-community bridge._
+- **What connects `com.latyr:latyr-api`, `WATCH`, `OPEN_GITHUB` to the rest of the system?**
+  _1069 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `package:flutter/cupertino.dart` be split into smaller, more focused modules?**
+  _Cohesion score 0.0563265306122449 - nodes in this community are weakly interconnected._
+- **Why does `AuthenticatedUser` connect `AuthenticatedUser` to `instant`, `CaptureController.java`, `CaptureControllerTest.java`, `User`, `org.springframework.http.ResponseEntity`, `CaptureStreamController.java`, `org.springframework.stereotype.Component`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Should `ExtractedEntity` be split into smaller, more focused modules?**
+  _Cohesion score 0.10409745293466224 - nodes in this community are weakly interconnected._
+- **Why does `Capture` connect `Capture` to `Intent`, `NotificationLog`, `org.slf4j.Logger`, `CaptureServiceTest.java`, `.processJob`, `instant`, `CanonicalSource`, `CaptureMapper`, `ResurfacingScheduler.java`, `Uuid`, `.createUrlCapture`, `UserMapper`, `Intent`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Should `app_database.dart` be split into smaller, more focused modules?**
+  _Cohesion score 0.03773584905660377 - nodes in this community are weakly interconnected._

@@ -106,3 +106,6 @@ flutter test
 
 - **No sensitive tokens or credentials**: `.env`, `*.key`, `*.keystore`, `*.jks`, `*.pem`, `google-services.json`, `GoogleService-Info.plist`, and `local.properties` are strictly ignored via `.gitignore`.
 - Provide template environment files (`.env.example`) for required configuration keys without committing secrets.
+- Backend credentials must be supplied through `FIREBASE_CONFIG_PATH` / `firebase.config.path` or Google Application Default Credentials (for example, an external file selected by `GOOGLE_APPLICATION_CREDENTIALS`). Credential files bundled on the classpath are no longer loaded. Known credential filenames and private-key files are excluded from backend resources and JARs, including stale build output.
+- Use a clean build (`./mvnw clean package`) for release verification. The packaging regression can be run on Windows with `latyr-api/scripts/verify-resource-packaging.ps1 -MavenPath <path-to-mvn.cmd>`; it creates only nonsecret fixtures.
+- API authentication requires a verified Firebase ID token. Development-token strings and unverified/custom JWT payloads are not accepted. The former `/api/v1/auth/*` diagnostic and `/api/v1/ai/*` direct-provider endpoints have been removed; capture processing uses the normal authenticated capture API.

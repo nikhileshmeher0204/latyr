@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:latyr_app/core/database/app_database.dart';
 import 'package:latyr_app/core/network/api_client.dart';
+import 'package:latyr_app/core/network/authentication_required_exception.dart';
 import 'package:latyr_app/core/network/sse_client.dart';
 import 'package:latyr_app/core/util/capture_source_classifier.dart';
 import 'package:uuid/uuid.dart';
@@ -12,16 +13,20 @@ class CaptureRepository {
   final AppDatabase db;
   final ApiClient apiClient;
   final SseClient? sseClient;
+  final bool Function() canCapture;
   final Uuid _uuid = const Uuid();
   StreamSubscription<SseCaptureEvent>? _sseSubscription;
+  bool _disposed = false;
+
+  bool get _hasCaptureSession => !_disposed && canCapture();
 
   CaptureRepository({
     required this.db,
     required this.apiClient,
+    required this.canCapture,
     this.sseClient,
   }) {
     _initSseListener();
-    db.deduplicateCaptures();
   }
 
   static String normalizeUrl(String rawUrl) {
@@ -54,6 +59,8 @@ class CaptureRepository {
   void _initSseListener() {
     _sseSubscription?.cancel();
     _sseSubscription = sseClient?.events.listen((event) async {
+      if (!_hasCaptureSession) return;
+      try {
       final captureId = event.data['capture_id']?.toString();
       if (captureId == null) return;
 
@@ -61,11 +68,13 @@ class CaptureRepository {
 
       if (event.eventType == 'CAPTURE_PROCESSING') {
         var existing = await db.getCaptureByServerId(captureId);
+        if (!_hasCaptureSession) return;
         final rawCaption = event.data['original_caption']?.toString();
         if (existing == null && rawCaption != null && rawCaption.isNotEmpty) {
           existing = await db.getCaptureByUrl(rawCaption);
         }
         if (existing != null && existing.status != 'PROCESSING') {
+          if (!_hasCaptureSession) return;
           await db.updateCapture(
             LocalCapturesCompanion(
               id: Value(existing.id),
@@ -78,6 +87,7 @@ class CaptureRepository {
         }
       } else if (event.eventType == 'CAPTURE_COMPLETED') {
         var existing = await db.getCaptureByServerId(captureId);
+        if (!_hasCaptureSession) return;
         final rawCaption = event.data['original_caption']?.toString();
         if (existing == null && rawCaption != null && rawCaption.isNotEmpty) {
           existing = await db.getCaptureByUrl(rawCaption);
@@ -93,6 +103,7 @@ class CaptureRepository {
         final thumbnailUrl = event.data['thumbnail_url']?.toString();
         final sourceType = event.data['source_type']?.toString();
 
+        if (!_hasCaptureSession) return;
         if (existing != null) {
           await db.updateCapture(
             LocalCapturesCompanion(
@@ -147,9 +158,11 @@ class CaptureRepository {
         final captureId = event.data['capture_id']?.toString();
         if (captureId != null) {
           final existing = await db.getCaptureByServerId(captureId);
+          if (!_hasCaptureSession) return;
           if (existing != null) {
             try {
               final detailResp = await apiClient.getCaptureDetail(captureId);
+              if (!_hasCaptureSession) return;
               final detailData = detailResp.data;
               if (detailData != null && detailData['entities'] != null) {
                 await db.updateCapture(
@@ -168,6 +181,7 @@ class CaptureRepository {
         }
       } else if (event.eventType == 'CAPTURE_FAILED') {
         final existing = await db.getCaptureByServerId(captureId);
+        if (!_hasCaptureSession) return;
         if (existing != null) {
           await db.updateCapture(
             LocalCapturesCompanion(
@@ -180,19 +194,25 @@ class CaptureRepository {
           debugPrint('[CaptureRepo] Updated capture ${existing.id} to FAILED via SSE');
         }
       }
+      } catch (_) {
+        if (_hasCaptureSession) debugPrint('Capture stream update could not be applied.');
+      }
     });
   }
 
   void dispose() {
+    _disposed = true;
     _sseSubscription?.cancel();
     _sseSubscription = null;
   }
 
   Stream<List<LocalCapture>> watchCaptures() {
+    _requireCaptureSession();
     return db.watchAllCaptures();
   }
 
   Future<LocalCapture> captureUrl(String rawUrl, {String? caption}) async {
+    _requireCaptureSession();
     final cleanUrl = normalizeUrl(rawUrl);
     debugPrint('Normalized capture URL: $cleanUrl');
 
@@ -201,6 +221,7 @@ class CaptureRepository {
         (rawUrl != cleanUrl ? await db.getCaptureByUrl(rawUrl) : null);
 
     if (existingLocal != null) {
+      _requireCaptureSession();
       debugPrint('Existing local capture found for URL: ${existingLocal.id} (status: ${existingLocal.status})');
       // If already COMPLETED or PROCESSING, do not re-insert or double-process
       if (existingLocal.status == 'COMPLETED' || existingLocal.status == 'PROCESSING') {
@@ -227,6 +248,7 @@ class CaptureRepository {
     );
 
     // 1. Optimistic Local SQLite Write (< 10ms)
+    _requireCaptureSession();
     await db.insertCapture(entry);
     debugPrint('Optimistically saved capture to SQLite: $localId');
 
@@ -234,6 +256,7 @@ class CaptureRepository {
     try {
       debugPrint('Dispatching POST /api/v1/captures with url: $cleanUrl, caption: $caption');
       final response = await apiClient.createCapture(cleanUrl, caption: caption);
+      _requireCaptureSession();
       final data = response.data;
       debugPrint('Server response status: ${response.statusCode}, body: $data');
 
@@ -263,18 +286,24 @@ class CaptureRepository {
       // Offline / Network Failure: Stays PENDING_SYNC for background drain
     }
 
-    return (await db.getCaptureById(localId))!;
+    _requireCaptureSession();
+    final saved = await db.getCaptureById(localId);
+    _requireCaptureSession();
+    return saved!;
   }
 
   Future<void> syncPending() async {
+    if (!_hasCaptureSession) return;
     final pendingList = await db.getPendingSyncCaptures();
     if (pendingList.isEmpty) return;
 
     for (final item in pendingList) {
+      if (!_hasCaptureSession) return;
       if (item.originalUrl != null && item.contentType == 'URL') {
         try {
           debugPrint('Syncing pending capture: ${item.id}');
           final response = await apiClient.createCapture(item.originalUrl!);
+          if (!_hasCaptureSession) return;
           final data = response.data;
           final serverId = data?['id']?.toString();
           final status = response.statusCode == 200 ? 'COMPLETED' : 'PROCESSING';
@@ -299,18 +328,25 @@ class CaptureRepository {
     }
   }
 
+  void _requireCaptureSession() {
+    if (!_hasCaptureSession) throw const AuthenticationRequiredException();
+  }
+
   Future<void> fetchRemoteFeed({int page = 0, int size = 20}) async {
+    if (!_hasCaptureSession) return;
     try {
       final response = await apiClient.getCaptures(page: page, size: size);
+      if (!_hasCaptureSession) return;
       final items = response.data?['items'] as List<dynamic>?;
 
       if (items != null) {
-        bool modified = false;
         for (final raw in items) {
+          if (!_hasCaptureSession) return;
           if (raw is Map<String, dynamic>) {
             final serverId = raw['id']?.toString();
             if (serverId != null) {
               var existing = await db.getCaptureByServerId(serverId);
+              if (!_hasCaptureSession) return;
               final rawCaption = raw['original_caption']?.toString();
               if (existing == null && rawCaption != null) {
                 existing = await db.getCaptureByUrl(rawCaption);
@@ -330,6 +366,7 @@ class CaptureRepository {
               if (needsEntityRefresh) {
                 try {
                   final detailResp = await apiClient.getCaptureDetail(serverId);
+                  if (!_hasCaptureSession) return;
                   final detailData = detailResp.data;
                   if (detailData != null && detailData['entities'] != null) {
                     entitiesJson = jsonEncode(detailData['entities']);
@@ -349,6 +386,7 @@ class CaptureRepository {
                   ? DateTime.tryParse(raw['created_at'].toString())
                   : null;
 
+              if (!_hasCaptureSession) return;
               if (existing != null) {
                 final bool hasChanged = existing.serverCaptureId != serverId ||
                     existing.status != newStatus ||
@@ -366,7 +404,6 @@ class CaptureRepository {
                   continue;
                 }
 
-                modified = true;
                 await db.updateCapture(
                   LocalCapturesCompanion(
                     id: Value(existing.id),
@@ -385,7 +422,6 @@ class CaptureRepository {
                   ),
                 );
               } else {
-                modified = true;
                 await db.insertCapture(
                   LocalCapturesCompanion(
                     id: Value(id),
@@ -410,21 +446,21 @@ class CaptureRepository {
             }
           }
         }
-        if (modified) {
-          await db.deduplicateCaptures();
-        }
       }
     } catch (_) {}
   }
 
   Future<bool> hasActiveProcessingCaptures() async {
+    if (!_hasCaptureSession) return false;
     final all = await db.getAllCaptures();
+    if (!_hasCaptureSession) return false;
     return all.any((c) =>
         (c.status == 'PROCESSING' || c.status == 'PENDING' || c.status == 'PENDING_SYNC') &&
         c.serverCaptureId != null);
   }
 
   Future<void> checkProcessingCaptures() async {
+    if (!_hasCaptureSession) return;
     final all = await db.getAllCaptures();
     final processing = all
         .where((c) =>
@@ -434,8 +470,10 @@ class CaptureRepository {
     if (processing.isEmpty) return;
 
     for (final item in processing) {
+      if (!_hasCaptureSession) return;
       try {
         final response = await apiClient.getCaptureDetail(item.serverCaptureId!);
+        if (!_hasCaptureSession) return;
         final data = response.data;
         if (data != null) {
           final serverStatus = data['status']?.toString();

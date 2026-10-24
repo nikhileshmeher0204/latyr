@@ -18,10 +18,10 @@
     "semantic_hash": "ab50dd89da7da2346b28003352eeeeeb"
   },
   "latyr-api/pom.xml": {
-    "mtime": 1790948882.67077,
-    "seen": 1792777450.6780808,
-    "ast_hash": "2eab0a9ba0bb5f760564e82f65386a67",
-    "semantic_hash": "2eab0a9ba0bb5f760564e82f65386a67"
+    "mtime": 1792831570.1867023,
+    "seen": 1792832367.0737915,
+    "ast_hash": "47c86449b2fce2c8060b210eea5afb97",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/LatyrApiApplication.java": {
     "mtime": 1790948882.6727772,
@@ -120,10 +120,10 @@
     "semantic_hash": "5d60fb399512a08c08c80d7826dff740"
   },
   "latyr-api/src/main/java/com/latyr/api/config/GoogleGenAIConfig.java": {
-    "mtime": 1790948882.6793013,
-    "seen": 1792777450.6780808,
-    "ast_hash": "19da3f9f135997daee12ef2cc1203dfc",
-    "semantic_hash": "19da3f9f135997daee12ef2cc1203dfc"
+    "mtime": 1792831408.5645587,
+    "seen": 1792832367.0737915,
+    "ast_hash": "cc6e520e952d3196ebfcc853ce8acfd0",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/config/JacksonConfig.java": {
     "mtime": 1790948882.6803007,
@@ -160,18 +160,6 @@
     "seen": 1792777450.6780808,
     "ast_hash": "a1a6f2965c92d1304fe35aba129faa51",
     "semantic_hash": "a1a6f2965c92d1304fe35aba129faa51"
-  },
-  "latyr-api/src/main/java/com/latyr/api/controller/AIController.java": {
-    "mtime": 1790948882.6803007,
-    "seen": 1792777450.6780808,
-    "ast_hash": "bae3d0858f60375ba40da637ac7c9e90",
-    "semantic_hash": "bae3d0858f60375ba40da637ac7c9e90"
-  },
-  "latyr-api/src/main/java/com/latyr/api/controller/AuthController.java": {
-    "mtime": 1790948882.6813004,
-    "seen": 1792777450.6780808,
-    "ast_hash": "d542af01c54a0a61c60b367e17c9a976",
-    "semantic_hash": "d542af01c54a0a61c60b367e17c9a976"
   },
   "latyr-api/src/main/java/com/latyr/api/controller/CaptureController.java": {
     "mtime": 1787551532.4711063,
@@ -352,18 +340,6 @@
     "seen": 1792777450.6780808,
     "ast_hash": "90d2cd36d54b41ebae7167e4487147cc",
     "semantic_hash": "90d2cd36d54b41ebae7167e4487147cc"
-  },
-  "latyr-api/src/main/java/com/latyr/api/dto/AnalyzeRawRequest.java": {
-    "mtime": 1790948882.6873572,
-    "seen": 1792777450.6780808,
-    "ast_hash": "9b433eac794cb7f836dbcd0c7fcdb1e0",
-    "semantic_hash": "9b433eac794cb7f836dbcd0c7fcdb1e0"
-  },
-  "latyr-api/src/main/java/com/latyr/api/dto/AnalyzeUrlRequest.java": {
-    "mtime": 1790948882.6873572,
-    "seen": 1792777450.6780808,
-    "ast_hash": "a5914305d08904be787354b5c23cb9d2",
-    "semantic_hash": "a5914305d08904be787354b5c23cb9d2"
   },
   "latyr-api/src/main/java/com/latyr/api/dto/CaptureDetailResponse.java": {
     "mtime": 1791466914.4295788,
@@ -582,22 +558,22 @@
     "semantic_hash": "222f262cbda469f92c367c0c6ca43a96"
   },
   "latyr-api/src/main/java/com/latyr/api/security/FirebaseAuthFilter.java": {
-    "mtime": 1790948882.6988716,
-    "seen": 1792777450.6780808,
-    "ast_hash": "3247c69b651ef0425b915479e5c64d9f",
-    "semantic_hash": "3247c69b651ef0425b915479e5c64d9f"
+    "mtime": 1792831569.636977,
+    "seen": 1792832367.0737915,
+    "ast_hash": "ddf196a381836a418f3ccbf768c53733",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/security/FirebaseConfig.java": {
-    "mtime": 1790948882.699871,
-    "seen": 1792777450.6780808,
-    "ast_hash": "8069c6e638731a15e4fe0dd99daac311",
-    "semantic_hash": "8069c6e638731a15e4fe0dd99daac311"
+    "mtime": 1792831408.0963013,
+    "seen": 1792832367.0737915,
+    "ast_hash": "e44e9ef16b3315a592df7af0627965cf",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/security/SecurityConfig.java": {
-    "mtime": 1790948882.7013755,
-    "seen": 1792777450.6780808,
-    "ast_hash": "de99c6da2851a31d0f43fd6926f8996f",
-    "semantic_hash": "de99c6da2851a31d0f43fd6926f8996f"
+    "mtime": 1792831569.1636944,
+    "seen": 1792832367.0737915,
+    "ast_hash": "2ddc134a9d5c1dc37ec95e7450c72638",
+    "semantic_hash": ""
   },
   "latyr-api/src/main/java/com/latyr/api/service/CanonicalDeduplicationService.java": {
     "mtime": 1791466914.4325874,
@@ -972,16 +948,16 @@
     "semantic_hash": "6009f1821b0b1c4eecfa72c6e9eedf37"
   },
   "latyr-app/lib/core/network/auth_interceptor.dart": {
-    "mtime": 1791358735.7241528,
-    "seen": 1792777450.6780808,
-    "ast_hash": "dfef625ab30aa5be103cd97d25643666",
-    "semantic_hash": "dfef625ab30aa5be103cd97d25643666"
+    "mtime": 1792831889.0070548,
+    "seen": 1792832367.0737915,
+    "ast_hash": "10c37767c36609b37fba5e14ecf3a1f0",
+    "semantic_hash": ""
   },
   "latyr-app/lib/core/network/sse_client.dart": {
-    "mtime": 1791358735.7251594,
-    "seen": 1792777450.6780808,
-    "ast_hash": "7a7a08348b42a5e2fc5bf0913fe57b6a",
-    "semantic_hash": "7a7a08348b42a5e2fc5bf0913fe57b6a"
+    "mtime": 1792831889.0223858,
+    "seen": 1792832367.0737915,
+    "ast_hash": "8f31f2ef84df381959de1ef9c87a4330",
+    "semantic_hash": ""
   },
   "latyr-app/lib/core/services/color_extraction_service.dart": {
     "mtime": 1791358735.7266643,
@@ -996,10 +972,10 @@
     "semantic_hash": "1c7422e389986c689ea91fd3c8519ff4"
   },
   "latyr-app/lib/core/services/share_intent_service.dart": {
-    "mtime": 1791358735.7276762,
-    "seen": 1792777450.6780808,
-    "ast_hash": "83d61704658da45f5a00df6e7b5eff8c",
-    "semantic_hash": "83d61704658da45f5a00df6e7b5eff8c"
+    "mtime": 1792832187.921249,
+    "seen": 1792832367.0737915,
+    "ast_hash": "38c1c471fe9103ccf3cd8300d78873f0",
+    "semantic_hash": ""
   },
   "latyr-app/lib/core/services/sync_service.dart": {
     "mtime": 1791358735.7286682,
@@ -1074,10 +1050,10 @@
     "semantic_hash": "33fc612653ca8e212806c85cbaec3869"
   },
   "latyr-app/lib/features/capture/data/capture_repository.dart": {
-    "mtime": 1792182170.3343618,
-    "seen": 1792777450.6780808,
-    "ast_hash": "7e83a7381ba63221675d1fb33087a063",
-    "semantic_hash": "7e83a7381ba63221675d1fb33087a063"
+    "mtime": 1792832187.2425728,
+    "seen": 1792832367.0737915,
+    "ast_hash": "ef3e36702138da875c39990b8cfcf7fd",
+    "semantic_hash": ""
   },
   "latyr-app/lib/features/capture/domain/entity_metadata/book_metadata.dart": {
     "mtime": 1792435056.4332533,
@@ -1134,10 +1110,10 @@
     "semantic_hash": "ceb9e5fdc446ea3712d8865484de2329"
   },
   "latyr-app/lib/features/capture/presentation/capture_providers.dart": {
-    "mtime": 1791358735.7467058,
-    "seen": 1792777450.6780808,
-    "ast_hash": "6b95033ca3630de5691a653e8c90f305",
-    "semantic_hash": "6b95033ca3630de5691a653e8c90f305"
+    "mtime": 1792831889.0344706,
+    "seen": 1792832367.0737915,
+    "ast_hash": "c28d4a589c9a6730b5ca4717d56fc3ae",
+    "semantic_hash": ""
   },
   "latyr-app/lib/features/collections/domain/collection_models.dart": {
     "mtime": 1791358735.748707,
@@ -1380,16 +1356,16 @@
     "semantic_hash": "e34d0e0966ad74be6a09334a4f7b40a1"
   },
   "latyr-app/test/core/network/auth_interceptor_test.dart": {
-    "mtime": 1787562524.5093966,
-    "seen": 1792777450.6780808,
-    "ast_hash": "1a79bf75a422b12af138515b91c7adbd",
-    "semantic_hash": "1a79bf75a422b12af138515b91c7adbd"
+    "mtime": 1792832090.8398347,
+    "seen": 1792832367.0737915,
+    "ast_hash": "edfcce97d10f968036e088c406298ab6",
+    "semantic_hash": ""
   },
   "latyr-app/test/features/capture/capture_repository_test.dart": {
-    "mtime": 1787562524.5129128,
-    "seen": 1792777450.6780808,
-    "ast_hash": "7c07e9342d03a2fcf22c26069179cb95",
-    "semantic_hash": "7c07e9342d03a2fcf22c26069179cb95"
+    "mtime": 1792832120.707903,
+    "seen": 1792832367.0737915,
+    "ast_hash": "cd2ab527e61ec97dc809ee361dfea121",
+    "semantic_hash": ""
   },
   "latyr-app/test/features/capture/entity_metadata_test.dart": {
     "mtime": 1792435056.4619415,
@@ -1428,10 +1404,10 @@
     "semantic_hash": "203a921bdfac6cc592cc65021042d8b4"
   },
   "README.md": {
-    "mtime": 1787517854.9175653,
-    "seen": 1792777450.6780808,
-    "ast_hash": "013f455ffa04f10fa99c5e2003149fd3",
-    "semantic_hash": "013f455ffa04f10fa99c5e2003149fd3"
+    "mtime": 1792832341.7824574,
+    "seen": 1792832367.0737915,
+    "ast_hash": "b6c94c4f765e2814e4276bf75d46b999",
+    "semantic_hash": ""
   },
   "VISUAL_VERIFICATION_SHOWCASE.md": {
     "mtime": 1792182170.3105636,
@@ -1468,5 +1444,665 @@
     "seen": 1792777450.6780808,
     "ast_hash": "41ecc5c07749d1e78c0bd4b2f327a406",
     "semantic_hash": "41ecc5c07749d1e78c0bd4b2f327a406"
+  },
+  "latyr-api/src/main/java/com/latyr/api/client/FirebaseIdentityTokenVerifier.java": {
+    "mtime": 1792830931.9078155,
+    "seen": 1792831011.1709166,
+    "ast_hash": "08fbee7ad107fa5ec4b0fff12c01e5a4",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/java/com/latyr/api/client/IdentityTokenVerifier.java": {
+    "mtime": 1792830931.3061688,
+    "seen": 1792831011.1709166,
+    "ast_hash": "6872b01a0970be9995f7f15aee8f0fbb",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/security/FirebaseSecurityChainTest.java": {
+    "mtime": 1792831450.941906,
+    "seen": 1792832367.0737915,
+    "ast_hash": "59a5f1bcdd9edaf51abacb9e0f07e42b",
+    "semantic_hash": ""
+  },
+  "latryl home screen.jpeg": {
+    "mtime": 1790948882.6672554,
+    "seen": 1792831011.1709166,
+    "ast_hash": "57b1776a89d49b66c5571d70ee64c815",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/main/resources/image.png": {
+    "mtime": 1790948882.7277162,
+    "seen": 1792831011.1709166,
+    "ast_hash": "3063dc1a97b0e125bb3f4b74b3b7d060",
+    "semantic_hash": ""
+  },
+  "latyr-app/android/app/src/main/res/mipmap-hdpi/ic_launcher.png": {
+    "mtime": 1787517855.0637436,
+    "seen": 1792831011.1709166,
+    "ast_hash": "13e9c72ec37fac220397aa819fa1ef2d",
+    "semantic_hash": ""
+  },
+  "latyr-app/android/app/src/main/res/mipmap-mdpi/ic_launcher.png": {
+    "mtime": 1787517855.0657547,
+    "seen": 1792831011.1709166,
+    "ast_hash": "6270344430679711b81476e29878caa7",
+    "semantic_hash": ""
+  },
+  "latyr-app/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png": {
+    "mtime": 1787517855.068753,
+    "seen": 1792831011.1709166,
+    "ast_hash": "a0a8db5985280b3679d99a820ae2db79",
+    "semantic_hash": ""
+  },
+  "latyr-app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png": {
+    "mtime": 1787517855.070269,
+    "seen": 1792831011.1709166,
+    "ast_hash": "afe1b655b9f32da22f9a4301bb8e6ba8",
+    "semantic_hash": ""
+  },
+  "latyr-app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png": {
+    "mtime": 1787517855.077279,
+    "seen": 1792831011.1709166,
+    "ast_hash": "57838d52c318faff743130c3fcfae0c6",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/bookmark.png": {
+    "mtime": 1791039044.109879,
+    "seen": 1792831011.1709166,
+    "ast_hash": "49c1a7cd62928188870909fe51797735",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/brain.png": {
+    "mtime": 1791039044.111997,
+    "seen": 1792831011.1709166,
+    "ast_hash": "8740c170d63cf0ac4ad8f30b0b1c31df",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/calendar.png": {
+    "mtime": 1791039044.1136005,
+    "seen": 1792831011.1709166,
+    "ast_hash": "3bf1850335c15d6939e9f09e7cfa40c6",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/code.png": {
+    "mtime": 1791039044.1157699,
+    "seen": 1792831011.1709166,
+    "ast_hash": "28a7e79a7d0d2287a8f977dc543b169c",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/fire.png": {
+    "mtime": 1791039044.1179066,
+    "seen": 1792831011.1709166,
+    "ast_hash": "7e1d74ce1db1ea95e915e0c17d4ec45f",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/globe.png": {
+    "mtime": 1791039044.1195006,
+    "seen": 1792831011.1709166,
+    "ast_hash": "3ad00b188b8a6fc129b02e0d9b6f096e",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/lightbulb.png": {
+    "mtime": 1791039044.1221833,
+    "seen": 1792831011.1709166,
+    "ast_hash": "c5ab840d4b286fe8a846f70b636252d5",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/lightning.png": {
+    "mtime": 1791039044.1237743,
+    "seen": 1792831011.1709166,
+    "ast_hash": "828e5c7d4f55ece6d716438b4aebefad",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/pin.png": {
+    "mtime": 1791039044.1258795,
+    "seen": 1792831011.1709166,
+    "ast_hash": "60ccb47098a55fc1927b3a48ec11120e",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/rocket.png": {
+    "mtime": 1791039044.1280105,
+    "seen": 1792831011.1709166,
+    "ast_hash": "4077888a5e0541efeecc3eb59ccfea94",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/runner.png": {
+    "mtime": 1791039044.1308248,
+    "seen": 1792831011.1709166,
+    "ast_hash": "fcba503d9f3e59b0f195bac7df6dcdfc",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/sparkles.png": {
+    "mtime": 1791039044.1329572,
+    "seen": 1792831011.1709166,
+    "ast_hash": "be94062001d7fdd7f817c48c53aafc07",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/target.png": {
+    "mtime": 1791039044.134542,
+    "seen": 1792831011.1709166,
+    "ast_hash": "0d612cae33485e451f063800eebb0bcd",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/3d/warning.png": {
+    "mtime": 1791039044.1366987,
+    "seen": 1792831011.1709166,
+    "ast_hash": "253aff0549d1298552c4207036217139",
+    "semantic_hash": ""
+  },
+  "latyr-app/assets/icons/github_mark.svg": {
+    "mtime": 1792268786.2499678,
+    "seen": 1792831011.1709166,
+    "ast_hash": "2dd46d9b70b5785958d15dd7d47374ca",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png": {
+    "mtime": 1787517855.2589812,
+    "seen": 1792831011.1709166,
+    "ast_hash": "c785f8932297af4acd5f5ccb7630f01c",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png": {
+    "mtime": 1787517855.2650244,
+    "seen": 1792831011.1709166,
+    "ast_hash": "a2f8558fb1d42514111fbbb19fb67314",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png": {
+    "mtime": 1787517855.2665546,
+    "seen": 1792831011.1709166,
+    "ast_hash": "2247a840b6ee72b8a069208af170e5b1",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png": {
+    "mtime": 1787517855.267554,
+    "seen": 1792831011.1709166,
+    "ast_hash": "1b3b1538136316263c7092951e923e9d",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png": {
+    "mtime": 1787517855.2891884,
+    "seen": 1792831011.1709166,
+    "ast_hash": "be8887071dd7ec39cb754d236aa9584f",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png": {
+    "mtime": 1787517855.2966042,
+    "seen": 1792831011.1709166,
+    "ast_hash": "043119ef4faa026ff82bd03f241e5338",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png": {
+    "mtime": 1787517855.3066719,
+    "seen": 1792831011.1709166,
+    "ast_hash": "2b1452c4c1bda6177b4fbbb832df217f",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png": {
+    "mtime": 1787517855.3111897,
+    "seen": 1792831011.1709166,
+    "ast_hash": "2247a840b6ee72b8a069208af170e5b1",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png": {
+    "mtime": 1787517855.316715,
+    "seen": 1792831011.1709166,
+    "ast_hash": "8245359312aea1b0d2412f79a07b0ca5",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png": {
+    "mtime": 1787517855.3248043,
+    "seen": 1792831011.1709166,
+    "ast_hash": "5b3c0902200ce596e9848f22e1f0fe0e",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png": {
+    "mtime": 1787517855.326812,
+    "seen": 1792831011.1709166,
+    "ast_hash": "5b3c0902200ce596e9848f22e1f0fe0e",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png": {
+    "mtime": 1787517855.3288133,
+    "seen": 1792831011.1709166,
+    "ast_hash": "e419d22a37bc40ba185aca1acb6d4ac6",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png": {
+    "mtime": 1787517855.3308344,
+    "seen": 1792831011.1709166,
+    "ast_hash": "36c0d7a7132bdde18898ffdfcfcdc4d2",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png": {
+    "mtime": 1787517855.336845,
+    "seen": 1792831011.1709166,
+    "ast_hash": "643842917530acf4c5159ae851b0baf2",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png": {
+    "mtime": 1787517855.3504145,
+    "seen": 1792831011.1709166,
+    "ast_hash": "665cb5e3c5729da6d639d26eff47a503",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png": {
+    "mtime": 1787517855.3674724,
+    "seen": 1792831011.1709166,
+    "ast_hash": "978c1bee49d7ad5fc1a4d81099b13e18",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png": {
+    "mtime": 1787517855.368981,
+    "seen": 1792831011.1709166,
+    "ast_hash": "978c1bee49d7ad5fc1a4d81099b13e18",
+    "semantic_hash": ""
+  },
+  "latyr-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png": {
+    "mtime": 1787517855.3858612,
+    "seen": 1792831011.1709166,
+    "ast_hash": "978c1bee49d7ad5fc1a4d81099b13e18",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/amazon_prime.svg": {
+    "mtime": 1792435056.4689415,
+    "seen": 1792831011.1709166,
+    "ast_hash": "c36fa6648c5cd8bb9e8ec754c618f7ce",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/apple_tv.svg": {
+    "mtime": 1792435056.4699428,
+    "seen": 1792831011.1709166,
+    "ast_hash": "4f39853a063a51a29f7ab0ff4e41c21f",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/disney_plus.svg": {
+    "mtime": 1792435056.470941,
+    "seen": 1792831011.1709166,
+    "ast_hash": "8e327d734f9b292443c68077495ed29f",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/hbo_max.svg": {
+    "mtime": 1792435056.4719405,
+    "seen": 1792831011.1709166,
+    "ast_hash": "caeafb87ec6bb188a9503e21d7cc7785",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/hotstar.svg": {
+    "mtime": 1792435056.4739437,
+    "seen": 1792831011.1709166,
+    "ast_hash": "5df1af8a56ecce9c0fa462e348e48c76",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/hulu.svg": {
+    "mtime": 1792435056.4749413,
+    "seen": 1792831011.1709166,
+    "ast_hash": "cbba38657d16b77fce36d6b2e9c8821f",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/netflix.svg": {
+    "mtime": 1792435056.4749413,
+    "seen": 1792831011.1709166,
+    "ast_hash": "824abe0248e0ec03364895d339d3e40c",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/paramount_plus.svg": {
+    "mtime": 1792435056.476448,
+    "seen": 1792831011.1709166,
+    "ast_hash": "2654c4f7ad5bc2b5a90c6624f2fd54c3",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/peacock.svg": {
+    "mtime": 1792435056.4774537,
+    "seen": 1792831011.1709166,
+    "ast_hash": "d474a005079f76dd7e03aa61a64d63c8",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/prime_video.svg": {
+    "mtime": 1792435056.4784627,
+    "seen": 1792831011.1709166,
+    "ast_hash": "edcc7b44616a107bbb560cecc5d93487",
+    "semantic_hash": ""
+  },
+  "public/assets/icons/streaming/youtube.svg": {
+    "mtime": 1792435056.4794605,
+    "seen": 1792831011.1709166,
+    "ast_hash": "fbae9fa0bf72b79e967ca4537eaf6795",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_chalk_line_exact.png": {
+    "mtime": 1792182170.3514748,
+    "seen": 1792831011.1709166,
+    "ast_hash": "7953760c05406c545aae5c53505dbf47",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_chalk_line_expanded.png": {
+    "mtime": 1792182170.356989,
+    "seen": 1792831011.1709166,
+    "ast_hash": "4d3e771489988d56ed322bbb0128677d",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_detail_gods_crooked_lines.png": {
+    "mtime": 1792182170.3620481,
+    "seen": 1792831011.1709166,
+    "ast_hash": "fd1d51f7238168d13f6c5a5c3296ee1c",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_detail_the_guilty.png": {
+    "mtime": 1792182170.3666737,
+    "seen": 1792831011.1709166,
+    "ast_hash": "016284eade19d27a1a2560cf8b7c66f5",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_fade_early_gods_crooked_lines.png": {
+    "mtime": 1792182170.3724682,
+    "seen": 1792831011.1709166,
+    "ast_hash": "35f320c29e80049331529ba9d629b1bd",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_fade_early_the_chalk_line.png": {
+    "mtime": 1792182170.3787374,
+    "seen": 1792831011.1709166,
+    "ast_hash": "0a883168e0f7df5a926c3389138ed1f9",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_fade_early_the_guilty.png": {
+    "mtime": 1792182170.3844178,
+    "seen": 1792831011.1709166,
+    "ast_hash": "8fac0d7befc6eac11447413bc0cb9285",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_gods_crooked_lines_exact.png": {
+    "mtime": 1792182170.3896787,
+    "seen": 1792831011.1709166,
+    "ast_hash": "d0add9b4f55fef5f1483d01f5e0a11cf",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_gods_crooked_lines_scrolled.png": {
+    "mtime": 1792182170.3927963,
+    "seen": 1792831011.1709166,
+    "ast_hash": "af9d67a19b4262dead81c4b185bcaa1d",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_guilty_exact.png": {
+    "mtime": 1792182170.3993218,
+    "seen": 1792831011.1709166,
+    "ast_hash": "480f522f8410bbc4059b52c0f8200240",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_vibrant_gods_crooked_lines.png": {
+    "mtime": 1792182170.4043305,
+    "seen": 1792831011.1709166,
+    "ast_hash": "6b5a6bcfc9d767e96da11fb9249dce60",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_vibrant_initial_home.png": {
+    "mtime": 1792182170.4053366,
+    "seen": 1792831011.1709166,
+    "ast_hash": "e1802dcfe61cb311d6c66de4882ce4f3",
+    "semantic_hash": ""
+  },
+  "screens/apple_tv_vibrant_the_guilty.png": {
+    "mtime": 1792182170.409849,
+    "seen": 1792831011.1709166,
+    "ast_hash": "260475dbad95c46d1c3200d7b19c5c75",
+    "semantic_hash": ""
+  },
+  "screens/chalk_line_clean.png": {
+    "mtime": 1792182170.4163587,
+    "seen": 1792831011.1709166,
+    "ast_hash": "301d7ecb82452283399f1f223b57b1f5",
+    "semantic_hash": ""
+  },
+  "screens/cinema_blur_screen.png": {
+    "mtime": 1792182170.421365,
+    "seen": 1792831011.1709166,
+    "ast_hash": "cb86653f5b7227f0e8d1af4636e9568e",
+    "semantic_hash": ""
+  },
+  "screens/cinema_feed.png": {
+    "mtime": 1792182170.4268818,
+    "seen": 1792831011.1709166,
+    "ast_hash": "56d6f0873ec91457249d03968a9d30a9",
+    "semantic_hash": ""
+  },
+  "screens/cinema_gods_crooked_lines.png": {
+    "mtime": 1792182170.4324744,
+    "seen": 1792831011.1709166,
+    "ast_hash": "6ae7e8cc6f83d528aec8a6671c0ac736",
+    "semantic_hash": ""
+  },
+  "screens/cinema_the_chalk_line.png": {
+    "mtime": 1792182170.438986,
+    "seen": 1792831011.1709166,
+    "ast_hash": "b86d4cbdccbe3ac9b440300680180ac8",
+    "semantic_hash": ""
+  },
+  "screens/cinema_the_guilty.png": {
+    "mtime": 1792182170.4443374,
+    "seen": 1792831011.1709166,
+    "ast_hash": "9342d874d4a7ec707a677e6987e08d28",
+    "semantic_hash": ""
+  },
+  "screens/collection_view.png": {
+    "mtime": 1792182170.445695,
+    "seen": 1792831011.1709166,
+    "ast_hash": "26d51e08dfff980992c80d2cac22dff9",
+    "semantic_hash": ""
+  },
+  "screens/enhancements_show_more_expanded.jpg": {
+    "mtime": 1792182170.4466949,
+    "seen": 1792831011.1709166,
+    "ast_hash": "f60c42581e367674920fa80f0ca606ac",
+    "semantic_hash": ""
+  },
+  "screens/gods_crooked_lines_clean.png": {
+    "mtime": 1792182170.4524212,
+    "seen": 1792831011.1709166,
+    "ast_hash": "2ca5ada2231f9754576edd4c273164f6",
+    "semantic_hash": ""
+  },
+  "screens/gods_crooked_lines_detail_omdb.png": {
+    "mtime": 1792182170.457664,
+    "seen": 1792831011.1709166,
+    "ast_hash": "fa003bc65061552d1647c7dffff559da",
+    "semantic_hash": ""
+  },
+  "screens/gods_crooked_lines_detail_scrolled.png": {
+    "mtime": 1792182170.4629996,
+    "seen": 1792831011.1709166,
+    "ast_hash": "4a58ac05b9e71b7c1fa6bc70b9b3ec7e",
+    "semantic_hash": ""
+  },
+  "screens/gods_crooked_lines_white_icons.png": {
+    "mtime": 1792182170.469303,
+    "seen": 1792831011.1709166,
+    "ast_hash": "8349d783acc9852a944b32b97159f361",
+    "semantic_hash": ""
+  },
+  "screens/guilty_clean.png": {
+    "mtime": 1792182170.4751794,
+    "seen": 1792831011.1709166,
+    "ast_hash": "037ddd96b17f9ffefd484b27361e7cc1",
+    "semantic_hash": ""
+  },
+  "screens/home.png": {
+    "mtime": 1792182170.4773173,
+    "seen": 1792831011.1709166,
+    "ast_hash": "93d022fc321a3b6dd416c5a0ef53422d",
+    "semantic_hash": ""
+  },
+  "screens/home_stat_clean.png": {
+    "mtime": 1792182170.4806354,
+    "seen": 1792831011.1709166,
+    "ast_hash": "b22dca0269bb1171fa0d7f6d585be2f1",
+    "semantic_hash": ""
+  },
+  "screens/imdb_tile_perfect.png": {
+    "mtime": 1792182170.4855368,
+    "seen": 1792831011.1709166,
+    "ast_hash": "b761c82329ea6a841ca275b8394a33eb",
+    "semantic_hash": ""
+  },
+  "screens/latyr_feed_clean.png": {
+    "mtime": 1792182170.4885437,
+    "seen": 1792831011.1709166,
+    "ast_hash": "73a42a5f56bb2d0e6cd8975157970012",
+    "semantic_hash": ""
+  },
+  "screens/library.png": {
+    "mtime": 1792182170.4885437,
+    "seen": 1792831011.1709166,
+    "ast_hash": "585c1984c848f9b448c0b0f4f2cf4c21",
+    "semantic_hash": ""
+  },
+  "screens/light_mode_capture_detail_cards.png": {
+    "mtime": 1792182170.4930582,
+    "seen": 1792831011.1709166,
+    "ast_hash": "3d19b21d69b70e43be765baf06a868a6",
+    "semantic_hash": ""
+  },
+  "screens/light_mode_entity_cards.png": {
+    "mtime": 1792182170.500571,
+    "seen": 1792831011.1709166,
+    "ast_hash": "493dc373be47bf3cb7a566bcf51e4b23",
+    "semantic_hash": ""
+  },
+  "screens/light_mode_gods_crooked_lines.png": {
+    "mtime": 1792182170.5052018,
+    "seen": 1792831011.1709166,
+    "ast_hash": "810d6bdb90a444d565163b7e6f5f08c7",
+    "semantic_hash": ""
+  },
+  "screens/light_mode_gods_crooked_lines_scrolled.png": {
+    "mtime": 1792182170.5107167,
+    "seen": 1792831011.1709166,
+    "ast_hash": "77ad288fc9f48a16a6a43c809a729cb7",
+    "semantic_hash": ""
+  },
+  "screens/light_mode_home.png": {
+    "mtime": 1792182170.514222,
+    "seen": 1792831011.1709166,
+    "ast_hash": "b4c343f1acc0592bd78a9bbecdc94952",
+    "semantic_hash": ""
+  },
+  "screens/light_mode_rating_sheet.png": {
+    "mtime": 1792182170.5202374,
+    "seen": 1792831011.1709166,
+    "ast_hash": "daf564ac9557a82bc6e3b4ea3dbd1b53",
+    "semantic_hash": ""
+  },
+  "screens/light_mode_the_chalk_line.png": {
+    "mtime": 1792182170.5264482,
+    "seen": 1792831011.1709166,
+    "ast_hash": "0d81cde8a2b3eab11aae4715d060ff64",
+    "semantic_hash": ""
+  },
+  "screens/light_mode_the_guilty.png": {
+    "mtime": 1792182170.5314498,
+    "seen": 1792831011.1709166,
+    "ast_hash": "7bbfd788f2dd3d150efe3f76c2636247",
+    "semantic_hash": ""
+  },
+  "screens/omdb_cards_live.png": {
+    "mtime": 1792182170.5365393,
+    "seen": 1792831011.1709166,
+    "ast_hash": "9a8c35a0f679a98910144f2515edd7b6",
+    "semantic_hash": ""
+  },
+  "screens/rating_sheet_gods_crooked_lines.png": {
+    "mtime": 1792182170.5430813,
+    "seen": 1792831011.1709166,
+    "ast_hash": "d3dc14ba899537f75d3b386ab4623555",
+    "semantic_hash": ""
+  },
+  "screens/rating_sheet_the_guilty.png": {
+    "mtime": 1792182170.549352,
+    "seen": 1792831011.1709166,
+    "ast_hash": "0fe9c52d8b886059e9217a38fcefe41d",
+    "semantic_hash": ""
+  },
+  "screens/search.png": {
+    "mtime": 1792182170.5509334,
+    "seen": 1792831011.1709166,
+    "ast_hash": "48593e93c1d0d6b33de5870d3d18bf1a",
+    "semantic_hash": ""
+  },
+  "screens/shot_home_screen_clean.png": {
+    "mtime": 1792182170.5564275,
+    "seen": 1792831011.1709166,
+    "ast_hash": "e93e12ced02a4b3cf5a45434afbd570e",
+    "semantic_hash": ""
+  },
+  "screens/the_guilty_detail_omdb_live.png": {
+    "mtime": 1792182170.563639,
+    "seen": 1792831011.1709166,
+    "ast_hash": "a2ca609d3ed881ee9a936df6d4a30706",
+    "semantic_hash": ""
+  },
+  "screens/the_guilty_detail_scrolled.png": {
+    "mtime": 1792182170.5704641,
+    "seen": 1792831011.1709166,
+    "ast_hash": "ea3adecfc766b7286bbc73d774ca78cc",
+    "semantic_hash": ""
+  },
+  "screens/the_guilty_white_icons.png": {
+    "mtime": 1792182170.5767243,
+    "seen": 1792831011.1709166,
+    "ast_hash": "4192faee89a7d1981612a42229f9ea86",
+    "semantic_hash": ""
+  },
+  "screens/watch_provider_cards_verified.png": {
+    "mtime": 1792182170.5823643,
+    "seen": 1792831011.1709166,
+    "ast_hash": "58d434a826d7654560d23f941a1e0f80",
+    "semantic_hash": ""
+  },
+  "screens/watch_provider_detail_view_verified.png": {
+    "mtime": 1792182170.5924025,
+    "seen": 1792831011.1709166,
+    "ast_hash": "8f7b5547a3afc1ab22d678e13caf8c58",
+    "semantic_hash": ""
+  },
+  "latyr-api/scripts/verify-resource-packaging.ps1": {
+    "mtime": 1792831570.7162342,
+    "seen": 1792832367.0737915,
+    "ast_hash": "a3bd271796a28fbe379da44e416fe2d0",
+    "semantic_hash": ""
+  },
+  "latyr-api/src/test/java/com/latyr/api/RemovedDiagnosticRoutesTest.java": {
+    "mtime": 1792831414.4097643,
+    "seen": 1792832367.0737915,
+    "ast_hash": "c82a24bd0331d71425f02e086e94674b",
+    "semantic_hash": ""
+  },
+  "latyr-app/lib/core/network/authentication_required_exception.dart": {
+    "mtime": 1792831813.705068,
+    "seen": 1792832367.0737915,
+    "ast_hash": "ab33212695af6ea731780259dc7a8638",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/core/network/recording_http_adapter.dart": {
+    "mtime": 1792831889.0465138,
+    "seen": 1792832367.0737915,
+    "ast_hash": "d07d3fd04d0586ad5734b06ca3844af3",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/core/network/share_auth_test.dart": {
+    "mtime": 1792832168.1701293,
+    "seen": 1792832367.0737915,
+    "ast_hash": "3925ab977ee3b128bcd2bef6b5e3f256",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/core/network/sse_auth_test.dart": {
+    "mtime": 1792831889.0470948,
+    "seen": 1792832367.0737915,
+    "ast_hash": "0733546b5de01b20f44dc5f6108352c8",
+    "semantic_hash": ""
+  },
+  "latyr-app/test/features/capture/token_provider_test.dart": {
+    "mtime": 1792831889.0605054,
+    "seen": 1792832367.0737915,
+    "ast_hash": "4a591e4d402c1cc308da5861c3b5524c",
+    "semantic_hash": ""
   }
 }

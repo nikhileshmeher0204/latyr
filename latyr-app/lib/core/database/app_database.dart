@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 
 part 'app_database.g.dart';
 
@@ -35,6 +36,24 @@ class LocalCaptures extends Table {
 @DriftDatabase(tables: [LocalCaptures])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
+
+  AppDatabase.forAccount(String firebaseUid)
+    : super(_openConnection(fileName: accountDatabaseFileName(firebaseUid)));
+
+  static String accountDatabaseFileName(String firebaseUid) {
+    if (firebaseUid.trim().isEmpty) {
+      throw ArgumentError.value(
+        firebaseUid,
+        'firebaseUid',
+        'Must not be empty',
+      );
+    }
+    final accountId = const Uuid().v5(
+      Namespace.url.value,
+      'latyr-account:$firebaseUid',
+    );
+    return 'latyr_account_$accountId.sqlite';
+  }
 
   AppDatabase.forTesting(super.e);
 
@@ -111,33 +130,6 @@ class AppDatabase extends _$AppDatabase {
         .getSingleOrNull();
   }
 
-  Future<void> deduplicateCaptures() async {
-    final all = await getAllCaptures();
-    final seenServerIds = <String>{};
-    final seenUrls = <String>{};
-    for (final item in all) {
-      bool isDuplicate = false;
-      if (item.serverCaptureId != null && item.serverCaptureId!.isNotEmpty) {
-        if (seenServerIds.contains(item.serverCaptureId)) {
-          isDuplicate = true;
-        } else {
-          seenServerIds.add(item.serverCaptureId!);
-        }
-      }
-      if (item.originalUrl != null && item.originalUrl!.isNotEmpty) {
-        final base = item.originalUrl!.split('?').first.replaceAll(RegExp(r'/+$'), '');
-        if (seenUrls.contains(base)) {
-          isDuplicate = true;
-        } else {
-          seenUrls.add(base);
-        }
-      }
-      if (isDuplicate) {
-        await deleteCapture(item.id);
-      }
-    }
-  }
-
   Future<int> insertCapture(LocalCapturesCompanion entry) {
     return into(localCaptures).insert(entry, mode: InsertMode.insertOrReplace);
   }
@@ -151,10 +143,10 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-LazyDatabase _openConnection() {
+LazyDatabase _openConnection({String fileName = 'latyr_local.sqlite'}) {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'latyr_local.sqlite'));
+    final file = File(p.join(dbFolder.path, fileName));
     return NativeDatabase.createInBackground(
       file,
       setup: (rawDb) {

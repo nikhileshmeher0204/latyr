@@ -18,9 +18,12 @@ class SseCaptureEvent {
 
 class SseClient {
   final Dio _dio;
+  final bool _ownsDio;
   final TokenProvider? tokenProvider;
   final _eventController = StreamController<SseCaptureEvent>.broadcast();
   CancelToken? _cancelToken;
+  StreamSubscription<String>? _streamSubscription;
+  int _connectionGeneration = 0;
   bool _isConnected = false;
   bool _isConnecting = false;
   bool _isDisposed = false;
@@ -28,15 +31,17 @@ class SseClient {
   Duration _reconnectDelay = const Duration(seconds: 2);
 
   SseClient({Dio? dio, this.tokenProvider})
-      : _dio = dio ??
-            Dio(
-              BaseOptions(
-                // SSE is a long-lived stream — no receive timeout.
-                // connectTimeout must be non-zero or Dio rejects immediately.
-                connectTimeout: const Duration(seconds: 30),
-                receiveTimeout: Duration.zero,
-              ),
-            );
+    : _ownsDio = dio == null,
+      _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              // SSE is a long-lived stream — no receive timeout.
+              // connectTimeout must be non-zero or Dio rejects immediately.
+              connectTimeout: const Duration(seconds: 30),
+              receiveTimeout: Duration.zero,
+            ),
+          );
 
   Stream<SseCaptureEvent> get events => _eventController.stream;
   bool get isConnected => _isConnected;
@@ -44,15 +49,28 @@ class SseClient {
   Future<void> connect() async {
     if (_isDisposed || _isConnected || _isConnecting) return;
     _isConnecting = true;
+    final generation = ++_connectionGeneration;
     _reconnectTimer?.cancel();
+
+    String? token;
+    try {
+      token = tokenProvider != null ? await tokenProvider!() : null;
+    } catch (_) {
+      if (generation == _connectionGeneration) _isConnecting = false;
+      return;
+    }
+    if (generation != _connectionGeneration) return;
+    if (_isDisposed || token == null || token.trim().isEmpty) {
+      _isConnecting = false;
+      return;
+    }
 
     _cancelToken = CancelToken();
     try {
-      final token = tokenProvider != null ? await tokenProvider!() : null;
       final headers = <String, dynamic>{
         'Accept': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+        'Authorization': 'Bearer $token',
       };
 
       final streamUrl = '${EnvironmentConfig.apiUrl}/api/v1/captures/stream';
@@ -60,12 +78,11 @@ class SseClient {
 
       final response = await _dio.get<ResponseBody>(
         streamUrl,
-        options: Options(
-          headers: headers,
-          responseType: ResponseType.stream,
-        ),
+        options: Options(headers: headers, responseType: ResponseType.stream),
         cancelToken: _cancelToken,
       );
+
+      if (_isDisposed || generation != _connectionGeneration) return;
 
       _isConnected = true;
       _isConnecting = false;
@@ -74,39 +91,47 @@ class SseClient {
 
       String buffer = '';
 
-      response.data?.stream
+      _streamSubscription = response.data?.stream
           .cast<List<int>>()
           .transform(utf8.decoder)
           .listen(
-        (String text) {
-          buffer += text;
+            (String text) {
+              if (_isDisposed || generation != _connectionGeneration) return;
+              buffer += text;
 
-          while (buffer.contains('\n\n')) {
-            final splitIndex = buffer.indexOf('\n\n');
-            final message = buffer.substring(0, splitIndex);
-            buffer = buffer.substring(splitIndex + 2);
+              while (buffer.contains('\n\n')) {
+                final splitIndex = buffer.indexOf('\n\n');
+                final message = buffer.substring(0, splitIndex);
+                buffer = buffer.substring(splitIndex + 2);
 
-            _parseAndEmitSseMessage(message);
-          }
-        },
-        onDone: () {
-          debugPrint('[SSE] Stream closed by server');
-          _isConnected = false;
-          _isConnecting = false;
-          _scheduleReconnect();
-        },
-        onError: (err) {
-          debugPrint('[SSE] Stream error: $err');
-          _isConnected = false;
-          _isConnecting = false;
-          _scheduleReconnect();
-        },
-        cancelOnError: true,
-      );
+                _parseAndEmitSseMessage(message);
+              }
+            },
+            onDone: () {
+              if (_isDisposed || generation != _connectionGeneration) return;
+              debugPrint('[SSE] Stream closed by server');
+              _isConnected = false;
+              _isConnecting = false;
+              _scheduleReconnect();
+            },
+            onError: (err) {
+              if (_isDisposed || generation != _connectionGeneration) return;
+              debugPrint('[SSE] Stream error: $err');
+              _isConnected = false;
+              _isConnecting = false;
+              _scheduleReconnect();
+            },
+            cancelOnError: true,
+          );
     } catch (e) {
+      if (_isDisposed || generation != _connectionGeneration) return;
       debugPrint('[SSE] Connection failed: $e');
       _isConnected = false;
       _isConnecting = false;
+      if (e is DioException &&
+          (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
+        return;
+      }
       _scheduleReconnect();
     }
   }
@@ -114,7 +139,9 @@ class SseClient {
   void _scheduleReconnect() {
     if (_isDisposed || _isConnected || _isConnecting) return;
     _reconnectTimer?.cancel();
-    debugPrint('[SSE] Scheduling reconnect in ${_reconnectDelay.inSeconds}s...');
+    debugPrint(
+      '[SSE] Scheduling reconnect in ${_reconnectDelay.inSeconds}s...',
+    );
     _reconnectTimer = Timer(_reconnectDelay, () {
       if (!_isDisposed && !_isConnected) {
         connect();
@@ -148,7 +175,9 @@ class SseClient {
         final parsed = jsonDecode(dataJson);
         if (parsed is Map<String, dynamic>) {
           debugPrint('[SSE] Received event $eventType: $dataJson');
-          _eventController.add(SseCaptureEvent(eventType: eventType, data: parsed));
+          _eventController.add(
+            SseCaptureEvent(eventType: eventType, data: parsed),
+          );
         }
       } catch (e) {
         debugPrint('[SSE] Failed to decode event JSON: $e');
@@ -157,8 +186,11 @@ class SseClient {
   }
 
   void disconnect() {
+    _connectionGeneration++;
     _reconnectTimer?.cancel();
     _cancelToken?.cancel('Disconnected by client');
+    _streamSubscription?.cancel();
+    _streamSubscription = null;
     _isConnected = false;
     _isConnecting = false;
   }
@@ -166,6 +198,7 @@ class SseClient {
   void dispose() {
     _isDisposed = true;
     disconnect();
+    if (_ownsDio) _dio.close(force: true);
     _eventController.close();
   }
 }

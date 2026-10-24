@@ -1,15 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:latyr_app/features/capture/data/capture_repository.dart';
+import 'package:latyr_app/core/network/authentication_required_exception.dart';
 
 class ShareIntentService {
   static const _channel = MethodChannel('com.latyr.latyr_app/share');
-  final CaptureRepository captureRepository;
+  final bool Function() canCapture;
+  final Future<void> Function(String url, {String? caption}) captureUrl;
+  final void Function() onAuthenticationRequired;
+  bool _disposed = false;
 
   String? _lastHandledUrl;
   DateTime? _lastHandledAt;
 
-  ShareIntentService({required this.captureRepository}) {
+  ShareIntentService({required this.canCapture, required this.captureUrl,
+    required this.onAuthenticationRequired}) {
     _init();
   }
 
@@ -25,7 +29,7 @@ class ShareIntentService {
 
     // Check for initial shared text when launched from cold start
     _channel.invokeMethod<String>('getInitialSharedText').then((text) {
-      if (text != null && text.isNotEmpty) {
+      if (!_disposed && text != null && text.isNotEmpty) {
         _handleSharedText(text);
       }
     }).catchError((e) {
@@ -33,8 +37,12 @@ class ShareIntentService {
     });
   }
 
-  void _handleSharedText(String text) {
-    debugPrint('Received shared text from Android Share Sheet: $text');
+  Future<void> _handleSharedText(String text) async {
+    if (_disposed) return;
+    if (!canCapture()) {
+      onAuthenticationRequired();
+      return;
+    }
     final extractedUrl = _extractUrl(text);
     if (extractedUrl != null) {
       // Debounce: prevent duplicate processing within 5 seconds for the same URL
@@ -42,7 +50,6 @@ class ShareIntentService {
       if (_lastHandledUrl == extractedUrl &&
           _lastHandledAt != null &&
           now.difference(_lastHandledAt!).inSeconds < 5) {
-        debugPrint('Debounced duplicate share intent for URL: $extractedUrl');
         return;
       }
       _lastHandledUrl = extractedUrl;
@@ -52,8 +59,15 @@ class ShareIntentService {
       if (caption.isEmpty) {
         caption = null;
       }
-      debugPrint('Optimistically capturing URL from share sheet: $extractedUrl (caption: $caption)');
-      captureRepository.captureUrl(extractedUrl, caption: caption);
+      try {
+        await captureUrl(extractedUrl, caption: caption);
+      } on AuthenticationRequiredException {
+        _lastHandledUrl = null;
+        _lastHandledAt = null;
+        if (!_disposed) onAuthenticationRequired();
+      } catch (_) {
+        debugPrint('Shared capture could not be saved.');
+      }
     }
   }
 
@@ -64,6 +78,7 @@ class ShareIntentService {
   }
 
   void dispose() {
+    _disposed = true;
     _channel.setMethodCallHandler(null);
   }
 }

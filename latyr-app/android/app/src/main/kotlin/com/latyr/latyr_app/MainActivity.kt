@@ -8,7 +8,7 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.latyr.latyr_app/share"
-    private var initialSharedText: String? = null
+    private val shareDelivery = ShareDeliveryState()
     private var methodChannel: MethodChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,13 +26,10 @@ class MainActivity : FlutterActivity() {
         if (intent?.action == Intent.ACTION_SEND && intent.type?.startsWith("text/") == true) {
             val text = intent.getStringExtra(Intent.EXTRA_TEXT)
             if (!text.isNullOrEmpty()) {
-                val channel = methodChannel
-                if (channel != null) {
-                    initialSharedText = null
-                    channel.invokeMethod("onSharedText", text)
-                } else {
-                    initialSharedText = text
-                }
+                val delivery = shareDelivery.offer(text)
+                // Consume only the captured share payload so recreation cannot replay it.
+                intent.removeExtra(Intent.EXTRA_TEXT)
+                if (delivery != null) methodChannel?.invokeMethod("onSharedText", delivery)
             }
         }
     }
@@ -43,9 +40,7 @@ class MainActivity : FlutterActivity() {
         methodChannel = channel
         channel.setMethodCallHandler { call, result ->
             if (call.method == "getInitialSharedText") {
-                val text = initialSharedText
-                initialSharedText = null // Consume once
-                result.success(text)
+                result.success(shareDelivery.readyAndTakeInitial())
             } else {
                 result.notImplemented()
             }

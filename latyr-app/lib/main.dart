@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latyr_app/core/widgets/latyr_progressive_blur.dart';
@@ -10,13 +9,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   debugPrint('Starting Latyr in ${EnvironmentConfig.environment.toUpperCase()} environment');
   debugPrint('API URL: ${EnvironmentConfig.apiUrl}');
-
-  try {
-    await Firebase.initializeApp();
-    debugPrint('Firebase initialized successfully on mobile.');
-  } catch (e) {
-    debugPrint('Firebase initialization: $e');
-  }
 
   try {
     await LatyrProgressiveBlur.precache();
@@ -37,12 +29,8 @@ class LatyrAppInitializer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Eagerly initialize sync service to listen to network connectivity
-    ref.watch(syncServiceProvider);
-    // Eagerly initialize Android share sheet receiver
+    // Receive and reject signed-out shares without opening a library or queue.
     ref.watch(shareIntentServiceProvider);
-    // Eagerly initialize real-time SSE stream
-    ref.watch(sseClientProvider);
 
     return const LatyrApp();
   }

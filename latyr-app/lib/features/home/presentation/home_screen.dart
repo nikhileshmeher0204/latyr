@@ -14,6 +14,7 @@ import 'package:latyr_app/core/database/app_database.dart';
 import 'package:flutter/services.dart';
 import 'package:latyr_app/features/feed/presentation/screens/capture_detail_screen.dart';
 import 'package:latyr_app/features/home/presentation/widgets/app_switcher_scroll_physics.dart';
+import 'package:latyr_app/features/auth/presentation/auth_providers.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -177,11 +178,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               isDark,
             ),
             const SizedBox(width: 8),
-            _buildCircleButton(
-              CupertinoIcons.settings,
-              textColor,
-              btnBg,
-              isDark,
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () => showCupertinoModalPopup<void>(
+                context: context,
+                builder: (sheetContext) => CupertinoActionSheet(
+                  actions: [CupertinoActionSheetAction(
+                    isDestructiveAction: true,
+                    onPressed: () {
+                      Navigator.of(sheetContext).pop();
+                      ref.read(authControllerProvider.notifier).signOut();
+                    },
+                    child: const Text('Sign out'),
+                  )],
+                  cancelButton: CupertinoActionSheetAction(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+              ),
+              child: Semantics(label: 'Account settings', child: _buildCircleButton(
+                CupertinoIcons.settings, textColor, btnBg, isDark,
+              )),
             ),
           ],
         ),

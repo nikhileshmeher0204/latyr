@@ -7,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 import jakarta.annotation.PostConstruct;
 import java.io.FileInputStream;
@@ -19,7 +17,7 @@ public class FirebaseConfig {
 
     private static final Logger log = LoggerFactory.getLogger(FirebaseConfig.class);
 
-    @Value("${firebase.config.path:}")
+    @Value("${firebase.config.path:${FIREBASE_CONFIG_PATH:}}")
     private String firebaseConfigPath;
 
     @PostConstruct
@@ -43,22 +41,7 @@ public class FirebaseConfig {
                 }
             }
 
-            // Option 2: Try classpath resource firebase-service-account.json
-            if (options == null) {
-                Resource resource = new ClassPathResource("firebase-service-account.json");
-                if (resource.exists()) {
-                    log.info("Initializing Firebase App from classpath: firebase-service-account.json");
-                    try (InputStream is = resource.getInputStream()) {
-                        options = FirebaseOptions.builder()
-                                .setCredentials(GoogleCredentials.fromStream(is))
-                                .build();
-                    } catch (Exception e) {
-                        log.warn("Could not load credentials from classpath resource: {}", e.getMessage());
-                    }
-                }
-            }
-
-            // Option 3: Fall back to Google Application Default Credentials (ADC)
+            // Credentials must remain external to the application artifact.
             if (options == null) {
                 log.info("Initializing Firebase App using Google Application Default Credentials (ADC)...");
                 options = FirebaseOptions.builder()
@@ -69,7 +52,7 @@ public class FirebaseConfig {
             FirebaseApp.initializeApp(options);
             log.info("Firebase App initialized successfully.");
         } catch (Exception e) {
-            log.warn("Firebase Admin SDK not initialized: {}. Ensure FIREBASE_CONFIG_PATH or firebase-service-account.json is provided.", e.getMessage());
+            log.warn("Firebase Admin SDK not initialized: {}. Configure FIREBASE_CONFIG_PATH or Application Default Credentials.", e.getMessage());
         }
     }
 }

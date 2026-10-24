@@ -55,7 +55,8 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
     if (serverId.isEmpty) return;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(apiClientProvider).getCaptureDetail(serverId).then((resp) {
+      if (!mounted) return;
+      ref.read(apiClientProvider).getCaptureDetail(serverId).then((resp) async {
         final data = resp.data;
         if (data != null && data['entities'] != null && mounted) {
           final entitiesList = (data['entities'] as List)
@@ -64,7 +65,7 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
           setState(() {
             _freshEntities = entitiesList;
           });
-          ref.read(appDatabaseProvider).updateCapture(
+          await ref.read(appDatabaseProvider).updateCapture(
             LocalCapturesCompanion(
               id: drift.Value(widget.capture.id),
               entitiesJson: drift.Value(jsonEncode(data['entities'])),

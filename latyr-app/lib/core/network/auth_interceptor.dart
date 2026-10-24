@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:latyr_app/core/network/authentication_required_exception.dart';
 
 typedef TokenProvider = Future<String?> Function();
 
@@ -12,15 +13,24 @@ class AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
+    options.headers.removeWhere(
+      (key, _) => key.toLowerCase() == 'authorization',
+    );
     try {
       final token = await tokenProvider();
-      if (token != null && token.isNotEmpty) {
+      if (token != null && token.trim().isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $token';
+        return handler.next(options);
       }
     } catch (_) {
-      // Proceed without token if provider fails (e.g. offline/mock)
+      // Token failures must never fall through to an unauthenticated request.
     }
-    return handler.next(options);
+    return handler.reject(
+      DioException(
+        requestOptions: options,
+        error: const AuthenticationRequiredException(),
+      ),
+    );
   }
 
   @override
