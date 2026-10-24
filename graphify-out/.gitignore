@@ -1,0 +1,12 @@
+# Keep published graph artifacts; retain machine-local extraction/cache data locally.
+/*
+!/.gitignore
+!/graph.json
+!/graph.html
+!/GRAPH_REPORT.md
+!/GRAPH_HEALTH.txt
+!/manifest.json
+!/cost.json
+!/code-graph.json
+!/doc-code-links.json
+!/audit-probes/

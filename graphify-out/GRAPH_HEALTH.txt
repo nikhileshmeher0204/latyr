@@ -1,0 +1,41 @@
+[graphify] MultiDiGraph edge-collapse diagnostic
+input: <in-memory>
+input_stage: provided JSON (normal graph.json is post-build)
+effective_directed: <direct-call>
+nodes: 2702
+unverified_code_nodes: 0
+raw_edges: 6977
+valid_candidate_edges: 6515
+missing_endpoint_edges: 1
+dangling_endpoint_edges: 461
+external_reference_edges: 0
+self_loop_edges: 5
+exact_duplicate_edges: 0
+directed_unique_endpoint_pairs: 5413
+directed_same_endpoint_collapsed_edges: 1102
+undirected_unique_endpoint_pairs: 5405
+undirected_same_endpoint_collapsed_edges: 1110
+same_endpoint_group_count: 479
+relation_variant_groups: 31
+source_file_variant_groups: 1
+source_location_variant_groups: 252
+context_variant_groups: 198
+post_build_graph_type: DiGraph
+post_build_edges: 5854
+producer_suppression_sites: 12
+producer_suppression_examples:
+  - L1813 seen_ids arity=unknown
+  - L2377 seen_ids arity=unknown
+  - L2379 seen_doc_refs arity=unknown
+  - L3046 seen_ids arity=unknown
+  - L3193 seen_ids arity=unknown
+  - L4222 seen_keys arity=unknown
+  - L4408 seen_keys arity=unknown
+  - L7689 seen_ids arity=unknown
+examples:
+  - latyr_app_lib_core_database_app_database -> generatedcolumn edges=38 relations=['references'] locations=['L100', 'L109', 'L120', 'L131', 'L1388', 'L1391', 'L1396', 'L14', 'L1401', 'L1406', 'L1409', 'L1414', 'L1417', 'L142', 'L1420', 'L1425', 'L1428', 'L1431', 'L1436', 'L1441', 'L1446', 'L1451', 'L1456', 'L1459', 'L1462', 'L153', 'L163', 'L175', 'L186', 'L198', 'L210', 'L25', 'L36', 'L47', 'L57', 'L69', 'L78', 'L89'] contexts=['variable_type']
+  - latyr_app_lib_core_design_latyr_typography -> static_const_textstyle edges=32 relations=['references'] locations=['L103', 'L112', 'L121', 'L132', 'L141', 'L150', 'L159', 'L168', 'L177', 'L186', 'L196', 'L206', 'L214', 'L226', 'L235', 'L24', 'L244', 'L253', 'L262', 'L271', 'L280', 'L289', 'L298', 'L308', 'L33', 'L42', 'L51', 'L62', 'L71', 'L80', 'L89', 'L98'] contexts=['variable_type']
+  - latyr_app_lib_core_design_latyr_spacing -> static_const_double edges=30 relations=['references'] locations=['L102', 'L13', 'L14', 'L15', 'L16', 'L17', 'L18', 'L19', 'L20', 'L21', 'L26', 'L29', 'L32', 'L35', 'L38', 'L41', 'L44', 'L47', 'L52', 'L55', 'L58', 'L61', 'L64', 'L67', 'L70', 'L88', 'L92', 'L93', 'L94', 'L99'] contexts=['variable_type']
+  - latyr_app_lib_core_theme_app_colors -> static_const_color edges=26 relations=['references'] locations=['L13', 'L14', 'L15', 'L17', 'L18', 'L20', 'L21', 'L22', 'L23', 'L25', 'L26', 'L27', 'L29', 'L30', 'L31', 'L38', 'L40', 'L41', 'L44', 'L47', 'L50', 'L53', 'L56', 'L57', 'L58', 'L59'] contexts=['variable_type']
+  - latyr_app_lib_features_capture_domain_entity_metadata_entertainment_metadata -> string edges=24 relations=['references'] locations=['L10', 'L11', 'L12', 'L13', 'L14', 'L15', 'L16', 'L17', 'L18', 'L19', 'L20', 'L21', 'L22', 'L23', 'L24', 'L25', 'L3', 'L30', 'L31', 'L4', 'L5', 'L7', 'L8', 'L9'] contexts=['variable_type']
+note: normal graph.json is post-build; raw producer loss must be measured earlier.

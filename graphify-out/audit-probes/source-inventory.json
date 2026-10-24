@@ -1,0 +1,1358 @@
+[
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/LatyrApiApplication.java",
+    "lines": 17,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/AIProvider.java",
+    "lines": 37,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/ApifyScraperAdapter.java",
+    "lines": 149,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/DefaultEntityEnrichmentAdapter.java",
+    "lines": 83,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/EntityEnrichmentProvider.java",
+    "lines": 8,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/EphemeralMediaStreamer.java",
+    "lines": 47,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/GoogleGenAIAdapter.java",
+    "lines": 319,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/ScraperProvider.java",
+    "lines": 18,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/enrichment/CompositeEntityEnricher.java",
+    "lines": 75,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/enrichment/EntertainmentEntityEnricher.java",
+    "lines": 674,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/enrichment/EntityEnricher.java",
+    "lines": 36,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/enrichment/GitHubEntityEnricher.java",
+    "lines": 288,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/enrichment/StreamingBrandCatalog.java",
+    "lines": 171,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/storage/AssetStorageProvider.java",
+    "lines": 24,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/adapter/storage/CdnAssetStorageProvider.java",
+    "lines": 40,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/config/AsyncConfig.java",
+    "lines": 20,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/config/GoogleGenAIConfig.java",
+    "lines": 115,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/config/JacksonConfig.java",
+    "lines": 27,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/config/PathNormalizationFilter.java",
+    "lines": 46,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/config/WebConfig.java",
+    "lines": 33,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/config/typehandler/JsonbTypeHandler.java",
+    "lines": 63,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/config/typehandler/StringArrayTypeHandler.java",
+    "lines": 62,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/config/typehandler/UuidTypeHandler.java",
+    "lines": 47,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/controller/AIController.java",
+    "lines": 89,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/controller/AuthController.java",
+    "lines": 54,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/controller/CaptureController.java",
+    "lines": 83,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/controller/CaptureStreamController.java",
+    "lines": 26,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/controller/ContextController.java",
+    "lines": 54,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/controller/EntityController.java",
+    "lines": 33,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/controller/HealthController.java",
+    "lines": 25,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/controller/RevenueCatWebhookController.java",
+    "lines": 52,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/controller/UserController.java",
+    "lines": 36,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/ActionCTA.java",
+    "lines": 11,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/CaptureStatus.java",
+    "lines": 8,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/ContentType.java",
+    "lines": 7,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/EntityType.java",
+    "lines": 13,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/Intent.java",
+    "lines": 11,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/JobStatus.java",
+    "lines": 8,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/Language.java",
+    "lines": 34,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/PlanTier.java",
+    "lines": 6,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/SourceType.java",
+    "lines": 9,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/StreamingPlatform.java",
+    "lines": 69,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/SubscriptionEventType.java",
+    "lines": 8,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/enums/WatchProviderCategory.java",
+    "lines": 47,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/CanonicalSource.java",
+    "lines": 55,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/Capture.java",
+    "lines": 111,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/CaptureCollection.java",
+    "lines": 27,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/Collection.java",
+    "lines": 46,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/ExtractedEntity.java",
+    "lines": 72,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/IngestionJob.java",
+    "lines": 70,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/NotificationLog.java",
+    "lines": 49,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/User.java",
+    "lines": 57,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/UserCollection.java",
+    "lines": 48,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/UserSubscription.java",
+    "lines": 53,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/domain/model/UserSubscriptionHistory.java",
+    "lines": 55,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/AnalyzeRawRequest.java",
+    "lines": 10,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/AnalyzeUrlRequest.java",
+    "lines": 12,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/CaptureDetailResponse.java",
+    "lines": 57,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/CaptureResponse.java",
+    "lines": 52,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/CreateCaptureRequest.java",
+    "lines": 21,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/ErrorResponse.java",
+    "lines": 21,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/ExtractedEntityResponse.java",
+    "lines": 37,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/PagedResponse.java",
+    "lines": 20,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/UpdateEntityRequest.java",
+    "lines": 22,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/UpdatePreferencesRequest.java",
+    "lines": 13,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/dto/UserProfileResponse.java",
+    "lines": 52,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/exception/ExternalProviderException.java",
+    "lines": 10,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/exception/GlobalExceptionHandler.java",
+    "lines": 85,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/exception/LatyrException.java",
+    "lines": 29,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/exception/QuotaExceededException.java",
+    "lines": 11,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/exception/ResourceNotFoundException.java",
+    "lines": 10,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/integration/GitHubClient.java",
+    "lines": 31,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/integration/OmdbClient.java",
+    "lines": 252,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/integration/RestGitHubClient.java",
+    "lines": 194,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/integration/TmdbClient.java",
+    "lines": 339,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/integration/WeatherIntegrationClient.java",
+    "lines": 75,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/integration/dto/GitHubRepoDetailsDTO.java",
+    "lines": 45,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/integration/dto/GitHubSearchResultDTO.java",
+    "lines": 30,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/CanonicalSourceMapper.java",
+    "lines": 64,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/CaptureCollectionMapper.java",
+    "lines": 33,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/CaptureMapper.java",
+    "lines": 151,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/CollectionMapper.java",
+    "lines": 27,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/ExtractedEntityMapper.java",
+    "lines": 92,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/IngestionJobMapper.java",
+    "lines": 110,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/NotificationLogMapper.java",
+    "lines": 31,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/UserCollectionMapper.java",
+    "lines": 40,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/UserMapper.java",
+    "lines": 49,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/UserSubscriptionHistoryMapper.java",
+    "lines": 24,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/mapper/UserSubscriptionMapper.java",
+    "lines": 46,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/scheduler/ResurfacingScheduler.java",
+    "lines": 173,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/security/AuthenticatedUser.java",
+    "lines": 61,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/security/CurrentUser.java",
+    "lines": 9,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/security/CurrentUserArgumentResolver.java",
+    "lines": 30,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/security/FirebaseAuthFilter.java",
+    "lines": 131,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/security/FirebaseConfig.java",
+    "lines": 75,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/security/SecurityConfig.java",
+    "lines": 62,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/service/CanonicalDeduplicationService.java",
+    "lines": 80,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/service/CaptureService.java",
+    "lines": 369,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/service/FcmService.java",
+    "lines": 75,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/service/FirebaseStorageService.java",
+    "lines": 88,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/service/IngestionPipelineService.java",
+    "lines": 286,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/service/SseNotificationService.java",
+    "lines": 104,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/service/SubscriptionQuotaService.java",
+    "lines": 189,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/service/UrlNormalizationService.java",
+    "lines": 143,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/service/UserService.java",
+    "lines": 127,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/util/MarkupSanitizer.java",
+    "lines": 38,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/util/UrlSourceClassifier.java",
+    "lines": 167,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/worker/EntityEnrichmentRetryWorker.java",
+    "lines": 122,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/java/com/latyr/api/worker/IngestionQueueWorker.java",
+    "lines": 86,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/resources/db/migration/V1__init_schema.sql",
+    "lines": 190,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/resources/db/migration/V2__add_sub_category.sql",
+    "lines": 2,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/resources/db/migration/V3__add_thumbnail_url.sql",
+    "lines": 3,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/resources/db/migration/V4__add_title_to_captures.sql",
+    "lines": 2,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/resources/db/migration/V5__add_summary_to_captures.sql",
+    "lines": 2,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/resources/db/migration/V6__add_source_type.sql",
+    "lines": 9,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/main/resources/db/migration/V7__add_entity_enrichment_queue.sql",
+    "lines": 11,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/ApifyScraperAdapterTest.java",
+    "lines": 26,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/CaptureControllerTest.java",
+    "lines": 191,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/CaptureServiceTest.java",
+    "lines": 128,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/CaptureStreamControllerTest.java",
+    "lines": 62,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/DefaultEntityEnrichmentAdapterTest.java",
+    "lines": 56,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/EntertainmentEntityEnricherTest.java",
+    "lines": 156,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/EphemeralMediaStreamerTest.java",
+    "lines": 23,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/FcmServiceTest.java",
+    "lines": 24,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/GitHubEntityEnricherTest.java",
+    "lines": 257,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/GoogleGenAIAdapterTest.java",
+    "lines": 91,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/IngestionPipelineServiceTest.java",
+    "lines": 256,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/LatyrApiApplicationTests.java",
+    "lines": 13,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/ResurfacingSchedulerTest.java",
+    "lines": 132,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/RevenueCatWebhookControllerTest.java",
+    "lines": 164,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/SseNotificationServiceTest.java",
+    "lines": 32,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/SubscriptionQuotaServiceTest.java",
+    "lines": 86,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/UrlNormalizationServiceTest.java",
+    "lines": 63,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/UserControllerTest.java",
+    "lines": 135,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/util/MarkupSanitizerTest.java",
+    "lines": 32,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-api/src/test/java/com/latyr/api/util/UrlSourceClassifierTest.java",
+    "lines": 62,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/android/app/src/main/kotlin/com/latyr/latyr_app/MainActivity.kt",
+    "lines": 59,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/ios/Runner/AppDelegate.swift",
+    "lines": 16,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/ios/Runner/SceneDelegate.swift",
+    "lines": 6,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/ios/RunnerTests/RunnerTests.swift",
+    "lines": 12,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/app.dart",
+    "lines": 237,
+    "color_literals": 7,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/config/app_properties.dart",
+    "lines": 26,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/config/environment_config.dart",
+    "lines": 42,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/database/app_database.dart",
+    "lines": 166,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/design/brand_registry.dart",
+    "lines": 212,
+    "color_literals": 24,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/design/latyr_colors.dart",
+    "lines": 174,
+    "color_literals": 60,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/design/latyr_spacing.dart",
+    "lines": 103,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/design/latyr_typography.dart",
+    "lines": 345,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/enums/capture_source.dart",
+    "lines": 83,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/enums/watch_provider_category.dart",
+    "lines": 33,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/network/api_client.dart",
+    "lines": 95,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/network/auth_interceptor.dart",
+    "lines": 33,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/network/sse_client.dart",
+    "lines": 171,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/services/color_extraction_service.dart",
+    "lines": 92,
+    "color_literals": 2,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/services/dominant_color_service.dart",
+    "lines": 161,
+    "color_literals": 12,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/services/share_intent_service.dart",
+    "lines": 69,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/services/sync_service.dart",
+    "lines": 58,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/theme/app_colors.dart",
+    "lines": 60,
+    "color_literals": 6,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/theme/app_theme.dart",
+    "lines": 116,
+    "color_literals": 10,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/util/capture_source_classifier.dart",
+    "lines": 103,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/widgets/capture_source_icon.dart",
+    "lines": 158,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/widgets/latyr_capture_card.dart",
+    "lines": 331,
+    "color_literals": 10,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/widgets/latyr_expandable_text.dart",
+    "lines": 96,
+    "color_literals": 4,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/widgets/latyr_progressive_blur.dart",
+    "lines": 374,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/widgets/rich_summary/latyr_rich_summary.dart",
+    "lines": 524,
+    "color_literals": 16,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/widgets/rich_summary/summary_action_handler.dart",
+    "lines": 396,
+    "color_literals": 17,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/widgets/rich_summary/summary_lexer.dart",
+    "lines": 120,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/core/widgets/rich_summary/summary_token.dart",
+    "lines": 108,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/data/capture_repository.dart",
+    "lines": 484,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/domain/entity_metadata/book_metadata.dart",
+    "lines": 57,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/domain/entity_metadata/entertainment_metadata.dart",
+    "lines": 137,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/domain/entity_metadata/entity_metadata.dart",
+    "lines": 7,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/domain/entity_metadata/generic_entity_metadata.dart",
+    "lines": 48,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/domain/entity_metadata/github_repo_metadata.dart",
+    "lines": 111,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/domain/entity_metadata/place_metadata.dart",
+    "lines": 70,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/domain/entity_metadata/quote_metadata.dart",
+    "lines": 32,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/domain/entity_metadata/recipe_metadata.dart",
+    "lines": 59,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/domain/extracted_entity_model.dart",
+    "lines": 101,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/capture/presentation/capture_providers.dart",
+    "lines": 83,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/collections/domain/collection_models.dart",
+    "lines": 26,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/collections/presentation/category_detail_screen.dart",
+    "lines": 130,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/collections/presentation/collections_providers.dart",
+    "lines": 115,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/collections/presentation/collections_screen.dart",
+    "lines": 111,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/collections/presentation/subcategory_detail_screen.dart",
+    "lines": 93,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/feed/presentation/screens/capture_detail_screen.dart",
+    "lines": 1028,
+    "color_literals": 34,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/feed/presentation/screens/entertainment_detail_screen.dart",
+    "lines": 907,
+    "color_literals": 16,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/feed/presentation/screens/github_repo_detail_screen.dart",
+    "lines": 647,
+    "color_literals": 28,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/feed/presentation/widgets/entity_cards.dart",
+    "lines": 958,
+    "color_literals": 28,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/feed/presentation/widgets/github_language_colors.dart",
+    "lines": 80,
+    "color_literals": 26,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/feed/presentation/widgets/intent_detail_app_bar.dart",
+    "lines": 237,
+    "color_literals": 5,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/feed/presentation/widgets/streaming_branding.dart",
+    "lines": 172,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/feed/presentation/widgets/where_to_watch_card.dart",
+    "lines": 450,
+    "color_literals": 4,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/home/presentation/home_providers.dart",
+    "lines": 68,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/home/presentation/home_screen.dart",
+    "lines": 919,
+    "color_literals": 45,
+    "todo_count": 1
+  },
+  {
+    "file": "latyr-app/lib/features/home/presentation/widgets/app_switcher_scroll_physics.dart",
+    "lines": 152,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/home/presentation/widgets/capture_banner_widget.dart",
+    "lines": 69,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/home/presentation/widgets/for_you_card_widget.dart",
+    "lines": 106,
+    "color_literals": 2,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/home/presentation/widgets/home_metrics_widget.dart",
+    "lines": 169,
+    "color_literals": 16,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/home/presentation/widgets/library_1x2_grid_widget.dart",
+    "lines": 139,
+    "color_literals": 12,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/home/presentation/widgets/processing_captures_section.dart",
+    "lines": 340,
+    "color_literals": 6,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/library/presentation/library_screen.dart",
+    "lines": 247,
+    "color_literals": 9,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/search/presentation/search_screen.dart",
+    "lines": 287,
+    "color_literals": 2,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/subscription/presentation/paywall_modal.dart",
+    "lines": 284,
+    "color_literals": 12,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/features/subscription/presentation/pro_screen.dart",
+    "lines": 202,
+    "color_literals": 5,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/main.dart",
+    "lines": 49,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/ambient_mesh_background.dart",
+    "lines": 114,
+    "color_literals": 6,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/apple_tv_badge.dart",
+    "lines": 80,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/entities/github_repo_entity_card.dart",
+    "lines": 127,
+    "color_literals": 8,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/entities/movie_show_entity_card.dart",
+    "lines": 153,
+    "color_literals": 2,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/entities/place_entity_card.dart",
+    "lines": 88,
+    "color_literals": 2,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/entities/quote_entity_card.dart",
+    "lines": 68,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/filter_chip_bar.dart",
+    "lines": 160,
+    "color_literals": 4,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/floating_nav_island.dart",
+    "lines": 140,
+    "color_literals": 9,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/glass_card.dart",
+    "lines": 167,
+    "color_literals": 6,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/metric_stat_card.dart",
+    "lines": 54,
+    "color_literals": 4,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/pill_badge.dart",
+    "lines": 89,
+    "color_literals": 14,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/lib/shared/widgets/pill_button.dart",
+    "lines": 134,
+    "color_literals": 7,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/test/core/capture_source_classifier_test.dart",
+    "lines": 91,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/test/core/database/app_database_test.dart",
+    "lines": 75,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/test/core/network/auth_interceptor_test.dart",
+    "lines": 31,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/test/features/capture/capture_repository_test.dart",
+    "lines": 43,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/test/features/capture/entity_metadata_test.dart",
+    "lines": 205,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/test/features/home/app_switcher_scroll_physics_test.dart",
+    "lines": 82,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/test/features/subscription/paywall_modal_test.dart",
+    "lines": 23,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/test/widget_test.dart",
+    "lines": 50,
+    "color_literals": 0,
+    "todo_count": 0
+  },
+  {
+    "file": "latyr-app/test/widgets/summary_lexer_test.dart",
+    "lines": 100,
+    "color_literals": 0,
+    "todo_count": 0
+  }
+]
