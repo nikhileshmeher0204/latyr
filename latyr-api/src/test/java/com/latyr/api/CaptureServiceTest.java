@@ -1,5 +1,7 @@
 package com.latyr.api;
 
+import com.latyr.api.exception.LatyrException;
+
 import com.latyr.api.domain.enums.ActionCTA;
 import com.latyr.api.domain.enums.CaptureStatus;
 import com.latyr.api.domain.enums.ContentType;
@@ -124,5 +126,49 @@ class CaptureServiceTest {
         verify(captureMapper, times(1)).insert(any(Capture.class));
         verify(extractedEntityMapper, times(1)).insert(any(ExtractedEntity.class));
         verify(ingestionJobMapper, never()).insert(any(IngestionJob.class)); // $0 AI cost!
+    }
+
+    @Test
+    @DisplayName("F16 Outbound policy: rejects restricted/internal destinations on createUrlCapture")
+    void testCreateUrlCapture_RestrictedDestination_ThrowsException() {
+        UUID userId = UUID.randomUUID();
+        CreateCaptureRequest request = new CreateCaptureRequest("http://127.0.0.1:8080/internal", ContentType.URL, null);
+
+        LatyrException ex = assertThrows(LatyrException.class, () ->
+                captureService.createUrlCapture(userId, request)
+        );
+
+        assertEquals("RESTRICTED_DESTINATION", ex.getErrorCode());
+        verify(captureMapper, never()).insert(any(Capture.class));
+        verify(ingestionJobMapper, never()).insert(any(IngestionJob.class));
+    }
+
+    @Test
+    @DisplayName("F11 Privacy: image captures are partitioned by userId to guarantee owner-private isolation")
+    void testCreateImageCapture_OwnerPrivateIsolation() {
+        UUID user1 = UUID.randomUUID();
+        UUID user2 = UUID.randomUUID();
+        byte[] imageBytes = "my-private-screenshot-bytes".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        String rawSha = urlNormalizationService.computeSha256(imageBytes);
+        String user1Hash = user1 + ":" + rawSha;
+        String user2Hash = user2 + ":" + rawSha;
+
+        assertNotEquals(user1Hash, user2Hash, "Image hashes across different users must never collide");
+
+        CanonicalSource cs1 = new CanonicalSource();
+        cs1.setId(UUID.randomUUID());
+        cs1.setCanonicalUrlHash(user1Hash);
+
+        when(deduplicationService.findCachedSource(user1Hash)).thenReturn(Optional.empty());
+        when(deduplicationService.getOrCreateCanonicalSource(eq(user1Hash), eq(SourceType.IMAGE), any()))
+                .thenReturn(cs1);
+
+        CaptureResponse resp1 = captureService.createImageCapture(user1, imageBytes, "screen.png");
+        assertNotNull(resp1);
+        assertEquals(CaptureStatus.PENDING, resp1.status());
+
+        verify(deduplicationService, times(1)).findCachedSource(user1Hash);
+        verify(deduplicationService, never()).findCachedSource(user2Hash);
     }
 }

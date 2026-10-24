@@ -1,5 +1,7 @@
 package com.latyr.api;
 
+import com.latyr.api.exception.LatyrException;
+
 import com.latyr.api.service.UrlNormalizationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,5 +61,32 @@ class UrlNormalizationServiceTest {
 
         // Idempotency check
         assertEquals(hash, normalizationService.computeSha256(imageBytes));
+    }
+
+    @Test
+    @DisplayName("F16 Outbound policy: rejects private/loopback IPs and non-http schemes, allows valid public URLs")
+    void testValidateOutboundUrl_RestrictedAndAllowedDestinations() {
+        // Allowed public URLs
+        assertDoesNotThrow(() -> normalizationService.validateOutboundUrl("https://www.instagram.com/reel/C8xyz123/"));
+        assertDoesNotThrow(() -> normalizationService.validateOutboundUrl("https://github.com/torvalds/linux"));
+
+        // Restricted localhost and loopback
+        LatyrException ex1 = assertThrows(LatyrException.class, () ->
+                normalizationService.validateOutboundUrl("http://localhost:8080/admin"));
+        assertEquals("RESTRICTED_DESTINATION", ex1.getErrorCode());
+
+        LatyrException ex2 = assertThrows(LatyrException.class, () ->
+                normalizationService.validateOutboundUrl("http://127.0.0.1:9090"));
+        assertEquals("RESTRICTED_DESTINATION", ex2.getErrorCode());
+
+        // Restricted link-local / cloud metadata IP
+        LatyrException ex3 = assertThrows(LatyrException.class, () ->
+                normalizationService.validateOutboundUrl("http://169.254.169.254/latest/meta-data"));
+        assertEquals("RESTRICTED_DESTINATION", ex3.getErrorCode());
+
+        // Restricted scheme
+        LatyrException ex4 = assertThrows(LatyrException.class, () ->
+                normalizationService.validateOutboundUrl("file:///etc/passwd"));
+        assertEquals("INVALID_URL_SCHEME", ex4.getErrorCode());
     }
 }

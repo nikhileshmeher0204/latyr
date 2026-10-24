@@ -60,6 +60,7 @@ public class CaptureService {
         String rawUrl = request.url();
         String extractedUrl = UrlSourceClassifier.extractFirstUrl(rawUrl);
         String effectiveUrl = extractedUrl != null ? extractedUrl : (rawUrl != null ? rawUrl.trim() : "");
+        urlNormalizationService.validateOutboundUrl(effectiveUrl);
         String normalizedUrl = UrlSourceClassifier.normalizeUrl(effectiveUrl);
 
         // Canonicalize URL and compute SHA-256 hash
@@ -145,8 +146,8 @@ public class CaptureService {
         // 1. Enforce monthly quota
         quotaService.verifyAndIncrementQuota(userId);
 
-        // 2. Compute SHA-256 byte checksum
-        String imageHash = urlNormalizationService.computeSha256(imageBytes);
+        // 2. Compute SHA-256 byte checksum partitioned by userId (F11 owner-private isolation)
+        String imageHash = userId + ":" + urlNormalizationService.computeSha256(imageBytes);
 
         // 3. Check deduplication cache
         Optional<CanonicalSource> cachedSourceOpt = deduplicationService.findCachedSource(imageHash);

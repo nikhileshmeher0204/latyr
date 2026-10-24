@@ -1,5 +1,7 @@
 package com.latyr.api.service;
 
+import com.latyr.api.exception.LatyrException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -89,6 +91,39 @@ public class UrlNormalizationService {
                 cleaned = cleaned.substring(0, cleaned.length() - 1);
             }
             return cleaned;
+        }
+    }
+
+    public void validateOutboundUrl(String rawUrl) {
+        if (rawUrl == null || rawUrl.trim().isEmpty()) {
+            throw new LatyrException("URL cannot be empty", "INVALID_URL", HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            URI uri = new URI(rawUrl.trim());
+            String scheme = uri.getScheme();
+            if (scheme == null || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https"))) {
+                throw new LatyrException("Unsupported URL scheme: " + scheme, "INVALID_URL_SCHEME", HttpStatus.BAD_REQUEST);
+            }
+
+            String host = uri.getHost();
+            if (host == null || host.trim().isEmpty()) {
+                throw new LatyrException("URL host cannot be empty", "INVALID_URL_HOST", HttpStatus.BAD_REQUEST);
+            }
+
+            String lowerHost = host.toLowerCase(Locale.ROOT);
+            if (lowerHost.equals("localhost") || lowerHost.endsWith(".localhost") || lowerHost.endsWith(".local") || lowerHost.endsWith(".internal")) {
+                throw new LatyrException("Restricted outbound destination: " + host, "RESTRICTED_DESTINATION", HttpStatus.BAD_REQUEST);
+            }
+
+            java.net.InetAddress address = java.net.InetAddress.getByName(host);
+            if (address.isLoopbackAddress() || address.isSiteLocalAddress() || address.isLinkLocalAddress() || address.isAnyLocalAddress()) {
+                throw new LatyrException("Restricted outbound destination: " + host, "RESTRICTED_DESTINATION", HttpStatus.BAD_REQUEST);
+            }
+        } catch (LatyrException le) {
+            throw le;
+        } catch (Exception e) {
+            throw new LatyrException("Invalid URL: " + e.getMessage(), "INVALID_URL", HttpStatus.BAD_REQUEST);
         }
     }
 

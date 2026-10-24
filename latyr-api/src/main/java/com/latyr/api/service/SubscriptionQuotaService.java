@@ -73,12 +73,13 @@ public class SubscriptionQuotaService {
             subscriptionMapper.update(sub);
         }
 
-        // Testing Mode: Quota restriction removed for seamless testing
-        log.info("Quota verification passed for user {} (testing mode: unlimited)", userId);
-        try {
-            subscriptionMapper.incrementMonthlyCaptureCountIfWithinQuota(userId);
-        } catch (Exception e) {
-            log.debug("Increment capture count note: {}", e.getMessage());
+        if (sub.getMonthlyCaptureCount() >= sub.getQuotaLimit()) {
+            throw new QuotaExceededException("Monthly capture quota exceeded for plan " + sub.getPlanTier());
+        }
+
+        int updated = subscriptionMapper.incrementMonthlyCaptureCountIfWithinQuota(userId);
+        if (updated == 0) {
+            throw new QuotaExceededException("Monthly capture quota exceeded for plan " + sub.getPlanTier());
         }
     }
 

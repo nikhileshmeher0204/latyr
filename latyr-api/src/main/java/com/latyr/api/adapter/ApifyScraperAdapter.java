@@ -42,6 +42,9 @@ public class ApifyScraperAdapter implements ScraperProvider {
         if (apiToken == null || apiToken.trim().isEmpty()) {
             log.info("Apify API token is not configured. Extracting public OpenGraph metadata for URL: {}", url);
             OgMetadata og = fetchInstagramOgMetadata(url);
+            if ((og.caption() == null || og.caption().isBlank()) && (og.imageUrl() == null || og.imageUrl().isBlank())) {
+                throw new LatyrException("Apify API token is not configured and metadata could not be extracted.", "MISSING_CONFIGURATION", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
             String caption = (og.caption() != null && !og.caption().isBlank()) ? og.caption() : ("Instagram Reel: " + url);
             return new ScrapedMedia(url, null, og.imageUrl(), caption, "Instagram Reel", 30, Map.of("fallback", true, "url", url, "scraped_og", og.caption() != null));
         }

@@ -5,6 +5,10 @@ import java.util.Map;
 
 public class QuotaExceededException extends LatyrException {
 
+    public QuotaExceededException(String message) {
+        this(message, Map.of());
+    }
+
     public QuotaExceededException(String message, Map<String, Object> details) {
         super(message, "QUOTA_EXCEEDED", HttpStatus.PAYMENT_REQUIRED, details);
     }
