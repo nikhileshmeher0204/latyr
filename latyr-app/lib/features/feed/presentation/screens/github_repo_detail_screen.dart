@@ -14,16 +14,47 @@ const String _roundedFontFamily = 'InterRounded';
 
 /// Dedicated GitHub Application style detail screen.
 /// Developer tool aesthetic with live stars, forks, language badges, and deep-link actions.
-class GitHubRepoDetailScreen extends StatelessWidget {
+class GitHubRepoDetailScreen extends StatefulWidget {
   final ExtractedEntityModel entity;
+  final String? categoryTitle;
 
   const GitHubRepoDetailScreen({
     super.key,
     required this.entity,
+    this.categoryTitle,
   });
 
   @override
+  State<GitHubRepoDetailScreen> createState() => _GitHubRepoDetailScreenState();
+}
+
+class _GitHubRepoDetailScreenState extends State<GitHubRepoDetailScreen> {
+  bool _isAdded = false;
+
+  void _toggleAdd(BuildContext context) {
+    setState(() {
+      _isAdded = !_isAdded;
+    });
+    HapticFeedback.mediumImpact();
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: Text(_isAdded ? 'Added to Collections' : 'Removed from Collections'),
+        content: Text('"${widget.entity.title}" has been ${_isAdded ? 'added to' : 'removed from'} your collections.'),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final entity = widget.entity;
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     final scaffoldBg = isDark ? const Color(0xFF000000) : const Color(0xFFF8F9FA);
     final cardBg = isDark ? const Color(0xFF161B22) : const Color(0xFFFFFFFF);
@@ -188,7 +219,7 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                             Divider(height: 1, thickness: 0.6, color: borderColor),
                             const SizedBox(height: 14),
 
-                            // Compact Metrics Row (Language · Stars · Forks · License · Recency)
+                            // Compact Metrics Row (Language Â· Stars Â· Forks Â· License Â· Recency)
                             Wrap(
                               spacing: 12,
                               runSpacing: 8,
@@ -290,7 +321,7 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                       const SizedBox(height: 14),
 
                       // High-Contrast Action Buttons
-                      // Primary: "Open on GitHub ↗" (Launch external application / GitHub Mobile)
+                      // Primary: "Open on GitHub â†—" (Launch external application / GitHub Mobile)
                       CupertinoButton(
                         padding: EdgeInsets.zero,
                         onPressed: () => _launchExternalUrl(repoUrl),
@@ -333,7 +364,7 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 const Text(
-                                  '↗',
+                                  'â†—',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 15,
@@ -346,7 +377,7 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                         ),
                       ),
 
-                      // Secondary: "Website & Docs ↗" (if homepage exists)
+                      // Secondary: "Website & Docs â†—" (if homepage exists)
                       if (homepage != null && homepage.isNotEmpty && homepage.startsWith('http')) ...[
                         const SizedBox(height: 10),
                         CupertinoButton(
@@ -376,7 +407,7 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  Text('↗', style: TextStyle(color: subtextColor, fontSize: 13)),
+                                  Text('â†—', style: TextStyle(color: subtextColor, fontSize: 13)),
                                 ],
                               ),
                             ),
@@ -498,7 +529,7 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Strategy: ${audit['strategy_applied'] ?? 'DIRECT_LOOKUP'} (${audit['latency_ms'] ?? 0}ms) · Source: ${audit['source_provider'] ?? 'GITHUB_REST_V3'}',
+                                  'Strategy: ${audit['strategy_applied'] ?? 'DIRECT_LOOKUP'} (${audit['latency_ms'] ?? 0}ms) Â· Source: ${audit['source_provider'] ?? 'GITHUB_REST_V3'}',
                                   style: TextStyle(
                                     fontFamily: _fontFamily,
                                     fontSize: 11,
@@ -523,26 +554,29 @@ class GitHubRepoDetailScreen extends StatelessWidget {
                   left: 0,
                   right: 0,
                   child: IntentDetailAppBar(
-                    title: 'GitHub Repository',
-                    titleLeading: SvgPicture.asset(
-                      'assets/icons/github_mark.svg',
-                      width: 14,
-                      height: 14,
-                      colorFilter: ColorFilter.mode(
-                        textColor,
-                        BlendMode.srcIn,
-                      ),
-                    ),
+                    title: widget.categoryTitle ?? 'GITHUB REPOSITORY',
+                    titleLeading: null,
                     isDark: isDark,
                     scaffoldBgColor: scaffoldBg,
                     actions: [
+                      // Share Button (Action 1)
                       IntentDetailAppBar.buildActionButton(
                         isDark: isDark,
                         onPressed: () => _copyToClipboard(context, repoUrl),
                         child: Icon(
-                          CupertinoIcons.link,
+                          CupertinoIcons.share,
                           color: textColor,
-                          size: 18,
+                          size: 20,
+                        ),
+                      ),
+                      // Add (+) Button (Action 2)
+                      IntentDetailAppBar.buildActionButton(
+                        isDark: isDark,
+                        onPressed: () => _toggleAdd(context),
+                        child: Icon(
+                          _isAdded ? CupertinoIcons.check_mark : CupertinoIcons.add,
+                          color: _isAdded ? CupertinoColors.activeGreen : textColor,
+                          size: 20,
                         ),
                       ),
                     ],

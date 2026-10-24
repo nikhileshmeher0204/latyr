@@ -15,12 +15,14 @@ class EntityCardRouter extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
   final bool isEmbedded;
+  final String? categoryTitle;
 
   const EntityCardRouter({
     super.key,
     required this.entity,
     this.cardColor,
     this.isEmbedded = false,
+    this.categoryTitle,
   });
 
   @override
@@ -28,13 +30,28 @@ class EntityCardRouter extends StatelessWidget {
     switch (entity.entityType.toUpperCase()) {
       case 'MOVIE':
       case 'TV_SHOW':
-        return _MovieShowCard(entity: entity, cardColor: cardColor, isEmbedded: isEmbedded);
+        return _MovieShowCard(
+          entity: entity,
+          cardColor: cardColor,
+          isEmbedded: isEmbedded,
+          categoryTitle: categoryTitle,
+        );
       case 'GITHUB_REPO':
-        return _GitHubRepoCard(entity: entity, cardColor: cardColor, isEmbedded: isEmbedded);
+        return _GitHubRepoCard(
+          entity: entity,
+          cardColor: cardColor,
+          isEmbedded: isEmbedded,
+          categoryTitle: categoryTitle,
+        );
       case 'QUOTE':
         return _QuoteCard(entity: entity, cardColor: cardColor, isEmbedded: isEmbedded);
       default:
-        return _GenericCard(entity: entity, cardColor: cardColor, isEmbedded: isEmbedded);
+        return _GenericCard(
+          entity: entity,
+          cardColor: cardColor,
+          isEmbedded: isEmbedded,
+          categoryTitle: categoryTitle,
+        );
     }
   }
 }
@@ -43,11 +60,13 @@ class _MovieShowCard extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
   final bool isEmbedded;
+  final String? categoryTitle;
 
   const _MovieShowCard({
     required this.entity,
     this.cardColor,
     this.isEmbedded = false,
+    this.categoryTitle,
   });
 
   @override
@@ -76,7 +95,7 @@ class _MovieShowCard extends StatelessWidget {
     if (metadataElements.isEmpty) {
       metadataElements.add(formatLabel);
     }
-    final subtitleParts = metadataElements.join(' · ');
+    final subtitleParts = metadataElements.join(' Â· ');
 
     final descriptionText = (entity.description != null && entity.description!.isNotEmpty)
         ? entity.description!
@@ -88,7 +107,10 @@ class _MovieShowCard extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push(
             CupertinoPageRoute(
-              builder: (context) => EntertainmentDetailScreen(entity: entity),
+              builder: (context) => EntertainmentDetailScreen(
+                entity: entity,
+                categoryTitle: categoryTitle,
+              ),
             ),
           );
         },
@@ -183,7 +205,7 @@ class _MovieShowCard extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 5),
                                       child: Text(
-                                        '·',
+                                        'Â·',
                                         style: TextStyle(
                                           color: textColor.withValues(alpha: 0.40),
                                           fontSize: 11.5,
@@ -386,7 +408,7 @@ class _RatingSourceBadge extends StatelessWidget {
             if (rottenTomatoes != null && rottenTomatoes!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                '🍅 Rotten Tomatoes: $rottenTomatoes Tomatometer',
+                'ðŸ… Rotten Tomatoes: $rottenTomatoes Tomatometer',
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ],
@@ -464,11 +486,13 @@ class _GitHubRepoCard extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
   final bool isEmbedded;
+  final String? categoryTitle;
   
   const _GitHubRepoCard({
     required this.entity,
     this.cardColor,
     this.isEmbedded = false,
+    this.categoryTitle,
   });
 
   @override
@@ -488,7 +512,10 @@ class _GitHubRepoCard extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push(
             CupertinoPageRoute(
-              builder: (_) => GitHubRepoDetailScreen(entity: entity),
+              builder: (_) => GitHubRepoDetailScreen(
+                entity: entity,
+                categoryTitle: categoryTitle,
+              ),
             ),
           );
         },
@@ -651,7 +678,10 @@ class _GitHubRepoCard extends StatelessWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     CupertinoPageRoute(
-                      builder: (_) => GitHubRepoDetailScreen(entity: entity),
+                      builder: (_) => GitHubRepoDetailScreen(
+                        entity: entity,
+                        categoryTitle: categoryTitle,
+                      ),
                     ),
                   );
                 },
@@ -761,11 +791,13 @@ class _GenericCard extends StatelessWidget {
   final ExtractedEntityModel entity;
   final Color? cardColor;
   final bool isEmbedded;
+  final String? categoryTitle;
   
   const _GenericCard({
     required this.entity,
     this.cardColor,
     this.isEmbedded = false,
+    this.categoryTitle,
   });
 
   @override
@@ -846,7 +878,10 @@ class _GenericCard extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   CupertinoPageRoute(
-                    builder: (_) => EntertainmentDetailScreen(entity: entity),
+                    builder: (_) => EntertainmentDetailScreen(
+                      entity: entity,
+                      categoryTitle: categoryTitle,
+                    ),
                   ),
                 );
               },

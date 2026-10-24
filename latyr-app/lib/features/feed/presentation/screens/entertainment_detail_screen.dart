@@ -17,16 +17,71 @@ const String _roundedFontFamily = 'InterRounded';
 /// and bottoming out just below the ratings row.
 /// Employs Latyr's progressive blur shader with color vibrancy, and renders
 /// translucent, luminous typography with subtle depth shadows without container boxes.
-class EntertainmentDetailScreen extends StatelessWidget {
+class EntertainmentDetailScreen extends StatefulWidget {
   final ExtractedEntityModel entity;
+  final String? categoryTitle;
 
   const EntertainmentDetailScreen({
     super.key,
     required this.entity,
+    this.categoryTitle,
   });
 
   @override
+  State<EntertainmentDetailScreen> createState() => _EntertainmentDetailScreenState();
+}
+
+class _EntertainmentDetailScreenState extends State<EntertainmentDetailScreen> {
+  bool _isAdded = false;
+
+  void _shareIntent(BuildContext context, String? imdbId, String? streamingDeepLink) {
+    final title = widget.entity.title;
+    final link = (imdbId != null && imdbId.isNotEmpty)
+        ? 'https://www.imdb.com/title/$imdbId/'
+        : (streamingDeepLink ?? title);
+    final text = '$title - $link';
+    Clipboard.setData(ClipboardData(text: text));
+    HapticFeedback.lightImpact();
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Link Copied to Clipboard'),
+        content: Text(text),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _toggleAdd(BuildContext context) {
+    setState(() {
+      _isAdded = !_isAdded;
+    });
+    HapticFeedback.mediumImpact();
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: Text(_isAdded ? 'Added to Collections' : 'Removed from Collections'),
+        content: Text('"${widget.entity.title}" has been ${_isAdded ? 'added to' : 'removed from'} your collections.'),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final entity = widget.entity;
     final movie = entity.entertainment;
     final heroImage = movie.heroImage;
     final rating = movie.rating;
@@ -48,7 +103,6 @@ class EntertainmentDetailScreen extends StatelessWidget {
     final director = movie.director;
     final leadCast = movie.leadCast;
     final genres = movie.genres;
-    final isTv = movie.isTv;
     final formatLabel = movie.formatLabel;
     final durationOrSeasons = movie.durationOrSeasons;
 
@@ -67,15 +121,15 @@ class EntertainmentDetailScreen extends StatelessWidget {
     // Top breathing space so the actor's face / key artwork shines clearly before text begins
     final topArtSpacing = (screenH * 0.35).clamp(270.0, 360.0);
 
-    // Subtitle string: "Movie · Crime · Drama" (No containers)
+    // Subtitle string: "Movie Â· Crime Â· Drama" (No containers)
     final subtitleItems = <String>[];
     subtitleItems.add(formatLabel);
     if (genres.isNotEmpty) {
       subtitleItems.addAll(genres.take(3));
     }
-    final subtitleString = subtitleItems.join(' · ');
+    final subtitleString = subtitleItems.join(' Â· ');
 
-    // Metrics items: ★ IMDb 🍅 RT [Metascore] Year · Runtime [Rating] (Apple TV compact row)
+    // Metrics items: â˜… IMDb ðŸ… RT [Metascore] Year Â· Runtime [Rating] (Apple TV compact row)
     final metricWidgets = <Widget>[];
     if (rating != null && rating.isNotEmpty) {
       metricWidgets.add(_RatingText(
@@ -97,7 +151,7 @@ class EntertainmentDetailScreen extends StatelessWidget {
     final hasYear = releaseYear != null && releaseYear.isNotEmpty;
     final hasDuration = durationOrSeasons != null && durationOrSeasons.isNotEmpty;
     if (hasYear && hasDuration) {
-      metricWidgets.add(_VibrantText(text: '$releaseYear · $durationOrSeasons', isDark: heroIsDark));
+      metricWidgets.add(_VibrantText(text: '$releaseYear Â· $durationOrSeasons', isDark: heroIsDark));
     } else if (hasYear) {
       metricWidgets.add(_VibrantText(text: releaseYear, isDark: heroIsDark));
     } else if (hasDuration) {
@@ -240,7 +294,7 @@ class EntertainmentDetailScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
 
-                          // Subtitle Line: "Movie · Crime · Drama" (Translucent, No Containers)
+                          // Subtitle Line: "Movie Â· Crime Â· Drama" (Translucent, No Containers)
                           if (subtitleString.isNotEmpty) ...[
                             Text(
                               subtitleString,
@@ -272,7 +326,7 @@ class EntertainmentDetailScreen extends StatelessWidget {
                             const SizedBox(height: 10),
                           ],
 
-                          // Metrics Row: Year · Runtime [Rating] 🍅 RT ★ IMDb (Bottom Left Aligned, Apple Weight)
+                          // Metrics Row: Year Â· Runtime [Rating] ðŸ… RT â˜… IMDb (Bottom Left Aligned, Apple Weight)
                           if (metricWidgets.isNotEmpty) ...[
                             Align(
                               alignment: Alignment.centerLeft,
@@ -377,31 +431,31 @@ class EntertainmentDetailScreen extends StatelessWidget {
             left: 0,
             right: 0,
             child: IntentDetailAppBar(
-              title: formatLabel,
-              titleLeading: Icon(
-                isTv ? CupertinoIcons.tv : CupertinoIcons.film,
-                size: 15,
-                color: isDark ? CupertinoColors.white : const Color(0xFF1A1A1A),
-              ),
+              title: widget.categoryTitle ?? formatLabel,
+              titleLeading: null,
               isDark: isDark,
               scaffoldBgColor: scaffoldBgColor,
               actions: [
-                if (imdbId != null && imdbId.isNotEmpty)
-                  IntentDetailAppBar.buildActionButton(
-                    isDark: isDark,
-                    onPressed: () {
-                      final url = 'https://www.imdb.com/title/$imdbId/';
-                      final uri = Uri.tryParse(url);
-                      if (uri != null) {
-                        launchUrl(uri, mode: LaunchMode.externalApplication);
-                      }
-                    },
-                    child: Icon(
-                      CupertinoIcons.link,
-                      color: isDark ? CupertinoColors.white : const Color(0xFF1A1A1A),
-                      size: 18,
-                    ),
+                // Share Button (Action 1)
+                IntentDetailAppBar.buildActionButton(
+                  isDark: isDark,
+                  onPressed: () => _shareIntent(context, imdbId, movie.streamingDeepLink),
+                  child: Icon(
+                    CupertinoIcons.share,
+                    color: isDark ? CupertinoColors.white : const Color(0xFF1A1A1A),
+                    size: 20,
                   ),
+                ),
+                // Add (+) Button (Action 2)
+                IntentDetailAppBar.buildActionButton(
+                  isDark: isDark,
+                  onPressed: () => _toggleAdd(context),
+                  child: Icon(
+                    _isAdded ? CupertinoIcons.check_mark : CupertinoIcons.add,
+                    color: _isAdded ? CupertinoColors.activeGreen : (isDark ? CupertinoColors.white : const Color(0xFF1A1A1A)),
+                    size: 20,
+                  ),
+                ),
               ],
             ),
           ),
@@ -632,7 +686,7 @@ class _RottenTomatoesText extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text('🍅', style: TextStyle(fontSize: 12.0)),
+        const Text('ðŸ…', style: TextStyle(fontSize: 12.0)),
         const SizedBox(width: 2.5),
         Text(
           score,
@@ -685,7 +739,7 @@ class _RatingText extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('★', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 13)),
+          const Text('â˜…', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 13)),
           const SizedBox(width: 2.5),
           Text(
             '$rating $source',
@@ -724,7 +778,7 @@ class _RatingText extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('★', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 20)),
+                const Text('â˜…', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 20)),
                 const SizedBox(width: 6),
                 Text(
                   '$rating / 10 ($source)',
@@ -742,14 +796,14 @@ class _RatingText extends StatelessWidget {
             if (rottenTomatoes != null && rottenTomatoes!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                '🍅 Rotten Tomatoes: $rottenTomatoes Tomatometer',
+                'ðŸ… Rotten Tomatoes: $rottenTomatoes Tomatometer',
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ],
             if (metascore != null && metascore!.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                'Ⓜ Metacritic: $metascore',
+                'â“‚ Metacritic: $metascore',
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ],
@@ -784,7 +838,7 @@ class _MetascoreText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      'Ⓜ $score',
+      'â“‚ $score',
       style: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 13.5,

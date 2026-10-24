@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:latyr_app/core/database/app_database.dart';
@@ -28,7 +29,6 @@ class CaptureDetailScreen extends ConsumerStatefulWidget {
 class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
   int _selectedSourceTab = 0;
   bool _isSourceTextExpanded = false;
-  bool _isFavorited = false;
   Color? _extractedCardColor;
   List<ExtractedEntityModel>? _freshEntities;
 
@@ -340,6 +340,7 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
                           titleColor: titleColor,
                           isDark: isDark,
                           cardColor: cardSurfaceColor,
+                          categoryTitle: navTitle,
                         ),
                         const SizedBox(height: 18),
                       ],
@@ -382,67 +383,28 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
               actions: [
                 LatyrAppBar.actionButton(
                   isDark: isDark,
-                  onPressed: () {
-                    setState(() {
-                      _isFavorited = !_isFavorited;
-                    });
-                  },
+                  onPressed: () => _shareCapture(context),
                   child: Icon(
-                    _isFavorited ? CupertinoIcons.suit_heart_fill : CupertinoIcons.suit_heart,
-                    color: _isFavorited ? CupertinoColors.systemPink : textColor,
+                    CupertinoIcons.share,
+                    color: textColor,
                     size: 20,
                   ),
                 ),
-                if (source != null || (capture.originalUrl != null && capture.originalUrl!.isNotEmpty)) ...[
-                  const SizedBox(width: 8),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () => _openSourceUrl(capture.originalUrl),
-                    child: Container(
-                      height: 42,
-                      padding: const EdgeInsets.symmetric(horizontal: 11),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xCC1C1C1E) : CupertinoColors.white.withValues(alpha: 0.95),
-                        borderRadius: BorderRadius.circular(21),
-                        border: Border.all(
-                          color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                          width: 1.5,
+                LatyrAppBar.actionButton(
+                  isDark: isDark,
+                  onPressed: () => _openSourceUrl(capture.originalUrl),
+                  child: source != null
+                      ? CaptureSourceIcon(
+                          source: source,
+                          size: 19,
+                          color: textColor,
+                        )
+                      : Icon(
+                          CupertinoIcons.arrow_up_right,
+                          color: textColor,
+                          size: 19,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                            blurRadius: 12,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          if (source != null)
-                            CaptureSourceIcon(
-                              source: source,
-                              size: 17,
-                              color: textColor,
-                            )
-                          else
-                            Icon(
-                              CupertinoIcons.globe,
-                              size: 17,
-                              color: textColor,
-                            ),
-                          const SizedBox(width: 5),
-                          Icon(
-                            CupertinoIcons.chevron_forward,
-                            color: textColor.withValues(alpha: 0.8),
-                            size: 14.0,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ],
             ),
           )
@@ -451,8 +413,46 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
     );
   }
 
+  void _shareCapture(BuildContext context) {
+    final text = (widget.capture.originalUrl != null && widget.capture.originalUrl!.trim().isNotEmpty)
+        ? widget.capture.originalUrl!
+        : (widget.capture.title ?? 'Latyr Capture');
+    Clipboard.setData(ClipboardData(text: text));
+    HapticFeedback.lightImpact();
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Capture Link Copied'),
+        content: Text(text),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _openSourceUrl(String? rawUrl) async {
-    if (rawUrl == null || rawUrl.trim().isEmpty) return;
+    if (rawUrl == null || rawUrl.trim().isEmpty) {
+      showCupertinoDialog(
+        context: context,
+        builder: (ctx) => CupertinoAlertDialog(
+          title: const Text('Source URL Unavailable'),
+          content: const Text('No external source link is associated with this capture.'),
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
     final uri = Uri.tryParse(rawUrl.trim());
     if (uri == null) return;
     try {
@@ -607,6 +607,7 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
     required Color titleColor,
     required bool isDark,
     required Color cardColor,
+    String? categoryTitle,
   }) {
     if (entities.isEmpty) return const SizedBox.shrink();
 
@@ -664,6 +665,7 @@ class _CaptureDetailScreenState extends ConsumerState<CaptureDetailScreen> {
               children: [
                 EntityCardRouter(
                   entity: entity,
+                  categoryTitle: categoryTitle,
                   isEmbedded: true,
                 ),
                 if (!isLast)
