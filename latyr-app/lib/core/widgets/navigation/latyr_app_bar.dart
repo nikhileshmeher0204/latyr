@@ -27,6 +27,13 @@ class LatyrAppBar extends StatelessWidget {
   final bool enableBlur;
   final bool isPersistent;
 
+  /// Standard navigation geometry constants
+  static const double kActionButtonSize = 42.0;
+  static const double kActionPillWidth = 56.0;
+  static const double kActionSpacing = 8.0;
+  static const double kMandatoryNavClearance = 14.0;
+  static const double kPillHorizontalMargin = 120.0;
+
   const LatyrAppBar({
     super.key,
     required this.title,
@@ -133,6 +140,40 @@ class LatyrAppBar extends StatelessWidget {
     );
   }
 
+  /// Builds the inner content of the category pill (leading icon + uppercase label).
+  static Widget _buildPillInnerRow({
+    required String title,
+    Widget? leading,
+    required Color textColor,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (leading != null) ...[
+          leading,
+          const SizedBox(width: 6),
+        ],
+        Flexible(
+          child: Text(
+            title.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: LTypography.footnoteSemibold.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: textColor,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   /// Floating Navigation Bar: Back button, Centered Category Pill, and Action Buttons.
   Widget _buildBarContent(BuildContext context) {
     final textColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
@@ -144,11 +185,11 @@ class LatyrAppBar extends StatelessWidget {
     final renderedActions = <Widget>[];
     if (actions != null && actions!.isNotEmpty) {
       for (int i = 0; i < actions!.length; i++) {
-        if (i > 0) renderedActions.add(const SizedBox(width: 8));
+        if (i > 0) renderedActions.add(const SizedBox(width: kActionSpacing));
         renderedActions.add(actions![i]);
       }
     } else {
-      renderedActions.add(const SizedBox(width: 42));
+      renderedActions.add(const SizedBox(width: kActionButtonSize));
     }
 
     return SafeArea(
@@ -156,16 +197,16 @@ class LatyrAppBar extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: SizedBox(
-          height: 42,
+          height: kActionButtonSize,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // 1. Centered Contextual Bubble Pill
+              // 1. Centered Contextual Bubble Pill with Guaranteed >=12px Clearance
               Padding(
-                padding: const EdgeInsets.only(left: 54, right: 104),
+                padding: const EdgeInsets.symmetric(horizontal: kPillHorizontalMargin),
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       color: cardBg,
                       borderRadius: BorderRadius.circular(24),
@@ -181,31 +222,10 @@ class LatyrAppBar extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        if (titleLeading != null) ...[
-                          titleLeading!,
-                          const SizedBox(width: 6),
-                        ],
-                        Flexible(
-                          child: Text(
-                            title.toUpperCase(),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: LTypography.footnoteSemibold.copyWith(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.8,
-                              color: textColor,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: _buildPillInnerRow(
+                      title: title,
+                      leading: titleLeading,
+                      textColor: textColor,
                     ),
                   ),
                 ),
@@ -220,8 +240,8 @@ class LatyrAppBar extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   onPressed: onBack ?? () => Navigator.of(context).pop(),
                   child: Container(
-                    width: 42,
-                    height: 42,
+                    width: kActionButtonSize,
+                    height: kActionButtonSize,
                     decoration: BoxDecoration(
                       color: cardBg,
                       shape: BoxShape.circle,
@@ -260,7 +280,7 @@ class LatyrAppBar extends StatelessWidget {
   }
 
   /// Custom flight shuttle that holds the blur backdrop continuously active and stationary
-  /// while smoothly cross-fading the foreground navigation content.
+  /// while smoothly cross-fading foreground content and animating action button shifts.
   Widget _buildFlightShuttle(
     BuildContext flightContext,
     Animation<double> animation,
@@ -305,6 +325,11 @@ class LatyrAppBar extends StatelessWidget {
     // Render the blur backdrop once at full opacity (NO Opacity widget!),
     // ensuring the fragment shader never breaks or reapplies across transitions.
     if (fromBar != null && toBar != null) {
+      final canAnimateRightCluster = fromBar.actions != null &&
+          toBar.actions != null &&
+          fromBar.actions!.length == 2 &&
+          toBar.actions!.length == 2;
+
       return AnimatedBuilder(
         animation: curved,
         builder: (context, _) {
@@ -324,27 +349,43 @@ class LatyrAppBar extends StatelessWidget {
                     if (fromBar.enableBlur || toBar.enableBlur)
                       fromBar._buildBackdrop(flightContext, blendedBg, isDark),
 
-                    // 2. Foreground content cross-fade: ONLY buttons & pill are faded
-                    if (t < 1.0)
+                    // 2. Foreground navigation content:
+                    if (canAnimateRightCluster)
                       Positioned(
                         top: 0,
                         left: 0,
                         right: 0,
-                        child: Opacity(
-                          opacity: (1.0 - t).clamp(0.0, 1.0),
-                          child: fromBar._buildBarContent(flightContext),
+                        child: _buildSeamlessFlightContent(
+                          context: flightContext,
+                          fromBar: fromBar,
+                          toBar: toBar,
+                          t: t,
+                          isDark: isDark,
                         ),
-                      ),
-                    if (t > 0.0)
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: Opacity(
-                          opacity: t.clamp(0.0, 1.0),
-                          child: toBar._buildBarContent(flightContext),
+                      )
+                    else ...[
+                      // Fallback for screens with arbitrary or asymmetric actions
+                      if (t < 1.0)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: Opacity(
+                            opacity: (1.0 - t).clamp(0.0, 1.0),
+                            child: fromBar._buildBarContent(flightContext),
+                          ),
                         ),
-                      ),
+                      if (t > 0.0)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: Opacity(
+                            opacity: t.clamp(0.0, 1.0),
+                            child: toBar._buildBarContent(flightContext),
+                          ),
+                        ),
+                    ],
                   ],
                 ),
               ),
@@ -390,12 +431,288 @@ class LatyrAppBar extends StatelessWidget {
     );
   }
 
+  /// Builds seamless flight content where:
+  /// - The Category Pill remains anchored and centered while its text/icon dissolves.
+  /// - The Back button remains locked at left: 0.
+  /// - Action 1 smoothly morphs its width (56px <-> 42px) with cross-fading icon content.
+  /// - Action 0 (Share button) glides horizontally without ghosting or double-rendering.
+  static Widget _buildSeamlessFlightContent({
+    required BuildContext context,
+    required LatyrAppBar fromBar,
+    required LatyrAppBar toBar,
+    required double t,
+    required bool isDark,
+  }) {
+    final textColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
+    final cardBg = isDark
+        ? const Color(0xCC1C1C1E)
+        : CupertinoColors.white.withValues(alpha: 0.95);
+    final borderColor = isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white;
+
+    // 1. Back button stays 100% stationary at left: 0
+    final backButton = Positioned(
+      left: 0,
+      top: 0,
+      bottom: 0,
+      child: Container(
+        width: kActionButtonSize,
+        height: kActionButtonSize,
+        decoration: BoxDecoration(
+          color: cardBg,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: borderColor,
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Icon(toBar.backIcon, color: textColor, size: 20),
+      ),
+    );
+
+    // 2. Centered Contextual Bubble Pill: Container is steady, content smoothly cross-fades
+    final pill = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: kPillHorizontalMargin),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: borderColor,
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                blurRadius: 14,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (t < 1.0)
+                Opacity(
+                  opacity: (1.0 - t).clamp(0.0, 1.0),
+                  child: _buildPillInnerRow(
+                    title: fromBar.title,
+                    leading: fromBar.titleLeading,
+                    textColor: textColor,
+                  ),
+                ),
+              if (t > 0.0)
+                Opacity(
+                  opacity: t.clamp(0.0, 1.0),
+                  child: _buildPillInnerRow(
+                    title: toBar.title,
+                    leading: toBar.titleLeading,
+                    textColor: textColor,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    // 3. Right Action Cluster with Animated Width Morphing:
+    // Action 0: Share button (42px)
+    // Gap: 8px
+    // Action 1: Morphing width from fromW to toW (e.g. 56px <-> 42px)
+    double getActionWidth(Widget action) {
+      if (action is LatyrActionPill) return action.width;
+      if (action is LatyrActionButton) return action.width;
+      return kActionButtonSize;
+    }
+
+    final fromW1 = getActionWidth(fromBar.actions![1]);
+    final toW1 = getActionWidth(toBar.actions![1]);
+    final currentW1 = (fromW1 + (toW1 - fromW1) * t).clamp(kActionButtonSize, kActionPillWidth);
+
+    Widget extractInnerContent(Widget action) {
+      if (action is LatyrActionPill) return action.child;
+      if (action is LatyrActionButton) return action.child;
+      return action;
+    }
+
+    final fromAction0Content = extractInnerContent(fromBar.actions![0]);
+    final toAction0Content = extractInnerContent(toBar.actions![0]);
+    final fromAction1Content = extractInnerContent(fromBar.actions![1]);
+    final toAction1Content = extractInnerContent(toBar.actions![1]);
+
+    final rightCluster = Positioned(
+      right: 0,
+      top: 0,
+      bottom: 0,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Action 0: Single persistent button (Share) smoothly shifting horizontally as Action 1 changes width
+          Container(
+            width: kActionButtonSize,
+            height: kActionButtonSize,
+            decoration: BoxDecoration(
+              color: cardBg,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: borderColor,
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (t < 1.0)
+                    Opacity(
+                      opacity: (1.0 - t).clamp(0.0, 1.0),
+                      child: fromAction0Content,
+                    ),
+                  if (t > 0.0)
+                    Opacity(
+                      opacity: t.clamp(0.0, 1.0),
+                      child: toAction0Content,
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: kActionSpacing),
+          // Action 1: Morphing capsule/circular button
+          Container(
+            width: currentW1,
+            height: kActionButtonSize,
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(kActionButtonSize / 2),
+              border: Border.all(
+                color: borderColor,
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(kActionButtonSize / 2),
+              child: Center(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (t < 1.0)
+                      Opacity(
+                        opacity: (1.0 - t).clamp(0.0, 1.0),
+                        child: fromAction1Content,
+                      ),
+                    if (t > 0.0)
+                      Opacity(
+                        opacity: t.clamp(0.0, 1.0),
+                        child: toAction1Content,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: SizedBox(
+          height: kActionButtonSize,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              pill,
+              backButton,
+              rightCluster,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Helper factory for uniform 42x42 circular frosted action buttons.
   static Widget actionButton({
     required Widget child,
     required VoidCallback onPressed,
     required bool isDark,
+    double width = kActionButtonSize,
+    double height = kActionButtonSize,
   }) {
+    return LatyrActionButton(
+      onPressed: onPressed,
+      isDark: isDark,
+      width: width,
+      height: height,
+      child: child,
+    );
+  }
+
+  /// Helper factory for uniform frosted capsule / pill action buttons (e.g. source deeplink with right arrow).
+  static Widget actionPill({
+    required Widget child,
+    required VoidCallback onPressed,
+    required bool isDark,
+    double width = kActionPillWidth,
+    double height = kActionButtonSize,
+    EdgeInsetsGeometry padding = const EdgeInsets.symmetric(horizontal: 8),
+  }) {
+    return LatyrActionPill(
+      onPressed: onPressed,
+      isDark: isDark,
+      width: width,
+      height: height,
+      padding: padding,
+      child: child,
+    );
+  }
+}
+
+/// Uniform circular frosted action button widget.
+class LatyrActionButton extends StatelessWidget {
+  final Widget child;
+  final VoidCallback onPressed;
+  final bool isDark;
+  final double width;
+  final double height;
+
+  const LatyrActionButton({
+    super.key,
+    required this.child,
+    required this.onPressed,
+    required this.isDark,
+    this.width = LatyrAppBar.kActionButtonSize,
+    this.height = LatyrAppBar.kActionButtonSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final cardBg = isDark
         ? const Color(0xCC1C1C1E)
         : CupertinoColors.white.withValues(alpha: 0.95);
@@ -405,8 +722,8 @@ class LatyrAppBar extends StatelessWidget {
       padding: EdgeInsets.zero,
       onPressed: onPressed,
       child: Container(
-        width: 42,
-        height: 42,
+        width: width,
+        height: height,
         decoration: BoxDecoration(
           color: cardBg,
           shape: BoxShape.circle,
@@ -426,14 +743,29 @@ class LatyrAppBar extends StatelessWidget {
       ),
     );
   }
+}
 
-  /// Helper factory for uniform frosted capsule / pill action buttons (e.g. source deeplink with right arrow).
-  static Widget actionPill({
-    required Widget child,
-    required VoidCallback onPressed,
-    required bool isDark,
-    EdgeInsetsGeometry padding = const EdgeInsets.symmetric(horizontal: 10),
-  }) {
+/// Uniform frosted capsule / pill action button widget.
+class LatyrActionPill extends StatelessWidget {
+  final Widget child;
+  final VoidCallback onPressed;
+  final bool isDark;
+  final double width;
+  final double height;
+  final EdgeInsetsGeometry padding;
+
+  const LatyrActionPill({
+    super.key,
+    required this.child,
+    required this.onPressed,
+    required this.isDark,
+    this.width = LatyrAppBar.kActionPillWidth,
+    this.height = LatyrAppBar.kActionButtonSize,
+    this.padding = const EdgeInsets.symmetric(horizontal: 8),
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final cardBg = isDark
         ? const Color(0xCC1C1C1E)
         : CupertinoColors.white.withValues(alpha: 0.95);
@@ -443,11 +775,12 @@ class LatyrAppBar extends StatelessWidget {
       padding: EdgeInsets.zero,
       onPressed: onPressed,
       child: Container(
-        height: 42,
+        width: width,
+        height: height,
         padding: padding,
         decoration: BoxDecoration(
           color: cardBg,
-          borderRadius: BorderRadius.circular(21),
+          borderRadius: BorderRadius.circular(height / 2),
           border: Border.all(
             color: borderColor,
             width: 1.5,

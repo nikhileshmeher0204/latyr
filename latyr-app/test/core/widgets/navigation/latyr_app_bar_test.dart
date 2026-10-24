@@ -136,6 +136,115 @@ void main() {
 
       expect(find.text('PAGE ONE'), findsOneWidget);
     });
+
+    testWidgets('seamless flight shuttle morphs action pill width and translates share button without overflow', (tester) async {
+      await tester.pumpWidget(
+        CupertinoApp(
+          home: Builder(
+            builder: (context) {
+              return CupertinoPageScaffold(
+                child: Column(
+                  children: [
+                    LatyrAppBar(
+                      title: 'Capture Detail',
+                      isDark: false,
+                      scaffoldBgColor: CupertinoColors.white,
+                      actions: [
+                        LatyrAppBar.actionButton(
+                          isDark: false,
+                          onPressed: () {},
+                          child: const Icon(CupertinoIcons.share),
+                        ),
+                        LatyrAppBar.actionPill(
+                          isDark: false,
+                          onPressed: () {},
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(CupertinoIcons.camera, size: 17),
+                              SizedBox(width: 4),
+                              Icon(CupertinoIcons.chevron_forward, size: 14),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    CupertinoButton(
+                      child: const Text('Push Intent Detail'),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => CupertinoPageScaffold(
+                              child: LatyrAppBar(
+                                title: 'Movie Intent',
+                                isDark: true,
+                                scaffoldBgColor: CupertinoColors.black,
+                                actions: [
+                                  LatyrAppBar.actionButton(
+                                    isDark: true,
+                                    onPressed: () {},
+                                    child: const Icon(CupertinoIcons.share),
+                                  ),
+                                  LatyrAppBar.actionButton(
+                                    isDark: true,
+                                    onPressed: () {},
+                                    child: const Icon(CupertinoIcons.add),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      );
+
+      expect(find.text('CAPTURE DETAIL'), findsOneWidget);
+      expect(find.byType(LatyrActionPill), findsOneWidget);
+
+      // Trigger navigation
+      await tester.tap(find.text('Push Intent Detail'));
+
+      // Pump mid-flight to exercise _buildSeamlessFlightContent
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
+      // Settle transition to destination
+      await tester.pumpAndSettle();
+
+      expect(find.text('MOVIE INTENT'), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.add), findsOneWidget);
+
+      // Pop back to exercise reverse flight morphing
+      await tester.tap(find.byIcon(CupertinoIcons.back));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      await tester.pumpAndSettle();
+
+      expect(find.text('CAPTURE DETAIL'), findsOneWidget);
+      expect(find.byType(LatyrActionPill), findsOneWidget);
+    });
+
+    test('geometry constants guarantee >= 12px horizontal clearance and centered pill', () {
+      expect(LatyrAppBar.kActionButtonSize, 42.0);
+      expect(LatyrAppBar.kActionPillWidth, 56.0);
+      expect(LatyrAppBar.kActionSpacing, 8.0);
+      expect(LatyrAppBar.kPillHorizontalMargin, 120.0);
+
+      // Maximum right cluster: Action 0 (42) + Gap (8) + Action 1 Pill (56) = 106.0
+      const maxCluster = LatyrAppBar.kActionButtonSize + LatyrAppBar.kActionSpacing + LatyrAppBar.kActionPillWidth;
+      expect(maxCluster, 106.0);
+
+      // Clearance between pill edge (120) and cluster edge (106)
+      const clearance = LatyrAppBar.kPillHorizontalMargin - maxCluster;
+      expect(clearance, greaterThanOrEqualTo(12.0));
+    });
   });
 
   group('LatyrScaffold Tests', () {

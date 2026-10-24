@@ -121,15 +121,15 @@ class _EntertainmentDetailScreenState extends State<EntertainmentDetailScreen> {
     // Top breathing space so the actor's face / key artwork shines clearly before text begins
     final topArtSpacing = (screenH * 0.35).clamp(270.0, 360.0);
 
-    // Subtitle string: "Movie Â· Crime Â· Drama" (No containers)
+    // Subtitle string: "Movie \u00B7 Crime \u00B7 Drama" (No containers)
     final subtitleItems = <String>[];
     subtitleItems.add(formatLabel);
     if (genres.isNotEmpty) {
       subtitleItems.addAll(genres.take(3));
     }
-    final subtitleString = subtitleItems.join(' Â· ');
+    final subtitleString = subtitleItems.join(' \u00B7 ');
 
-    // Metrics items: â˜… IMDb ðŸ… RT [Metascore] Year Â· Runtime [Rating] (Apple TV compact row)
+    // Metrics items: \u2605 IMDb \u{1F345} RT [Metascore] Year \u00B7 Runtime [Rating] (Apple TV compact row)
     final metricWidgets = <Widget>[];
     if (rating != null && rating.isNotEmpty) {
       metricWidgets.add(_RatingText(
@@ -151,7 +151,7 @@ class _EntertainmentDetailScreenState extends State<EntertainmentDetailScreen> {
     final hasYear = releaseYear != null && releaseYear.isNotEmpty;
     final hasDuration = durationOrSeasons != null && durationOrSeasons.isNotEmpty;
     if (hasYear && hasDuration) {
-      metricWidgets.add(_VibrantText(text: '$releaseYear Â· $durationOrSeasons', isDark: heroIsDark));
+      metricWidgets.add(_VibrantText(text: '$releaseYear \u00B7 $durationOrSeasons', isDark: heroIsDark));
     } else if (hasYear) {
       metricWidgets.add(_VibrantText(text: releaseYear, isDark: heroIsDark));
     } else if (hasDuration) {
@@ -294,7 +294,7 @@ class _EntertainmentDetailScreenState extends State<EntertainmentDetailScreen> {
                           ),
                           const SizedBox(height: 6),
 
-                          // Subtitle Line: "Movie Â· Crime Â· Drama" (Translucent, No Containers)
+                          // Subtitle Line: "Movie \u00B7 Crime \u00B7 Drama" (Translucent, No Containers)
                           if (subtitleString.isNotEmpty) ...[
                             Text(
                               subtitleString,
@@ -326,7 +326,7 @@ class _EntertainmentDetailScreenState extends State<EntertainmentDetailScreen> {
                             const SizedBox(height: 10),
                           ],
 
-                          // Metrics Row: Year Â· Runtime [Rating] ðŸ… RT â˜… IMDb (Bottom Left Aligned, Apple Weight)
+                          // Metrics Row: Year \u00B7 Runtime [Rating] \u{1F345} RT \u2605 IMDb (Bottom Left Aligned, Apple Weight)
                           if (metricWidgets.isNotEmpty) ...[
                             Align(
                               alignment: Alignment.centerLeft,
@@ -686,7 +686,7 @@ class _RottenTomatoesText extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text('ðŸ…', style: TextStyle(fontSize: 12.0)),
+        const Text('\u{1F345}', style: TextStyle(fontSize: 12.0)),
         const SizedBox(width: 2.5),
         Text(
           score,
@@ -739,7 +739,7 @@ class _RatingText extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('â˜…', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 13)),
+          const Icon(CupertinoIcons.star_fill, color: Color(0xFFFFD60A), size: 12.5),
           const SizedBox(width: 2.5),
           Text(
             '$rating $source',
@@ -778,7 +778,7 @@ class _RatingText extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('â˜…', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 20)),
+                const Icon(CupertinoIcons.star_fill, color: Color(0xFFFFD60A), size: 20),
                 const SizedBox(width: 6),
                 Text(
                   '$rating / 10 ($source)',
@@ -796,14 +796,14 @@ class _RatingText extends StatelessWidget {
             if (rottenTomatoes != null && rottenTomatoes!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                'ðŸ… Rotten Tomatoes: $rottenTomatoes Tomatometer',
+                'Rotten Tomatoes: $rottenTomatoes Tomatometer',
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ],
             if (metascore != null && metascore!.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                'â“‚ Metacritic: $metascore',
+                'Metacritic: $metascore',
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ],
@@ -838,7 +838,7 @@ class _MetascoreText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      'â“‚ $score',
+      'MC $score',
       style: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 13.5,

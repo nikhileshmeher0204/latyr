@@ -219,7 +219,7 @@ class _GitHubRepoDetailScreenState extends State<GitHubRepoDetailScreen> {
                             Divider(height: 1, thickness: 0.6, color: borderColor),
                             const SizedBox(height: 14),
 
-                            // Compact Metrics Row (Language Â· Stars Â· Forks Â· License Â· Recency)
+                            // Compact Metrics Row (Language \u00B7 Stars \u00B7 Forks \u00B7 License \u00B7 Recency)
                             Wrap(
                               spacing: 12,
                               runSpacing: 8,
@@ -321,7 +321,7 @@ class _GitHubRepoDetailScreenState extends State<GitHubRepoDetailScreen> {
                       const SizedBox(height: 14),
 
                       // High-Contrast Action Buttons
-                      // Primary: "Open on GitHub â†—" (Launch external application / GitHub Mobile)
+                      // Primary: "Open on GitHub \u2197" (Launch external application / GitHub Mobile)
                       CupertinoButton(
                         padding: EdgeInsets.zero,
                         onPressed: () => _launchExternalUrl(repoUrl),
@@ -364,7 +364,7 @@ class _GitHubRepoDetailScreenState extends State<GitHubRepoDetailScreen> {
                                 ),
                                 const SizedBox(width: 4),
                                 const Text(
-                                  'â†—',
+                                  '\u2197',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 15,
@@ -377,7 +377,7 @@ class _GitHubRepoDetailScreenState extends State<GitHubRepoDetailScreen> {
                         ),
                       ),
 
-                      // Secondary: "Website & Docs â†—" (if homepage exists)
+                      // Secondary: "Website & Docs \u2197" (if homepage exists)
                       if (homepage != null && homepage.isNotEmpty && homepage.startsWith('http')) ...[
                         const SizedBox(height: 10),
                         CupertinoButton(
@@ -407,7 +407,7 @@ class _GitHubRepoDetailScreenState extends State<GitHubRepoDetailScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  Text('â†—', style: TextStyle(color: subtextColor, fontSize: 13)),
+                                  Text('\u2197', style: TextStyle(color: subtextColor, fontSize: 13)),
                                 ],
                               ),
                             ),
@@ -529,7 +529,7 @@ class _GitHubRepoDetailScreenState extends State<GitHubRepoDetailScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Strategy: ${audit['strategy_applied'] ?? 'DIRECT_LOOKUP'} (${audit['latency_ms'] ?? 0}ms) Â· Source: ${audit['source_provider'] ?? 'GITHUB_REST_V3'}',
+                                  'Strategy: ${audit['strategy_applied'] ?? 'DIRECT_LOOKUP'} (${audit['latency_ms'] ?? 0}ms) \u00B7 Source: ${audit['source_provider'] ?? 'GITHUB_REST_V3'}',
                                   style: TextStyle(
                                     fontFamily: _fontFamily,
                                     fontSize: 11,

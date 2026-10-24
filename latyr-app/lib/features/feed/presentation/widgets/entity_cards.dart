@@ -95,7 +95,7 @@ class _MovieShowCard extends StatelessWidget {
     if (metadataElements.isEmpty) {
       metadataElements.add(formatLabel);
     }
-    final subtitleParts = metadataElements.join(' Â· ');
+    final subtitleParts = metadataElements.join(' \u00B7 ');
 
     final descriptionText = (entity.description != null && entity.description!.isNotEmpty)
         ? entity.description!
@@ -205,7 +205,7 @@ class _MovieShowCard extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 5),
                                       child: Text(
-                                        'Â·',
+                                        '\u00B7',
                                         style: TextStyle(
                                           color: textColor.withValues(alpha: 0.40),
                                           fontSize: 11.5,
@@ -408,7 +408,7 @@ class _RatingSourceBadge extends StatelessWidget {
             if (rottenTomatoes != null && rottenTomatoes!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                'ðŸ… Rotten Tomatoes: $rottenTomatoes Tomatometer',
+                '\u{1F345} Rotten Tomatoes: $rottenTomatoes Tomatometer',
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ],
