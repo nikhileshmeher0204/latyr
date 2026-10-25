@@ -604,17 +604,15 @@ class _AddToCollectionBottomSheetState
                                   color: cardBg,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: isMember
-                                        ? brandPrimary.withValues(alpha: 0.4)
-                                        : borderColor,
-                                    width: isMember ? 1.2 : 0.8,
+                                    color: borderColor,
+                                    width: 0.8,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
                                       color: CupertinoColors.black.withValues(
-                                        alpha: isDark ? 0.2 : (isMember ? 0.05 : 0.025),
+                                        alpha: isDark ? 0.2 : 0.025,
                                       ),
-                                      blurRadius: isMember ? 8 : 5,
+                                      blurRadius: 5,
                                       offset: const Offset(0, 2),
                                     ),
                                   ],
