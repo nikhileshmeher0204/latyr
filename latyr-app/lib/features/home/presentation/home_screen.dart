@@ -15,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:latyr_app/features/feed/presentation/screens/capture_detail_screen.dart';
 import 'package:latyr_app/features/home/presentation/widgets/app_switcher_scroll_physics.dart';
 import 'package:latyr_app/features/auth/presentation/auth_providers.dart';
+import 'package:latyr_app/features/capture/presentation/screens/all_captures_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -78,7 +79,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         _buildDateAndWeather(context, ref, isDark),
                         const SizedBox(height: LSpacing.xl),
                         _buildStatCards(context, ref, isDark),
-                        const SizedBox(height: LSpacing.xl),
+                        const SizedBox(height: LSpacing.lg),
+                        _buildCapturesSectionHeader(context, isDark),
+                        const SizedBox(height: LSpacing.md),
                       ],
                     ),
                   ),
@@ -534,17 +537,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildRingChart(Color color) {
-    return Container(
-      width: 16,
-      height: 16,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: 3),
-      ),
-    );
-  }
-
   Widget _buildSkeletonStatCard(bool isDark) {
     return Shimmer.fromColors(
       baseColor: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
@@ -564,6 +556,78 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCapturesSectionHeader(BuildContext context, bool isDark) {
+    final textColor = isDark ? CupertinoColors.white : CupertinoColors.black;
+    final pillBg = isDark
+        ? const Color(0xFF1C1C1E).withValues(alpha: 0.8)
+        : CupertinoColors.white.withValues(alpha: 0.9);
+    final borderColor = isDark
+        ? const Color(0xFF2C2C2E)
+        : const Color(0xFFE5E5EA);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'Captures',
+          style: TextStyle(
+            fontFamily: 'Georgia',
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: textColor,
+            letterSpacing: -0.3,
+          ),
+        ),
+        CupertinoButton(
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.of(context).push(
+              CupertinoPageRoute(
+                builder: (_) => const AllCapturesScreen(),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: pillBg,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: borderColor, width: 0.8),
+              boxShadow: [
+                BoxShadow(
+                  color: CupertinoColors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'View All',
+                  style: LTypography.caption1.rounded.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: textColor.withValues(alpha: 0.85),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  CupertinoIcons.chevron_right,
+                  size: 11,
+                  color: textColor.withValues(alpha: 0.6),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 

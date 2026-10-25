@@ -188,8 +188,11 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
                     CaptureSourceClassifier.classify(widget.capture.originalUrl ?? widget.capture.originalCaption);
                 final insightsCount = _getInsightsCount();
 
-                return Row(
-                  children: [
+                return FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    children: [
                     // Slot 1: Source Brand Glyph (omitted cleanly if unknown)
                     if (source != null) ...[
                       CaptureSourceIcon(
@@ -255,7 +258,8 @@ class _LatyrCaptureCardState extends State<LatyrCaptureCard> {
                         ),
                       ],
                     ),
-                  ],
+                    ],
+                  ),
                 );
               },
             ),
