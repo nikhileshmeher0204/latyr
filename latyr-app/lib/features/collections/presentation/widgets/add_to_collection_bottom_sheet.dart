@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -82,6 +83,58 @@ class _AddToCollectionBottomSheetState
     return isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
   }
 
+  String? _getEntityArtworkUrl(ExtractedEntityModel entity) {
+    if (entity.entertainment.posterUrl != null && entity.entertainment.posterUrl!.isNotEmpty) {
+      return entity.entertainment.posterUrl;
+    }
+    if (entity.entertainment.backdropUrl != null && entity.entertainment.backdropUrl!.isNotEmpty) {
+      return entity.entertainment.backdropUrl;
+    }
+    if (entity.gitHubRepo.avatarUrl != null && entity.gitHubRepo.avatarUrl!.isNotEmpty) {
+      return entity.gitHubRepo.avatarUrl;
+    }
+    return null;
+  }
+
+  Color _getEntityTypeColor(String type, bool isDark) {
+    switch (type.toUpperCase()) {
+      case 'MOVIE':
+      case 'MOVIES':
+        return const Color(0xFFE07A5F); // Terracotta
+      case 'TV_SHOW':
+      case 'TV SERIES':
+      case 'SERIES':
+        return const Color(0xFFD4A373); // Warm Sand
+      case 'GITHUB_REPO':
+      case 'CODE':
+      case 'DEV':
+        return const Color(0xFF81B29A); // Sage Green
+      case 'BOOK':
+        return const Color(0xFFF2CC8F); // Soft Gold
+      default:
+        return const Color(0xFF78E4A5); // Latyr Mint
+    }
+  }
+
+  IconData _getEntityTypeIcon(String type) {
+    switch (type.toUpperCase()) {
+      case 'MOVIE':
+      case 'MOVIES':
+        return CupertinoIcons.film;
+      case 'TV_SHOW':
+      case 'TV SERIES':
+      case 'SERIES':
+        return CupertinoIcons.tv;
+      case 'GITHUB_REPO':
+      case 'CODE':
+        return CupertinoIcons.chevron_left_slash_chevron_right;
+      case 'BOOK':
+        return CupertinoIcons.book;
+      default:
+        return CupertinoIcons.lightbulb_fill;
+    }
+  }
+
   Future<void> _createAndAdd(String name) async {
     if (widget.entity.id == null || name.trim().isEmpty) return;
     HapticFeedback.mediumImpact();
@@ -96,12 +149,17 @@ class _AddToCollectionBottomSheetState
   @override
   Widget build(BuildContext context) {
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
-    final sheetBg = isDark ? const Color(0xFF1C1C1E) : CupertinoColors.white;
+    final sheetBg = isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF8F9FA);
+    final cardBg = isDark ? const Color(0xFF262629) : CupertinoColors.white;
     final textColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
     final secondaryTextColor = isDark
         ? CupertinoColors.white.withValues(alpha: 0.6)
         : const Color(0xFF8E8E93);
-    final borderColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
+    final borderColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEBEBEB);
+
+    const latyrGreen = Color(0xFF28543A);
+    const mintAccent = Color(0xFF78E4A5);
+    final brandPrimary = isDark ? mintAccent : latyrGreen;
 
     final collectionsAsync = ref.watch(userCollectionsProvider);
     final entityId = widget.entity.id;
@@ -111,13 +169,16 @@ class _AddToCollectionBottomSheetState
 
     final memberCollectionIds = entityCollectionIdsAsync.valueOrNull ?? <String>{};
 
+    final artworkUrl = _getEntityArtworkUrl(widget.entity);
+    final entityColor = _getEntityTypeColor(widget.entity.entityType, isDark);
+
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.70,
+        maxHeight: MediaQuery.of(context).size.height * 0.78,
       ),
       decoration: BoxDecoration(
         color: sheetBg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: SafeArea(
         top: false,
@@ -128,57 +189,55 @@ class _AddToCollectionBottomSheetState
             // Top Notch Handle
             Center(
               child: Container(
-                margin: const EdgeInsets.only(top: 8, bottom: 4),
+                margin: const EdgeInsets.only(top: 10, bottom: 8),
                 width: 36,
-                height: 4.5,
+                height: 4,
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF38383A)
-                      : const Color(0xFFD1D1D6),
-                  borderRadius: BorderRadius.circular(3),
+                  color: isDark ? const Color(0xFF38383A) : const Color(0xFFD1D1D6),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
 
-            // Header Row: Title & Done
+            // Header Row: Title & Circular Close Button
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Save to Collection',
-                          style: LTypography.roundedTitle2.copyWith(
-                            color: textColor,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          widget.entity.title,
-                          style: LTypography.caption1.copyWith(
-                            color: secondaryTextColor,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                  Text(
+                    'Save to Collection',
+                    style: TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 21,
+                      fontWeight: FontWeight.w500,
+                      color: textColor,
+                      letterSpacing: -0.3,
                     ),
                   ),
                   CupertinoButton(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      'Done',
-                      style: LTypography.body.rounded.copyWith(
-                        color: CupertinoColors.activeBlue,
-                        fontWeight: FontWeight.w600,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        CupertinoIcons.xmark,
+                        size: 14,
+                        color: textColor,
                       ),
                     ),
                   ),
@@ -186,15 +245,108 @@ class _AddToCollectionBottomSheetState
               ),
             ),
 
-            Container(height: 0.8, color: borderColor),
+            // Entity Mini Preview Card
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: borderColor, width: 0.8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: CupertinoColors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Artwork Thumbnail or Entity Icon Badge
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        color: entityColor.withValues(alpha: 0.15),
+                        child: artworkUrl != null
+                            ? CachedNetworkImage(
+                                imageUrl: artworkUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Center(
+                                  child: Icon(
+                                    _getEntityTypeIcon(widget.entity.entityType),
+                                    size: 18,
+                                    color: entityColor,
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Center(
+                                  child: Icon(
+                                    _getEntityTypeIcon(widget.entity.entityType),
+                                    size: 18,
+                                    color: entityColor,
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Icon(
+                                  _getEntityTypeIcon(widget.entity.entityType),
+                                  size: 20,
+                                  color: entityColor,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.entity.title,
+                            style: LTypography.body.rounded.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14.5,
+                              color: textColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 3),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: entityColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              widget.entity.entityType.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.4,
+                                color: entityColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
             // Scrollable Content
             Flexible(
               child: ListView(
                 shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                 children: [
-                  // Smart Suggestion Banner (if suggested collection doesn't exist yet)
+                  // Smart Suggestion Banner
                   if (widget.suggestedCollectionName != null &&
                       widget.suggestedCollectionName!.isNotEmpty)
                     collectionsAsync.when(
@@ -211,52 +363,52 @@ class _AddToCollectionBottomSheetState
                               await _createAndAdd(widget.suggestedCollectionName!);
                             },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
-                                color: CupertinoColors.activeBlue
-                                    .withValues(alpha: isDark ? 0.18 : 0.08),
-                                borderRadius: BorderRadius.circular(14),
+                                color: isDark
+                                    ? mintAccent.withValues(alpha: 0.14)
+                                    : latyrGreen.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: CupertinoColors.activeBlue
-                                      .withValues(alpha: 0.3),
-                                  width: 0.8,
+                                  color: isDark
+                                      ? mintAccent.withValues(alpha: 0.3)
+                                      : latyrGreen.withValues(alpha: 0.2),
+                                  width: 1.0,
                                 ),
                               ),
                               child: Row(
                                 children: [
                                   Container(
-                                    width: 32,
-                                    height: 32,
+                                    width: 34,
+                                    height: 34,
                                     decoration: BoxDecoration(
-                                      color: CupertinoColors.activeBlue
-                                          .withValues(alpha: 0.2),
+                                      color: isDark
+                                          ? mintAccent.withValues(alpha: 0.2)
+                                          : latyrGreen.withValues(alpha: 0.15),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       CupertinoIcons.sparkles,
-                                      color: CupertinoColors.activeBlue,
+                                      color: brandPrimary,
                                       size: 16,
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Create "${widget.suggestedCollectionName}"',
-                                          style: LTypography.footnoteSemibold.rounded
-                                              .copyWith(
-                                            color: isDark
-                                                ? CupertinoColors.white
-                                                : CupertinoColors.activeBlue,
-                                            fontWeight: FontWeight.w600,
+                                          style: LTypography.footnoteSemibold.rounded.copyWith(
+                                            color: isDark ? mintAccent : latyrGreen,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 13.5,
                                           ),
                                         ),
+                                        const SizedBox(height: 1),
                                         Text(
-                                          'Suggested from capture subcategory',
+                                          'Suggested from capture category',
                                           style: LTypography.caption2.copyWith(
                                             color: secondaryTextColor,
                                           ),
@@ -264,10 +416,20 @@ class _AddToCollectionBottomSheetState
                                       ],
                                     ),
                                   ),
-                                  const Icon(
-                                    CupertinoIcons.add,
-                                    color: CupertinoColors.activeBlue,
-                                    size: 18,
+                                  Container(
+                                    width: 28,
+                                    height: 28,
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? mintAccent.withValues(alpha: 0.2)
+                                          : latyrGreen.withValues(alpha: 0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      CupertinoIcons.add,
+                                      color: brandPrimary,
+                                      size: 16,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -317,7 +479,7 @@ class _AddToCollectionBottomSheetState
                           final colColor = _parseColor(col.colorHex, isDark);
 
                           return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.only(bottom: 8),
                             child: CupertinoButton(
                               padding: EdgeInsets.zero,
                               minimumSize: Size.zero,
@@ -332,26 +494,61 @@ class _AddToCollectionBottomSheetState
                                 }
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                                 decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF2C2C2E).withValues(alpha: 0.5)
-                                      : const Color(0xFFF2F2F7),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: cardBg,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isMember
+                                        ? brandPrimary.withValues(alpha: 0.4)
+                                        : borderColor,
+                                    width: isMember ? 1.2 : 0.8,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: CupertinoColors.black.withValues(
+                                        alpha: isDark ? 0.2 : (isMember ? 0.05 : 0.025),
+                                      ),
+                                      blurRadius: isMember ? 8 : 5,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                                 child: Row(
                                   children: [
-                                    Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
+                                    // Collection artwork thumbnail or colorful icon tile
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        width: 38,
+                                        height: 38,
                                         color: colColor.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        _parseIcon(col.icon),
-                                        color: colColor,
-                                        size: 16,
+                                        child: col.previewArtworkUrls.isNotEmpty
+                                            ? CachedNetworkImage(
+                                                imageUrl: col.previewArtworkUrls.first,
+                                                fit: BoxFit.cover,
+                                                placeholder: (context, url) => Center(
+                                                  child: Icon(
+                                                    _parseIcon(col.icon),
+                                                    color: colColor,
+                                                    size: 18,
+                                                  ),
+                                                ),
+                                                errorWidget: (context, url, error) => Center(
+                                                  child: Icon(
+                                                    _parseIcon(col.icon),
+                                                    color: colColor,
+                                                    size: 18,
+                                                  ),
+                                                ),
+                                              )
+                                            : Center(
+                                                child: Icon(
+                                                  _parseIcon(col.icon),
+                                                  color: colColor,
+                                                  size: 18,
+                                                ),
+                                              ),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -367,8 +564,9 @@ class _AddToCollectionBottomSheetState
                                               fontSize: 15,
                                             ),
                                           ),
+                                          const SizedBox(height: 1),
                                           Text(
-                                            '${col.itemCount} items',
+                                            '${col.itemCount} ${col.itemCount == 1 ? 'item' : 'items'}',
                                             style: LTypography.caption2.copyWith(
                                               color: secondaryTextColor,
                                             ),
@@ -376,28 +574,35 @@ class _AddToCollectionBottomSheetState
                                         ],
                                       ),
                                     ),
-                                    Container(
+                                    // Circular animated selection checkmark
+                                    AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
                                       width: 24,
                                       height: 24,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: isMember
-                                            ? CupertinoColors.activeGreen
-                                            : CupertinoColors.transparent,
+                                        color: isMember ? brandPrimary : CupertinoColors.transparent,
                                         border: Border.all(
                                           color: isMember
-                                              ? CupertinoColors.activeGreen
-                                              : (isDark
-                                                  ? const Color(0xFF48484A)
-                                                  : const Color(0xFFC7C7CC)),
+                                              ? brandPrimary
+                                              : (isDark ? const Color(0xFF48484A) : const Color(0xFFD1D1D6)),
                                           width: 1.5,
                                         ),
+                                        boxShadow: isMember
+                                            ? [
+                                                BoxShadow(
+                                                  color: brandPrimary.withValues(alpha: 0.35),
+                                                  blurRadius: 6,
+                                                  offset: const Offset(0, 1.5),
+                                                ),
+                                              ]
+                                            : null,
                                       ),
                                       child: isMember
-                                          ? const Icon(
-                                              CupertinoIcons.check_mark,
-                                              size: 14,
-                                              color: CupertinoColors.white,
+                                          ? Icon(
+                                              CupertinoIcons.checkmark,
+                                              size: 13,
+                                              color: isDark ? const Color(0xFF1A1A1A) : CupertinoColors.white,
                                             )
                                           : null,
                                     ),
@@ -411,24 +616,54 @@ class _AddToCollectionBottomSheetState
                     },
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
                   // Inline New Collection Creation
                   if (_isCreatingInline) ...[
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CupertinoTextField(
-                            controller: _newCollectionController,
-                            placeholder: 'Collection name',
-                            autofocus: true,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
-                              borderRadius: BorderRadius.circular(10),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: borderColor, width: 0.8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: CupertinoColors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CupertinoTextField(
+                              controller: _newCollectionController,
+                              placeholder: 'Collection name...',
+                              autofocus: true,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              onSubmitted: (val) async {
+                                if (val.trim().isNotEmpty) {
+                                  await _createAndAdd(val);
+                                  setState(() {
+                                    _isCreatingInline = false;
+                                    _newCollectionController.clear();
+                                  });
+                                }
+                              },
                             ),
-                            onSubmitted: (val) async {
-                              if (val.trim().isNotEmpty) {
+                          ),
+                          const SizedBox(width: 8),
+                          CupertinoButton(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            minimumSize: Size.zero,
+                            onPressed: () async {
+                              final val = _newCollectionController.text.trim();
+                              if (val.isNotEmpty) {
                                 await _createAndAdd(val);
                                 setState(() {
                                   _isCreatingInline = false;
@@ -436,56 +671,65 @@ class _AddToCollectionBottomSheetState
                                 });
                               }
                             },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: brandPrimary,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'Add',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? const Color(0xFF1A1A1A) : CupertinoColors.white,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        CupertinoButton(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          minimumSize: Size.zero,
-                          onPressed: () async {
-                            final val = _newCollectionController.text.trim();
-                            if (val.isNotEmpty) {
-                              await _createAndAdd(val);
-                              setState(() {
-                                _isCreatingInline = false;
-                                _newCollectionController.clear();
-                              });
-                            }
-                          },
-                          child: const Text('Add'),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ] else ...[
                     CupertinoButton(
                       padding: EdgeInsets.zero,
                       minimumSize: Size.zero,
                       onPressed: () {
+                        HapticFeedback.lightImpact();
                         setState(() => _isCreatingInline = true);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
+                          color: cardBg,
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: borderColor,
-                            width: 1.0,
+                            width: 0.8,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: CupertinoColors.black.withValues(alpha: isDark ? 0.2 : 0.025),
+                              blurRadius: 5,
+                              offset: const Offset(0, 1.5),
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              CupertinoIcons.add,
-                              size: 16,
-                              color: CupertinoColors.activeBlue,
+                              CupertinoIcons.plus_circle_fill,
+                              size: 18,
+                              color: brandPrimary,
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                             Text(
                               'New Collection',
                               style: LTypography.body.rounded.copyWith(
-                                color: CupertinoColors.activeBlue,
+                                color: brandPrimary,
                                 fontWeight: FontWeight.w600,
+                                fontSize: 14.5,
                               ),
                             ),
                           ],
@@ -494,7 +738,7 @@ class _AddToCollectionBottomSheetState
                     ),
                   ],
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),

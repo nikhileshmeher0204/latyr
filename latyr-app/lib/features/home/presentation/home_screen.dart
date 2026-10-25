@@ -149,7 +149,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           style: TextStyle(
             fontFamily: 'Georgia',
             fontSize: 26,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w400,
             color: textColor,
             letterSpacing: -0.4,
           ),
@@ -556,7 +556,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           style: TextStyle(
             fontFamily: 'Georgia',
             fontSize: 22,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w400,
             color: textColor,
             letterSpacing: -0.3,
           ),
