@@ -584,9 +584,9 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
     required VoidCallback onTap,
   }) {
     final textColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
-    final cardBg = isDark ? const Color(0xFF1C1C1E) : CupertinoColors.white;
-    final selectedBorderColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
-    final unselectedBorderColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
+    final cardBg = isDark
+        ? (isSelected ? const Color(0xFF2C2C2E) : const Color(0xFF1C1C1E))
+        : CupertinoColors.white;
 
     return GestureDetector(
       onTap: onTap,
@@ -596,17 +596,14 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isSelected ? selectedBorderColor : unselectedBorderColor,
-            width: isSelected ? 1.5 : 1.0,
-          ),
+          // No borders: drop shadow provides elevation and distinction
           boxShadow: [
             BoxShadow(
               color: CupertinoColors.black.withValues(
-                alpha: isDark ? (isSelected ? 0.35 : 0.2) : (isSelected ? 0.06 : 0.03),
+                alpha: isDark ? (isSelected ? 0.35 : 0.15) : (isSelected ? 0.08 : 0.03),
               ),
-              blurRadius: isSelected ? 8 : 5,
-              offset: const Offset(0, 2),
+              blurRadius: isSelected ? 12 : 6,
+              offset: isSelected ? const Offset(0, 3) : const Offset(0, 1.5),
             ),
           ],
         ),
@@ -616,7 +613,7 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? textColor : textColor.withValues(alpha: 0.55),
+                color: isSelected ? textColor : textColor.withValues(alpha: 0.45),
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 fontSize: 12.5,
                 letterSpacing: 0.4,
@@ -637,7 +634,7 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected ? textColor : textColor.withValues(alpha: 0.5),
+                    color: isSelected ? textColor : textColor.withValues(alpha: 0.45),
                   ),
                 ),
               ),
@@ -656,9 +653,9 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
     required VoidCallback onTap,
   }) {
     final textColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
-    final cardBg = isDark ? const Color(0xFF1C1C1E) : CupertinoColors.white;
-    final selectedBorderColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
-    final unselectedBorderColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
+    final cardBg = isDark
+        ? (isSelected ? const Color(0xFF2C2C2E) : const Color(0xFF1C1C1E))
+        : CupertinoColors.white;
 
     return GestureDetector(
       onTap: onTap,
@@ -668,17 +665,14 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? selectedBorderColor : unselectedBorderColor,
-            width: isSelected ? 1.4 : 1.0,
-          ),
+          // No borders: drop shadow provides elevation and distinction
           boxShadow: [
             BoxShadow(
               color: CupertinoColors.black.withValues(
-                alpha: isDark ? (isSelected ? 0.3 : 0.15) : (isSelected ? 0.05 : 0.025),
+                alpha: isDark ? (isSelected ? 0.3 : 0.12) : (isSelected ? 0.07 : 0.025),
               ),
-              blurRadius: isSelected ? 6 : 4,
-              offset: const Offset(0, 1.5),
+              blurRadius: isSelected ? 10 : 5,
+              offset: isSelected ? const Offset(0, 2.5) : const Offset(0, 1),
             ),
           ],
         ),
@@ -688,7 +682,7 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? textColor : textColor.withValues(alpha: 0.55),
+                color: isSelected ? textColor : textColor.withValues(alpha: 0.45),
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 fontSize: 11.5,
               ),
@@ -700,7 +694,7 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? textColor : textColor.withValues(alpha: 0.5),
+                  color: isSelected ? textColor : textColor.withValues(alpha: 0.45),
                 ),
               ),
             ],
