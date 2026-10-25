@@ -128,7 +128,7 @@ public class IngestionPipelineService {
                 store.startStage(job, stage);
                 List<AIEntity> enriched = enricher.enrichEntities(analysis.entities());
                 AIAnalysisResult result = new AIAnalysisResult(analysis.title(), analysis.summary(), analysis.transcript(),
-                        analysis.intent(), analysis.category(), analysis.subCategory(), analysis.suggestedCollection(),
+                        analysis.intent(), analysis.category(), analysis.subCategory(), analysis.tags(), analysis.suggestedCollection(),
                         analysis.notificationCopies(), enriched);
                 if (!CaptureSuccessPolicy.isUseful(result) || enriched.size() != analysis.entities().size())
                     throw new ProviderOperationException("ENRICHMENT_UNAVAILABLE", ProviderOperationException.Outcome.RETRYABLE);
@@ -190,7 +190,7 @@ public class IngestionPipelineService {
         }
         capture.setStatus(CaptureStatus.COMPLETED);
         capture.setIntent(analysis.intent()); capture.setTitle(analysis.title()); capture.setSummary(analysis.summary());
-        capture.setCategory(analysis.category()); capture.setSubCategory(analysis.subCategory());
+        capture.setCategory(analysis.category()); capture.setSubCategory(analysis.subCategory()); capture.setTags(analysis.tags());
         capture.setAudioTranscript(analysis.transcript()); capture.setNotificationCopies(analysis.notificationCopies());
         capture.setOriginalCaption(CaptureAnalysisCodec.text(core,"original_caption"));
         capture.setThumbnailUrl(CaptureAnalysisCodec.text(core,"thumbnail_url"));
@@ -280,7 +280,7 @@ public class IngestionPipelineService {
     }
     private Map<String,Object> existingAnalysis(Capture capture) {
         AIAnalysisResult result = new AIAnalysisResult(capture.getTitle(), capture.getSummary(), capture.getAudioTranscript(),
-                capture.getIntent(), capture.getCategory(), capture.getSubCategory(), null, capture.getNotificationCopies(),
+                capture.getIntent(), capture.getCategory(), capture.getSubCategory(), capture.getTags(), null, capture.getNotificationCopies(),
                 entities.findByCaptureId(capture.getId()).stream().map(row -> new AIEntity(row.getEntityType(), row.getTitle(),
                         row.getDescription(), row.getExternalUrl(), row.getActionCta(), row.getMetadata())).toList());
         return CaptureAnalysisCodec.encode(result);

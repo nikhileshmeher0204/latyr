@@ -35,6 +35,19 @@ public interface ExtractedEntityMapper {
     @ResultMap("ExtractedEntityResult")
     List<ExtractedEntity> findByCaptureId(@Param("captureId") UUID captureId);
 
+    @Select("""
+        SELECT ee.* FROM extracted_entities ee
+        JOIN user_collection_entities uce ON ee.id = uce.entity_id
+        JOIN user_collections uc ON uce.user_collection_id = uc.id
+        WHERE uc.id = #{userCollectionId} AND uc.user_id = #{userId}
+        ORDER BY uce.item_order ASC, uce.added_at DESC
+    """)
+    @ResultMap("ExtractedEntityResult")
+    List<ExtractedEntity> findByUserCollectionIdAndUserId(
+            @Param("userCollectionId") UUID userCollectionId,
+            @Param("userId") UUID userId
+    );
+
     @Insert("""
         INSERT INTO extracted_entities (
             id, capture_id, extraction_index, entity_type, title, description, external_url, action_cta,

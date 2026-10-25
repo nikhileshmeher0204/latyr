@@ -24,6 +24,7 @@ public interface CaptureMapper {
         @Result(property = "intent", column = "intent"),
         @Result(property = "category", column = "category"),
         @Result(property = "subCategory", column = "sub_category"),
+        @Result(property = "tags", column = "tags", typeHandler = StringArrayTypeHandler.class),
         @Result(property = "title", column = "title"),
         @Result(property = "summary", column = "summary"),
         @Result(property = "originalCaption", column = "original_caption"),
@@ -63,6 +64,49 @@ public interface CaptureMapper {
     List<Capture> findByUserIdAndCategory(@Param("userId") UUID userId, @Param("category") String category, @Param("limit") int limit, @Param("offset") int offset);
 
     @Select("""
+        SELECT * FROM captures 
+        WHERE user_id = #{userId} 
+          AND category = #{category}
+          AND sub_category = #{subCategory}
+        ORDER BY created_at DESC 
+        LIMIT #{limit} OFFSET #{offset}
+    """)
+    @ResultMap("CaptureResult")
+    List<Capture> findByUserIdAndCategoryAndSubCategory(
+            @Param("userId") UUID userId,
+            @Param("category") String category,
+            @Param("subCategory") String subCategory,
+            @Param("limit") int limit,
+            @Param("offset") int offset
+    );
+
+    @Select("""
+        SELECT COUNT(*) FROM captures 
+        WHERE user_id = #{userId} 
+          AND category = #{category}
+          AND sub_category = #{subCategory}
+    """)
+    long countByUserIdAndCategoryAndSubCategory(
+            @Param("userId") UUID userId,
+            @Param("category") String category,
+            @Param("subCategory") String subCategory
+    );
+
+    @Select("""
+        SELECT 
+            category,
+            sub_category,
+            COUNT(*) AS count
+        FROM captures
+        WHERE user_id = #{userId}
+          AND category IS NOT NULL 
+          AND category != ''
+        GROUP BY category, sub_category
+        ORDER BY category ASC, count DESC
+    """)
+    List<CategorySubCategoryCount> selectTaxonomyCountsByUserId(@Param("userId") UUID userId);
+
+    @Select("""
         SELECT * FROM captures
         WHERE user_id = #{userId}
           AND status = 'COMPLETED'
@@ -96,7 +140,7 @@ public interface CaptureMapper {
 
     @Insert("""
         INSERT INTO captures (
-            id, user_id, canonical_source_id, source_type, content_type, status, intent, category, sub_category,
+            id, user_id, canonical_source_id, source_type, content_type, status, intent, category, sub_category, tags,
             title, summary, original_caption, thumbnail_url, audio_transcript, notification_copies, resurface_count,
             total_processing_duration_ms, scheduled_resurface_at, last_resurfaced_at,
             created_at, updated_at
@@ -111,6 +155,7 @@ public interface CaptureMapper {
             #{intent},
             #{category},
             #{subCategory},
+            #{tags, typeHandler=com.latyr.api.config.typehandler.StringArrayTypeHandler, jdbcType=ARRAY},
             #{title},
             #{summary},
             #{originalCaption},
@@ -134,6 +179,7 @@ public interface CaptureMapper {
             intent = #{intent},
             category = #{category},
             sub_category = #{subCategory},
+            tags = #{tags, typeHandler=com.latyr.api.config.typehandler.StringArrayTypeHandler, jdbcType=ARRAY},
             title = #{title},
             summary = #{summary},
             original_caption = #{originalCaption},
@@ -159,4 +205,19 @@ public interface CaptureMapper {
 
     @Delete("DELETE FROM captures WHERE id = #{id}")
     int deleteById(@Param("id") UUID id);
+
+    class CategorySubCategoryCount {
+        private String category;
+        private String subCategory;
+        private long count;
+
+        public String getCategory() { return category; }
+        public void setCategory(String category) { this.category = category; }
+
+        public String getSubCategory() { return subCategory; }
+        public void setSubCategory(String subCategory) { this.subCategory = subCategory; }
+
+        public long getCount() { return count; }
+        public void setCount(long count) { this.count = count; }
+    }
 }

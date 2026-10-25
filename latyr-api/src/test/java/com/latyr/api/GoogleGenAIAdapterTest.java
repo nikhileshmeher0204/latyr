@@ -63,7 +63,7 @@ class GoogleGenAIAdapterTest {
         assertEquals("Top 5 Sci-Fi Thriller Shows", result.title());
         assertEquals(Intent.WATCH, result.intent());
         assertEquals("Entertainment", result.category());
-        assertEquals("Sci-Fi TV Shows", result.subCategory());
+        assertEquals("TV Series", result.subCategory());
         assertEquals(1, result.entities().size());
         assertEquals(EntityType.TV_SHOW, result.entities().get(0).entityType());
         assertEquals("Dark", result.entities().get(0).title());

@@ -5,6 +5,7 @@ import com.latyr.api.dto.CaptureDetailResponse;
 import com.latyr.api.dto.CaptureResponse;
 import com.latyr.api.dto.CreateCaptureRequest;
 import com.latyr.api.dto.PagedResponse;
+import com.latyr.api.dto.TaxonomyResponse;
 import com.latyr.api.security.AuthenticatedUser;
 import com.latyr.api.security.CurrentUser;
 import com.latyr.api.service.CaptureService;
@@ -48,10 +49,8 @@ public class CaptureController {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-
         byte[] bytes = file.getBytes();
         CaptureResponse response = captureService.createImageCapture(currentUser.getUserId(), bytes, file.getOriginalFilename());
-
         if (response.status() != CaptureStatus.PENDING && response.status() != CaptureStatus.PROCESSING) {
             return ResponseEntity.ok(response);
         }
@@ -63,13 +62,21 @@ public class CaptureController {
             @CurrentUser AuthenticatedUser currentUser,
             @RequestParam(name = "status", required = false) CaptureStatus status,
             @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "subCategory", required = false) String subCategory,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size
     ) {
         PagedResponse<CaptureResponse> response = captureService.getUserCaptures(
-                currentUser.getUserId(), status, category, page, size
+                currentUser.getUserId(), status, category, subCategory, page, size
         );
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/taxonomy")
+    public ResponseEntity<TaxonomyResponse> getUserTaxonomy(
+            @CurrentUser AuthenticatedUser currentUser
+    ) {
+        return ResponseEntity.ok(captureService.getUserTaxonomy(currentUser.getUserId()));
     }
 
     @GetMapping("/{id}")

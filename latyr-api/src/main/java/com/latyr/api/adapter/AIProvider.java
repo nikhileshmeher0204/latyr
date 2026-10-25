@@ -21,10 +21,25 @@ public interface AIProvider {
             Intent intent,
             String category,
             String subCategory,
+            List<String> tags,
             String suggestedCollection,
             List<String> notificationCopies,
             List<AIEntity> entities
-    ) {}
+    ) {
+        public AIAnalysisResult(
+                String title,
+                String summary,
+                String transcript,
+                Intent intent,
+                String category,
+                String subCategory,
+                String suggestedCollection,
+                List<String> notificationCopies,
+                List<AIEntity> entities
+        ) {
+            this(title, summary, transcript, intent, category, subCategory, List.of(), suggestedCollection, notificationCopies, entities);
+        }
+    }
 
     record AIEntity(
             EntityType entityType,

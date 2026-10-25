@@ -143,6 +143,11 @@ public class CaptureService {
 
     @Transactional(readOnly = true)
     public PagedResponse<CaptureResponse> getUserCaptures(UUID userId, CaptureStatus status, String category, int page, int size) {
+        return getUserCaptures(userId, status, category, null, page, size);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<CaptureResponse> getUserCaptures(UUID userId, CaptureStatus status, String category, String subCategory, int page, int size) {
         int limit = Math.max(1, Math.min(100, size));
         int offset = Math.max(0, page) * limit;
 
@@ -152,6 +157,9 @@ public class CaptureService {
         if (status != null) {
             captures = captureMapper.findByUserIdAndStatus(userId, status, limit, offset);
             total = captureMapper.countByUserIdAndStatus(userId, status);
+        } else if (category != null && !category.trim().isEmpty() && subCategory != null && !subCategory.trim().isEmpty()) {
+            captures = captureMapper.findByUserIdAndCategoryAndSubCategory(userId, category.trim(), subCategory.trim(), limit, offset);
+            total = captureMapper.countByUserIdAndCategoryAndSubCategory(userId, category.trim(), subCategory.trim());
         } else if (category != null && !category.trim().isEmpty()) {
             captures = captureMapper.findByUserIdAndCategory(userId, category.trim(), limit, offset);
             total = captureMapper.countByUserIdAndCategory(userId, category.trim());
@@ -165,6 +173,39 @@ public class CaptureService {
                 .toList();
 
         return PagedResponse.of(responseList, page, limit, total);
+    }
+
+    @Transactional(readOnly = true)
+    public TaxonomyResponse getUserTaxonomy(UUID userId) {
+        List<CaptureMapper.CategorySubCategoryCount> rows = captureMapper.selectTaxonomyCountsByUserId(userId);
+        Map<String, List<TaxonomySubCategoryDto>> categoryMap = new LinkedHashMap<>();
+        Map<String, Long> categoryTotals = new LinkedHashMap<>();
+
+        for (CaptureMapper.CategorySubCategoryCount row : rows) {
+            String cat = row.getCategory();
+            if (cat == null || cat.isBlank()) continue;
+            String sub = row.getSubCategory();
+            if (sub == null || sub.isBlank()) {
+                sub = cat;
+            }
+            categoryTotals.merge(cat, row.getCount(), Long::sum);
+            categoryMap.computeIfAbsent(cat, k -> new ArrayList<>())
+                    .add(new TaxonomySubCategoryDto(sub, row.getCount()));
+        }
+
+        List<TaxonomyCategoryDto> categories = new ArrayList<>();
+        for (Map.Entry<String, List<TaxonomySubCategoryDto>> entry : categoryMap.entrySet()) {
+            String cat = entry.getKey();
+            long total = categoryTotals.getOrDefault(cat, 0L);
+            List<TaxonomySubCategoryDto> sortedSubs = entry.getValue().stream()
+                    .sorted((a, b) -> Long.compare(b.count(), a.count()))
+                    .toList();
+            categories.add(new TaxonomyCategoryDto(cat, total, sortedSubs));
+        }
+
+        categories.sort((a, b) -> Long.compare(b.count(), a.count()));
+
+        return new TaxonomyResponse(categories);
     }
 
     @Transactional
@@ -194,6 +235,14 @@ public class CaptureService {
 
         capture.setCategory((String) cache.get("category"));
         capture.setSubCategory((String) cache.get("sub_category"));
+        Object tagsObj = cache.get("tags");
+        if (tagsObj instanceof List<?> tagsList) {
+            List<String> tags = new ArrayList<>();
+            for (Object o : tagsList) {
+                if (o != null) tags.add(o.toString());
+            }
+            capture.setTags(tags);
+        }
         capture.setTitle((String) cache.get("title"));
         capture.setSummary((String) cache.get("summary"));
         capture.setThumbnailUrl((String) cache.get("thumbnail_url"));

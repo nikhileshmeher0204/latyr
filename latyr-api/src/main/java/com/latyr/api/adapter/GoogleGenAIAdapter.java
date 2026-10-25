@@ -12,6 +12,7 @@ import com.latyr.api.domain.enums.EntityType;
 import com.latyr.api.domain.enums.Intent;
 import com.latyr.api.domain.enums.Language;
 import com.latyr.api.exception.LatyrException;
+import com.latyr.api.service.TaxonomyNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,6 +99,7 @@ public class GoogleGenAIAdapter implements AIProvider {
 
     private String buildPrompt(String caption, Language language, boolean isImage) {
         String langInstruction = language != null ? language.name() : "ENGLISH";
+
         return """
             You are Latyr AI, an intelligent personal knowledge and content extraction system.
             Analyze the input %s and extract structured knowledge in strict JSON format.
@@ -109,11 +111,12 @@ public class GoogleGenAIAdapter implements AIProvider {
             Return a JSON object with this exact schema:
             {
               "title": "A concise, descriptive, and engaging 4-8 word title summarizing the core topic or hook of this content (e.g. 'Run AWS Services Locally with FLOCI', 'Top 5 AI Extensions for VS Code', 'Crispy Garlic Butter Smashed Potatoes'). Never use generic filler like 'Instagram Reel' or creator hashtags.",
-              "summary": "MANDATORY: Provide an editorial 2-3 sentence summary enriched with Latyr Semantic Markup tags: (1) Highlight: Wrap exactly ONE primary standout keyword or concept in '==text==' (e.g. '==symmetric encryption=='). (2) Warning/Caveat: Wrap at most ONE critical caveat or friction point in '~text~' (e.g. '~key exchange complexity~'). (3) 3D Icons: Include 1-2 inline icons [icon:name] from: runner, lightning, rocket, lightbulb, fire, brain, sparkles, target, code, warning, bookmark, pin, calendar, globe (e.g. 'high speed [icon:runner]'). (4) Explainer Tip: Wrap key technical terms or acronyms in '[Term](tip:Brief+definition)' for interactive popover explainers (e.g. '[HTTPS](tip:Secure+hypertext+transfer+protocol)'). (5) Links: If repos, places, or dates are mentioned, use [Name](github:query), [Place](maps:query), or [Event](reminder:text). Example: 'This breakdown reveals how ==symmetric encryption== provides [icon:lightning] blazing speed while ~asymmetric key exchange~ ensures security. Learn how [HTTPS](tip:Secure+web+protocol) unifies both.' Keep it restrained, elegant, and magazine-quality. Never hallucinate unmentioned external URLs.",
+              "summary": "MANDATORY: Provide an editorial 2-3 sentence summary enriched with Latyr Semantic Markup tags: (1) Highlight: Wrap exactly ONE primary standout keyword or concept in '==text==' (e.g. '==symmetric encryption=='). (2) Warning/Caveat: Wrap at most ONE critical caveat or friction point in '~text~' (e.g. '~key exchange complexity~'). (3) 3D Icons: Include 1-2 inline icons [icon:name] from: runner, lightning, rocket, lightbulb, fire, brain, sparkles, target, code, warning, bookmark, pin, calendar, globe (e.g. 'high speed [icon:runner]'). (4) Explainer Tip: Wrap key technical terms or acronyms in '[Term](tip:Brief+definition)' for interactive popover explainers (e.g. '[HTTPS](tip:Secure+web+protocol)'). (5) Links: If repos, places, or dates are mentioned, use [Name](github:query), [Place](maps:query), or [Event](reminder:text). Example: 'This breakdown reveals how ==symmetric encryption== provides [icon:lightning] blazing speed while ~asymmetric key exchange~ ensures security. Learn how [HTTPS](tip:Secure+web+protocol) unifies both.' Keep it restrained, elegant, and magazine-quality. Never hallucinate unmentioned external URLs.",
               "transcript": "Accurate transcription of spoken audio or summary of the provided text content",
               "intent": "WATCH | EXPLORE | REMEMBER | COOK | VISIT | BUY | LEARN",
               "category": "Entertainment | Tech | Food | Travel | Learning | Shopping | Lifestyle | Fitness | Finance",
-              "sub_category": "Specific granular sub-category (e.g. Geology, Himalayas, Science, Movies, Sci-Fi, Web Development, Pasta Recipes, Japan Travel, Personal Finance, Productivity, etc.)",
+              "sub_category": "Standard format or topic (e.g. 'Movies', 'TV Series', 'Documentaries', 'Developer Tools', 'AI Tools', 'Cybersecurity', 'Cloud Architecture', 'Data & Analytics', 'Recipes', 'Career & Interviews', 'Certifications', 'Business Strategy')",
+              "tags": ["Granular genre/topic 1", "Granular genre/topic 2"],
               "suggested_collection": "Suggested collection name",
               "notification_copies": [
                 "Catchy reminder notification copy 1",
@@ -172,6 +175,7 @@ public class GoogleGenAIAdapter implements AIProvider {
         Map<String, Object> structured = objectMapper.readValue(cleanJson, new TypeReference<Map<String, Object>>() {});
 
         String transcript = structured.get("transcript") != null ? structured.get("transcript").toString() : "";
+        String title = structured.get("title") != null ? structured.get("title").toString() : "";
         String summary = structured.get("summary") != null ? structured.get("summary").toString() : "";
         String intentStr = structured.get("intent") != null ? structured.get("intent").toString() : "EXPLORE";
         Intent intent = Intent.EXPLORE;
@@ -185,15 +189,29 @@ public class GoogleGenAIAdapter implements AIProvider {
 
         String category = structured.get("category") != null ? structured.get("category").toString() : "General";
         
-        // Extract sub_category (supporting sub_category and subcategory fallback)
-        String subCategory = null;
+        // Extract raw sub_category (supporting sub_category and subcategory fallback)
+        String rawSubCategory = null;
         if (structured.get("sub_category") != null) {
-            subCategory = structured.get("sub_category").toString();
+            rawSubCategory = structured.get("sub_category").toString();
         } else if (structured.get("subcategory") != null) {
-            subCategory = structured.get("subcategory").toString();
+            rawSubCategory = structured.get("subcategory").toString();
         } else {
-            subCategory = category;
+            rawSubCategory = category;
         }
+
+        List<String> rawTags = new ArrayList<>();
+        Object tagsObj = structured.get("tags");
+        if (tagsObj instanceof List<?> list) {
+            for (Object item : list) {
+                if (item != null && !item.toString().trim().isEmpty()) {
+                    rawTags.add(item.toString().trim());
+                }
+            }
+        }
+
+        // Apply deterministic normalization and tag extraction
+        String subCategory = TaxonomyNormalizer.normalizeSubCategory(category, rawSubCategory);
+        List<String> tags = TaxonomyNormalizer.extractTags(category, rawSubCategory, rawTags);
 
         String suggestedCollection = structured.get("suggested_collection") != null ? structured.get("suggested_collection").toString() : "General Knowledge";
 
@@ -219,44 +237,40 @@ public class GoogleGenAIAdapter implements AIProvider {
                             if (entityTypeStr != null) {
                                 entityType = EntityType.valueOf(entityTypeStr.toUpperCase(Locale.ROOT));
                             }
-                        } catch (Exception ex) {
-                            entityType = EntityType.IDEA;
+                        } catch (Exception e) {
+                            log.warn("Unknown entity_type '{}', falling back to IDEA", entityTypeStr);
                         }
 
-                        String title = map.get("title") != null ? map.get("title").toString().strip() : "";
-                        if (title.isBlank()) continue;
+                        String entityTitle = map.get("title") != null ? map.get("title").toString() : "Untitled Entity";
                         String description = map.get("description") != null ? map.get("description").toString() : "";
-                        String externalUrl = map.get("external_url") != null ? map.get("external_url").toString() : null;
-
-                        String ctaStr = map.get("action_cta") != null ? map.get("action_cta").toString() : "EXPLORE";
+                        String externalUrl = map.get("external_url") != null ? map.get("external_url").toString() : "";
+                        String actionCtaStr = map.get("action_cta") != null ? map.get("action_cta").toString() : "EXPLORE";
                         ActionCTA actionCta = ActionCTA.EXPLORE;
                         try {
-                            if (ctaStr != null) {
-                                actionCta = ActionCTA.valueOf(ctaStr.toUpperCase(Locale.ROOT));
+                            if (actionCtaStr != null) {
+                                actionCta = ActionCTA.valueOf(actionCtaStr.toUpperCase(Locale.ROOT));
                             }
-                        } catch (Exception ex) {
-                            actionCta = ActionCTA.EXPLORE;
+                        } catch (Exception e) {
+                            log.warn("Unknown action_cta '{}', falling back to EXPLORE", actionCtaStr);
                         }
 
                         Map<String, Object> metadata = new HashMap<>();
-                        Object metaObj = map.get("metadata");
-                        if (metaObj instanceof Map<?, ?> m) {
-                            for (Map.Entry<?, ?> entry : m.entrySet()) {
-                                if (entry.getKey() != null) {
+                        if (map.get("metadata") instanceof Map<?, ?> metaMap) {
+                            for (Map.Entry<?, ?> entry : metaMap.entrySet()) {
+                                if (entry.getKey() != null && entry.getValue() != null) {
                                     metadata.put(entry.getKey().toString(), entry.getValue());
                                 }
                             }
                         }
 
-                        entities.add(new AIEntity(entityType, title, description, externalUrl, actionCta, metadata));
+                        entities.add(new AIEntity(entityType, entityTitle, description, externalUrl, actionCta, metadata));
                     } catch (Exception e) {
-                        log.warn("Failed to parse extracted entity: {}", e.getMessage());
+                        log.warn("Failed to parse extracted entity entry, skipping: {}", e.getMessage());
                     }
                 }
             }
         }
 
-        String title = structured.get("title") != null ? structured.get("title").toString().trim() : null;
         if (title == null || title.isEmpty()) {
             if (!entities.isEmpty()) {
                 title = entities.get(0).title();
@@ -274,6 +288,7 @@ public class GoogleGenAIAdapter implements AIProvider {
                 intent,
                 category,
                 subCategory,
+                tags,
                 suggestedCollection,
                 notificationCopies,
                 entities

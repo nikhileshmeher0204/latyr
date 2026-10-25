@@ -176,7 +176,7 @@ class CaptureControllerTest {
         );
 
         PagedResponse<CaptureResponse> pagedResponse = PagedResponse.of(List.of(captureItem), 0, 20, 1);
-        when(captureService.getUserCaptures(eq(testUserId), any(), any(), eq(0), eq(20)))
+        when(captureService.getUserCaptures(eq(testUserId), any(), any(), any(), eq(0), eq(20)))
                 .thenReturn(pagedResponse);
 
         mockMvc.perform(get("/api/v1/captures")

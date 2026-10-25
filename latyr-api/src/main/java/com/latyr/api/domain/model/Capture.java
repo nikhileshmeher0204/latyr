@@ -21,6 +21,7 @@ public class Capture {
     private Intent intent;
     private String category;
     private String subCategory;
+    private List<String> tags = new ArrayList<>();
     private String title;
     private String summary;
     private String originalCaption;
@@ -69,6 +70,9 @@ public class Capture {
 
     public String getSubCategory() { return subCategory; }
     public void setSubCategory(String subCategory) { this.subCategory = subCategory; }
+
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags != null ? tags : new ArrayList<>(); }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
