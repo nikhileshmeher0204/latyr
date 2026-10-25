@@ -337,6 +337,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildStatCards(BuildContext context, WidgetRef ref, bool isDark) {
     final statsAsync = ref.watch(homeStatsProvider);
+    final dynamicMetricColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
+    final dynamicLabelColor = isDark
+        ? CupertinoColors.white.withValues(alpha: 0.72)
+        : const Color(0xFF1A1A1A).withValues(alpha: 0.72);
+
     return statsAsync.when(
       data: (stats) => Row(
         children: [
@@ -344,8 +349,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: _buildStatCard(
               isDark: isDark,
               color: isDark ? const Color(0xFF28543A) : const Color(0xFFC7F0D8),
-              counterColor: isDark ? const Color(0xFF88F0B8) : const Color(0xFF0F472A),
-              labelColor: isDark ? const Color(0xFFA5EAC2).withValues(alpha: 0.85) : const Color(0xFF1D5A37).withValues(alpha: 0.85),
+              counterColor: dynamicMetricColor,
+              labelColor: dynamicLabelColor,
               iconColor: isDark ? const Color(0xFF78E4A5) : const Color(0xFF2A8A5C),
               icon: CupertinoIcons.paw,
               value: stats.capturesToday.toString(),
@@ -358,8 +363,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: _buildStatCard(
               isDark: isDark,
               color: isDark ? const Color(0xFF24466B) : const Color(0xFFCBE3FA),
-              counterColor: isDark ? const Color(0xFF9BD4FF) : const Color(0xFF0D3666),
-              labelColor: isDark ? const Color(0xFFBCE0FF).withValues(alpha: 0.85) : const Color(0xFF1B497D).withValues(alpha: 0.85),
+              counterColor: dynamicMetricColor,
+              labelColor: dynamicLabelColor,
               iconColor: isDark ? const Color(0xFF8AC7FF) : const Color(0xFF3B7FC4),
               icon: CupertinoIcons.person_solid,
               value: stats.categoriesDiscovered.toString(),
@@ -372,13 +377,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: _buildStatCard(
               isDark: isDark,
               color: isDark ? const Color(0xFF6B332C) : const Color(0xFFFFD1CC),
-              counterColor: isDark ? const Color(0xFFFFB2A8) : const Color(0xFF6E1C14),
-              labelColor: isDark ? const Color(0xFFFFCDC6).withValues(alpha: 0.85) : const Color(0xFF7E261C).withValues(alpha: 0.85),
+              counterColor: dynamicMetricColor,
+              labelColor: dynamicLabelColor,
               iconColor: isDark ? const Color(0xFFFF9E94) : const Color(0xFFC75748),
               icon: CupertinoIcons.flame_fill,
               value: stats.processingQueue.toString(),
               label: "Processing",
-              chartWidget: _buildRingChart(isDark ? const Color(0xFFFF9E94) : const Color(0xFFC75748)),
+              chartWidget: stats.processingQueue > 0
+                  ? CupertinoActivityIndicator(
+                      radius: 8.0,
+                      color: dynamicMetricColor,
+                    )
+                  : Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0x33FFFFFF)
+                            : CupertinoColors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        CupertinoIcons.chevron_right,
+                        size: 11,
+                        color: dynamicMetricColor.withValues(alpha: 0.8),
+                      ),
+                    ),
             ),
           ),
         ],
