@@ -135,6 +135,25 @@ class _AddToCollectionBottomSheetState
     }
   }
 
+  IconData _getCategoryIcon(String? name, String entityType) {
+    if (name != null) {
+      final lower = name.toLowerCase();
+      if (lower.contains('movie') || lower.contains('film') || lower.contains('cinema')) {
+        return CupertinoIcons.film;
+      }
+      if (lower.contains('tv') || lower.contains('series') || lower.contains('show')) {
+        return CupertinoIcons.tv;
+      }
+      if (lower.contains('code') || lower.contains('dev') || lower.contains('git') || lower.contains('repo') || lower.contains('tool')) {
+        return CupertinoIcons.chevron_left_slash_chevron_right;
+      }
+      if (lower.contains('book') || lower.contains('read')) {
+        return CupertinoIcons.book;
+      }
+    }
+    return _getEntityTypeIcon(entityType);
+  }
+
   Future<void> _createAndAdd(String name) async {
     if (widget.entity.id == null || name.trim().isEmpty) return;
     HapticFeedback.mediumImpact();
@@ -357,40 +376,51 @@ class _AddToCollectionBottomSheetState
                         if (exists) return const SizedBox.shrink();
 
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: GestureDetector(
-                            onTap: () async {
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            onPressed: () async {
                               await _createAndAdd(widget.suggestedCollectionName!);
                             },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? mintAccent.withValues(alpha: 0.14)
-                                    : latyrGreen.withValues(alpha: 0.08),
+                                color: cardBg,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: isDark
-                                      ? mintAccent.withValues(alpha: 0.3)
-                                      : latyrGreen.withValues(alpha: 0.2),
-                                  width: 1.0,
+                                  color: borderColor,
+                                  width: 0.8,
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CupertinoColors.black.withValues(
+                                      alpha: isDark ? 0.2 : 0.025,
+                                    ),
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 children: [
-                                  Container(
-                                    width: 34,
-                                    height: 34,
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? mintAccent.withValues(alpha: 0.2)
-                                          : latyrGreen.withValues(alpha: 0.15),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      CupertinoIcons.sparkles,
-                                      color: brandPrimary,
-                                      size: 16,
+                                  // Category icon in rounded colorful tile
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Container(
+                                      width: 38,
+                                      height: 38,
+                                      color: entityColor.withValues(alpha: 0.15),
+                                      child: Center(
+                                        child: Icon(
+                                          _getCategoryIcon(
+                                            widget.suggestedCollectionName,
+                                            widget.entity.entityType,
+                                          ),
+                                          color: entityColor,
+                                          size: 18,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -399,16 +429,16 @@ class _AddToCollectionBottomSheetState
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Create "${widget.suggestedCollectionName}"',
-                                          style: LTypography.footnoteSemibold.rounded.copyWith(
-                                            color: isDark ? mintAccent : latyrGreen,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 13.5,
+                                          widget.suggestedCollectionName!,
+                                          style: LTypography.body.rounded.copyWith(
+                                            color: textColor,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
                                           ),
                                         ),
                                         const SizedBox(height: 1),
                                         Text(
-                                          'Suggested from capture category',
+                                          'Suggested collection',
                                           style: LTypography.caption2.copyWith(
                                             color: secondaryTextColor,
                                           ),
@@ -416,19 +446,20 @@ class _AddToCollectionBottomSheetState
                                       ],
                                     ),
                                   ),
+                                  // Minimal subtle + circle
                                   Container(
-                                    width: 28,
-                                    height: 28,
+                                    width: 24,
+                                    height: 24,
                                     decoration: BoxDecoration(
-                                      color: isDark
-                                          ? mintAccent.withValues(alpha: 0.2)
-                                          : latyrGreen.withValues(alpha: 0.12),
                                       shape: BoxShape.circle,
+                                      color: isDark
+                                          ? const Color(0xFF38383A)
+                                          : const Color(0xFFF2F2F7),
                                     ),
                                     child: Icon(
-                                      CupertinoIcons.add,
-                                      color: brandPrimary,
-                                      size: 16,
+                                      CupertinoIcons.plus,
+                                      size: 13,
+                                      color: textColor.withValues(alpha: 0.75),
                                     ),
                                   ),
                                 ],
