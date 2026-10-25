@@ -6,6 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latyr_app/core/widgets/latyr_expandable_text.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/github_language_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latyr_app/features/collections/presentation/user_collections_provider.dart';
+import 'package:latyr_app/features/collections/presentation/widgets/add_to_collection_bottom_sheet.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/intent_detail_app_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -14,7 +17,7 @@ const String _roundedFontFamily = 'InterRounded';
 
 /// Dedicated GitHub Application style detail screen.
 /// Developer tool aesthetic with live stars, forks, language badges, and deep-link actions.
-class GitHubRepoDetailScreen extends StatefulWidget {
+class GitHubRepoDetailScreen extends ConsumerStatefulWidget {
   final ExtractedEntityModel entity;
   final String? categoryTitle;
 
@@ -25,36 +28,28 @@ class GitHubRepoDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<GitHubRepoDetailScreen> createState() => _GitHubRepoDetailScreenState();
+  ConsumerState<GitHubRepoDetailScreen> createState() => _GitHubRepoDetailScreenState();
 }
 
-class _GitHubRepoDetailScreenState extends State<GitHubRepoDetailScreen> {
-  bool _isAdded = false;
+class _GitHubRepoDetailScreenState extends ConsumerState<GitHubRepoDetailScreen> {
 
   void _toggleAdd(BuildContext context) {
-    setState(() {
-      _isAdded = !_isAdded;
-    });
-    HapticFeedback.mediumImpact();
-    showCupertinoDialog(
-      context: context,
-      builder: (ctx) => CupertinoAlertDialog(
-        title: Text(_isAdded ? 'Added to Collections' : 'Removed from Collections'),
-        content: Text('"${widget.entity.title}" has been ${_isAdded ? 'added to' : 'removed from'} your collections.'),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+    HapticFeedback.lightImpact();
+    AddToCollectionBottomSheet.show(
+      context,
+      entity: widget.entity,
+      suggestedCollectionName: widget.categoryTitle ?? 'Developer Tools',
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final entity = widget.entity;
+    final entityId = entity.id;
+    final entityCollectionIdsAsync = entityId != null
+        ? ref.watch(entityCollectionIdsProvider(entityId))
+        : const AsyncValue.data(<String>{});
+    final isInAnyCollection = (entityCollectionIdsAsync.valueOrNull ?? <String>{}).isNotEmpty;
     final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     final scaffoldBg = isDark ? const Color(0xFF000000) : const Color(0xFFF8F9FA);
     final cardBg = isDark ? const Color(0xFF161B22) : const Color(0xFFFFFFFF);
@@ -574,8 +569,8 @@ class _GitHubRepoDetailScreenState extends State<GitHubRepoDetailScreen> {
                         isDark: isDark,
                         onPressed: () => _toggleAdd(context),
                         child: Icon(
-                          _isAdded ? CupertinoIcons.check_mark : CupertinoIcons.add,
-                          color: _isAdded ? CupertinoColors.activeGreen : textColor,
+                          isInAnyCollection ? CupertinoIcons.check_mark : CupertinoIcons.add,
+                          color: isInAnyCollection ? CupertinoColors.activeGreen : textColor,
                           size: 20,
                         ),
                       ),

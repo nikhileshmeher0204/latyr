@@ -3,6 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:latyr_app/features/capture/domain/extracted_entity_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latyr_app/features/collections/presentation/user_collections_provider.dart';
+import 'package:latyr_app/features/collections/presentation/widgets/add_to_collection_bottom_sheet.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/intent_detail_app_bar.dart';
 import 'package:latyr_app/features/feed/presentation/widgets/where_to_watch_card.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -17,7 +20,7 @@ const String _roundedFontFamily = 'InterRounded';
 /// and bottoming out just below the ratings row.
 /// Employs Latyr's progressive blur shader with color vibrancy, and renders
 /// translucent, luminous typography with subtle depth shadows without container boxes.
-class EntertainmentDetailScreen extends StatefulWidget {
+class EntertainmentDetailScreen extends ConsumerStatefulWidget {
   final ExtractedEntityModel entity;
   final String? categoryTitle;
 
@@ -28,11 +31,10 @@ class EntertainmentDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<EntertainmentDetailScreen> createState() => _EntertainmentDetailScreenState();
+  ConsumerState<EntertainmentDetailScreen> createState() => _EntertainmentDetailScreenState();
 }
 
-class _EntertainmentDetailScreenState extends State<EntertainmentDetailScreen> {
-  bool _isAdded = false;
+class _EntertainmentDetailScreenState extends ConsumerState<EntertainmentDetailScreen> {
 
   void _shareIntent(BuildContext context, String? imdbId, String? streamingDeepLink) {
     final title = widget.entity.title;
@@ -59,23 +61,12 @@ class _EntertainmentDetailScreenState extends State<EntertainmentDetailScreen> {
   }
 
   void _toggleAdd(BuildContext context) {
-    setState(() {
-      _isAdded = !_isAdded;
-    });
-    HapticFeedback.mediumImpact();
-    showCupertinoDialog(
-      context: context,
-      builder: (ctx) => CupertinoAlertDialog(
-        title: Text(_isAdded ? 'Added to Collections' : 'Removed from Collections'),
-        content: Text('"${widget.entity.title}" has been ${_isAdded ? 'added to' : 'removed from'} your collections.'),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+    HapticFeedback.lightImpact();
+    AddToCollectionBottomSheet.show(
+      context,
+      entity: widget.entity,
+      suggestedCollectionName: widget.categoryTitle ??
+          (widget.entity.entertainment.isTv ? 'TV Series' : 'Movies'),
     );
   }
 
@@ -83,6 +74,11 @@ class _EntertainmentDetailScreenState extends State<EntertainmentDetailScreen> {
   Widget build(BuildContext context) {
     final entity = widget.entity;
     final movie = entity.entertainment;
+    final entityId = entity.id;
+    final entityCollectionIdsAsync = entityId != null
+        ? ref.watch(entityCollectionIdsProvider(entityId))
+        : const AsyncValue.data(<String>{});
+    final isInAnyCollection = (entityCollectionIdsAsync.valueOrNull ?? <String>{}).isNotEmpty;
     final heroImage = movie.heroImage;
     final rating = movie.rating;
     final ratingSource = movie.ratingSource;
@@ -451,8 +447,8 @@ class _EntertainmentDetailScreenState extends State<EntertainmentDetailScreen> {
                   isDark: isDark,
                   onPressed: () => _toggleAdd(context),
                   child: Icon(
-                    _isAdded ? CupertinoIcons.check_mark : CupertinoIcons.add,
-                    color: _isAdded ? CupertinoColors.activeGreen : (isDark ? CupertinoColors.white : const Color(0xFF1A1A1A)),
+                    isInAnyCollection ? CupertinoIcons.check_mark : CupertinoIcons.add,
+                    color: isInAnyCollection ? CupertinoColors.activeGreen : (isDark ? CupertinoColors.white : const Color(0xFF1A1A1A)),
                     size: 20,
                   ),
                 ),

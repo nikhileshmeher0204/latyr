@@ -25,7 +25,7 @@ class TaxonomyCategory {
   });
 
   factory TaxonomyCategory.fromJson(Map<String, dynamic> json) {
-    final subs = json['subCategories'] as List<dynamic>? ?? [];
+    final subs = (json['sub_categories'] ?? json['subCategories']) as List<dynamic>? ?? [];
     return TaxonomyCategory(
       name: json['name'] as String? ?? '',
       count: (json['count'] as num?)?.toInt() ?? 0,

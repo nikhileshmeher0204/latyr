@@ -21,6 +21,7 @@ class LatyrAppBar extends StatelessWidget {
   final Widget? titleLeading;
   final VoidCallback? onBack;
   final IconData backIcon;
+  final bool showBackButton;
   final List<Widget>? actions;
   final bool isDark;
   final Color scaffoldBgColor;
@@ -40,6 +41,7 @@ class LatyrAppBar extends StatelessWidget {
     this.titleLeading,
     this.onBack,
     this.backIcon = CupertinoIcons.back,
+    this.showBackButton = true,
     this.actions,
     required this.isDark,
     required this.scaffoldBgColor,
@@ -203,7 +205,11 @@ class LatyrAppBar extends StatelessWidget {
             children: [
               // 1. Centered Contextual Bubble Pill with Guaranteed >=12px Clearance
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: kPillHorizontalMargin),
+                padding: EdgeInsets.symmetric(
+                  horizontal: (actions != null && actions!.length > 1)
+                      ? kPillHorizontalMargin
+                      : (showBackButton || (actions != null && actions!.isNotEmpty) ? 68.0 : 48.0),
+                ),
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -232,7 +238,8 @@ class LatyrAppBar extends StatelessWidget {
               ),
 
               // 2. Left Back Button (42x42)
-              Positioned(
+              if (showBackButton)
+                Positioned(
                 left: 0,
                 top: 0,
                 bottom: 0,
