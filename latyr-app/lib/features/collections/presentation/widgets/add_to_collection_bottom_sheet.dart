@@ -39,7 +39,11 @@ class AddToCollectionBottomSheet extends ConsumerStatefulWidget {
 class _AddToCollectionBottomSheetState
     extends ConsumerState<AddToCollectionBottomSheet> {
   bool _isCreatingInline = false;
+  bool _isCreatingSuggested = false;
   final TextEditingController _newCollectionController = TextEditingController();
+
+  Set<String>? _selectedCollectionIds;
+  Set<String>? _initialCollectionIds;
 
   @override
   void dispose() {
@@ -154,15 +158,85 @@ class _AddToCollectionBottomSheetState
     return _getEntityTypeIcon(entityType);
   }
 
-  Future<void> _createAndAdd(String name) async {
+  void _toggleCollection(String colId, Set<String> currentSelected) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _selectedCollectionIds ??= Set<String>.from(currentSelected);
+      if (_selectedCollectionIds!.contains(colId)) {
+        _selectedCollectionIds!.remove(colId);
+      } else {
+        _selectedCollectionIds!.add(colId);
+      }
+    });
+  }
+
+  Future<void> _createSuggestedCollection(
+    String name,
+    Set<String> currentSelected,
+  ) async {
+    if (widget.entity.id == null || name.trim().isEmpty) return;
+    HapticFeedback.mediumImpact();
+    setState(() => _isCreatingSuggested = true);
+    try {
+      final created = await ref
+          .read(userCollectionsProvider.notifier)
+          .createCollection(name: name.trim());
+      setState(() {
+        _selectedCollectionIds ??= Set<String>.from(currentSelected);
+        _selectedCollectionIds!.add(created.id);
+        _isCreatingSuggested = false;
+      });
+    } catch (_) {
+      setState(() => _isCreatingSuggested = false);
+    }
+  }
+
+  Future<void> _createInlineCollection(
+    String name,
+    Set<String> currentSelected,
+  ) async {
     if (widget.entity.id == null || name.trim().isEmpty) return;
     HapticFeedback.mediumImpact();
     final created = await ref
         .read(userCollectionsProvider.notifier)
         .createCollection(name: name.trim());
-    await ref
-        .read(userCollectionsProvider.notifier)
-        .addEntityToCollection(created.id, widget.entity.id!);
+    setState(() {
+      _selectedCollectionIds ??= Set<String>.from(currentSelected);
+      _selectedCollectionIds!.add(created.id);
+      _isCreatingInline = false;
+      _newCollectionController.clear();
+    });
+  }
+
+  void _saveAndDismiss(Set<String> currentSelected, Set<String> initial) {
+    final entityId = widget.entity.id;
+    HapticFeedback.mediumImpact();
+
+    final toAdd = currentSelected.difference(initial);
+    final toRemove = initial.difference(currentSelected);
+
+    final notifier = ref.read(userCollectionsProvider.notifier);
+
+    // Dismiss bottom sheet immediately so the user experience is fluid & instant
+    Navigator.of(context).pop();
+
+    if (entityId == null || (toAdd.isEmpty && toRemove.isEmpty)) {
+      return;
+    }
+
+    // Execute background additions and removals asynchronously without blocking the UI
+    Future.microtask(() async {
+      try {
+        for (final colId in toAdd) {
+          await notifier.addEntityToCollection(colId, entityId);
+        }
+        for (final colId in toRemove) {
+          await notifier.removeEntityFromCollection(colId, entityId);
+        }
+      } catch (e) {
+        debugPrint('Background save collections error: $e');
+      }
+    });
   }
 
   @override
@@ -186,7 +260,13 @@ class _AddToCollectionBottomSheetState
         ? ref.watch(entityCollectionIdsProvider(entityId))
         : const AsyncValue.data(<String>{});
 
-    final memberCollectionIds = entityCollectionIdsAsync.valueOrNull ?? <String>{};
+    final initialIds = entityCollectionIdsAsync.valueOrNull ?? <String>{};
+    if (_selectedCollectionIds == null && entityCollectionIdsAsync.hasValue) {
+      _initialCollectionIds = Set<String>.from(initialIds);
+      _selectedCollectionIds = Set<String>.from(initialIds);
+    }
+    final selectedIds = _selectedCollectionIds ?? initialIds;
+    final effectiveInitialIds = _initialCollectionIds ?? initialIds;
 
     final artworkUrl = _getEntityArtworkUrl(widget.entity);
     final entityColor = _getEntityTypeColor(widget.entity.entityType, isDark);
@@ -264,100 +344,94 @@ class _AddToCollectionBottomSheetState
               ),
             ),
 
-            // Entity Mini Preview Card
+            // Capture Intent Preview (Minimal header presentation, NOT inside a tile)
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: cardBg,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: borderColor, width: 0.8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: CupertinoColors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    // Artwork Thumbnail or Entity Icon Badge
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        width: 42,
-                        height: 42,
-                        color: entityColor.withValues(alpha: 0.15),
-                        child: artworkUrl != null
-                            ? CachedNetworkImage(
-                                imageUrl: artworkUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Center(
-                                  child: Icon(
-                                    _getEntityTypeIcon(widget.entity.entityType),
-                                    size: 18,
-                                    color: entityColor,
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Center(
-                                  child: Icon(
-                                    _getEntityTypeIcon(widget.entity.entityType),
-                                    size: 18,
-                                    color: entityColor,
-                                  ),
-                                ),
-                              )
-                            : Center(
+              padding: const EdgeInsets.fromLTRB(20, 2, 20, 10),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      color: entityColor.withValues(alpha: 0.15),
+                      child: artworkUrl != null
+                          ? CachedNetworkImage(
+                              imageUrl: artworkUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Center(
                                 child: Icon(
                                   _getEntityTypeIcon(widget.entity.entityType),
                                   size: 20,
                                   color: entityColor,
                                 ),
                               ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            widget.entity.title,
-                            style: LTypography.body.rounded.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14.5,
-                              color: textColor,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 3),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                            decoration: BoxDecoration(
-                              color: entityColor.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              widget.entity.entityType.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.4,
+                              errorWidget: (context, url, error) => Center(
+                                child: Icon(
+                                  _getEntityTypeIcon(widget.entity.entityType),
+                                  size: 20,
+                                  color: entityColor,
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Icon(
+                                _getEntityTypeIcon(widget.entity.entityType),
+                                size: 22,
                                 color: entityColor,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.entity.title,
+                          style: LTypography.body.rounded.copyWith(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                            color: textColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 3),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: entityColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(
+                            widget.entity.entityType.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.4,
+                              color: entityColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
+
+            // Subtle Hairline Divider separating intent header from collection choices
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                height: 0.7,
+                color: borderColor,
+              ),
+            ),
+            const SizedBox(height: 10),
 
             // Scrollable Content
             Flexible(
@@ -380,9 +454,14 @@ class _AddToCollectionBottomSheetState
                           child: CupertinoButton(
                             padding: EdgeInsets.zero,
                             minimumSize: Size.zero,
-                            onPressed: () async {
-                              await _createAndAdd(widget.suggestedCollectionName!);
-                            },
+                            onPressed: _isCreatingSuggested
+                                ? null
+                                : () async {
+                                    await _createSuggestedCollection(
+                                      widget.suggestedCollectionName!,
+                                      selectedIds,
+                                    );
+                                  },
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                               decoration: BoxDecoration(
@@ -456,11 +535,15 @@ class _AddToCollectionBottomSheetState
                                           ? const Color(0xFF38383A)
                                           : const Color(0xFFF2F2F7),
                                     ),
-                                    child: Icon(
-                                      CupertinoIcons.plus,
-                                      size: 13,
-                                      color: textColor.withValues(alpha: 0.75),
-                                    ),
+                                    child: _isCreatingSuggested
+                                        ? const Center(
+                                            child: CupertinoActivityIndicator(radius: 6),
+                                          )
+                                        : Icon(
+                                            CupertinoIcons.plus,
+                                            size: 13,
+                                            color: textColor.withValues(alpha: 0.75),
+                                          ),
                                   ),
                                 ],
                               ),
@@ -506,7 +589,7 @@ class _AddToCollectionBottomSheetState
 
                       return Column(
                         children: collections.map((col) {
-                          final isMember = memberCollectionIds.contains(col.id);
+                          final isMember = selectedIds.contains(col.id);
                           final colColor = _parseColor(col.colorHex, isDark);
 
                           return Padding(
@@ -514,16 +597,7 @@ class _AddToCollectionBottomSheetState
                             child: CupertinoButton(
                               padding: EdgeInsets.zero,
                               minimumSize: Size.zero,
-                              onPressed: () async {
-                                if (entityId == null) return;
-                                HapticFeedback.selectionClick();
-                                final notifier = ref.read(userCollectionsProvider.notifier);
-                                if (isMember) {
-                                  await notifier.removeEntityFromCollection(col.id, entityId);
-                                } else {
-                                  await notifier.addEntityToCollection(col.id, entityId);
-                                }
-                              },
+                              onPressed: () => _toggleCollection(col.id, selectedIds),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                                 decoration: BoxDecoration(
@@ -679,11 +753,7 @@ class _AddToCollectionBottomSheetState
                               ),
                               onSubmitted: (val) async {
                                 if (val.trim().isNotEmpty) {
-                                  await _createAndAdd(val);
-                                  setState(() {
-                                    _isCreatingInline = false;
-                                    _newCollectionController.clear();
-                                  });
+                                  await _createInlineCollection(val.trim(), selectedIds);
                                 }
                               },
                             ),
@@ -695,11 +765,7 @@ class _AddToCollectionBottomSheetState
                             onPressed: () async {
                               final val = _newCollectionController.text.trim();
                               if (val.isNotEmpty) {
-                                await _createAndAdd(val);
-                                setState(() {
-                                  _isCreatingInline = false;
-                                  _newCollectionController.clear();
-                                });
+                                await _createInlineCollection(val, selectedIds);
                               }
                             },
                             child: Container(
@@ -769,8 +835,38 @@ class _AddToCollectionBottomSheetState
                     ),
                   ],
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                 ],
+              ),
+            ),
+
+            // Sticky Bottom Save Action Bar
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              decoration: BoxDecoration(
+                color: sheetBg,
+                border: Border(
+                  top: BorderSide(color: borderColor, width: 0.6),
+                ),
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  color: brandPrimary,
+                  borderRadius: BorderRadius.circular(14),
+                  onPressed: () => _saveAndDismiss(selectedIds, effectiveInitialIds),
+                  child: Text(
+                    'Save',
+                    style: TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? const Color(0xFF1A1A1A) : CupertinoColors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
