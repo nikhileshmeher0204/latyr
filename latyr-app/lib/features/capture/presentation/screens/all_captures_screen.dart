@@ -1,4 +1,6 @@
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Icons, Colors, Material, Divider;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latyr_app/core/database/app_database.dart';
@@ -68,50 +70,182 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
     return '${_getMonthName(itemDate.month)} ${itemDate.year}';
   }
 
-  void _showSortActionSheet(BuildContext context) {
-    showCupertinoModalPopup<void>(
+  void _showSortOverlay(BuildContext context, double topPadding, bool isDark) {
+    HapticFeedback.selectionClick();
+    showGeneralDialog(
       context: context,
-      builder: (ctx) => CupertinoActionSheet(
-        title: const Text('Sort Captures'),
-        message: const Text('Order by creation timestamp'),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              if (!_isDescending) setState(() => _isDescending = true);
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (_isDescending) ...[
-                  const Icon(CupertinoIcons.check_mark, size: 16, color: Color(0xFF78E4A5)),
-                  const SizedBox(width: 8),
-                ],
-                const Text('Most Recent (Latest First)'),
-              ],
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss sort menu',
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 180),
+      pageBuilder: (dialogCtx, anim1, anim2) {
+        return Stack(
+          children: [
+            // Full-screen transparent dismiss barrier
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => Navigator.of(dialogCtx).pop(),
+              ),
             ),
-          ),
-          CupertinoActionSheetAction(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              if (_isDescending) setState(() => _isDescending = false);
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (!_isDescending) ...[
-                  const Icon(CupertinoIcons.check_mark, size: 16, color: Color(0xFF78E4A5)),
-                  const SizedBox(width: 8),
-                ],
-                const Text('Oldest First'),
-              ],
+            // Anchored dropdown menu directly below the sort button
+            Positioned(
+              top: topPadding + 56,
+              right: 16,
+              child: Material(
+                color: Colors.transparent,
+                child: _buildSortOverlayMenu(dialogCtx, isDark),
+              ),
             ),
+          ],
+        );
+      },
+      transitionBuilder: (context, anim, secondaryAnim, child) {
+        return FadeTransition(
+          opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+          child: ScaleTransition(
+            alignment: Alignment.topRight,
+            scale: Tween<double>(begin: 0.88, end: 1.0).animate(
+              CurvedAnimation(parent: anim, curve: Curves.easeOutCubic),
+            ),
+            child: child,
           ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text('Cancel'),
+        );
+      },
+    );
+  }
+
+  Widget _buildSortOverlayMenu(BuildContext menuContext, bool isDark) {
+    final bg = isDark
+        ? const Color(0xF21C1C1E)
+        : CupertinoColors.white.withValues(alpha: 0.98);
+    final borderColor = isDark ? const Color(0xFF38383A) : const Color(0xFFE5E5EA);
+    final textPrimary = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
+    final textSecondary = isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93);
+    final dividerColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF0F0F2);
+    const accentGreen = Color(0xFF78E4A5);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          width: 220,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor, width: 1.0),
+            boxShadow: [
+              BoxShadow(
+                color: CupertinoColors.black.withValues(alpha: isDark ? 0.45 : 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                child: Text(
+                  'SORT BY',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: textSecondary,
+                  ),
+                ),
+              ),
+              _buildSortMenuItem(
+                title: 'Most Recent',
+                subtitle: 'Newest captures first',
+                isSelected: _isDescending,
+                accentColor: accentGreen,
+                textColor: textPrimary,
+                subtitleColor: textSecondary,
+                onTap: () {
+                  Navigator.of(menuContext).pop();
+                  if (!_isDescending) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _isDescending = true);
+                  }
+                },
+              ),
+              Divider(height: 1, thickness: 1, color: dividerColor),
+              _buildSortMenuItem(
+                title: 'Oldest First',
+                subtitle: 'Earliest captures first',
+                isSelected: !_isDescending,
+                accentColor: accentGreen,
+                textColor: textPrimary,
+                subtitleColor: textSecondary,
+                onTap: () {
+                  Navigator.of(menuContext).pop();
+                  if (_isDescending) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _isDescending = false);
+                  }
+                },
+              ),
+              const SizedBox(height: 6),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSortMenuItem({
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required Color accentColor,
+    required Color textColor,
+    required Color subtitleColor,
+    required VoidCallback onTap,
+  }) {
+    return CupertinoButton(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      alignment: Alignment.centerLeft,
+      onPressed: onTap,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w400,
+                    color: subtitleColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isSelected)
+            Icon(
+              CupertinoIcons.checkmark,
+              size: 16,
+              color: accentColor,
+            ),
+        ],
       ),
     );
   }
@@ -176,41 +310,31 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
           CupertinoButton(
             padding: EdgeInsets.zero,
             minimumSize: Size.zero,
-            onPressed: () {
-              HapticFeedback.selectionClick();
-              setState(() {
-                _isDescending = !_isDescending;
-              });
-            },
-            child: GestureDetector(
-              onLongPress: () => _showSortActionSheet(context),
-              child: Container(
-                width: LatyrAppBar.kActionButtonSize,
-                height: LatyrAppBar.kActionButtonSize,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xCC1C1C1E)
-                      : CupertinoColors.white.withValues(alpha: 0.95),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
-                    width: 1.5,
+            onPressed: () => _showSortOverlay(context, topPadding, isDark),
+            child: Container(
+              width: LatyrAppBar.kActionButtonSize,
+              height: LatyrAppBar.kActionButtonSize,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xCC1C1C1E)
+                    : CupertinoColors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  _isDescending ? CupertinoIcons.arrow_down : CupertinoIcons.arrow_up,
-                  size: 19,
-                  color: _isDescending
-                      ? const Color(0xFF78E4A5) // Light green icon color when applied
-                      : textColor,
-                ),
+                ],
+              ),
+              child: const Icon(
+                Icons.sort_rounded,
+                size: 20,
+                color: Color(0xFF78E4A5),
               ),
             ),
           ),
@@ -459,13 +583,10 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    final cardBg = isDark
-        ? const Color(0xCC1C1C1E)
-        : CupertinoColors.white.withValues(alpha: 0.95);
-    final borderColor = isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white;
-    final activeBg = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
-    final activeText = isDark ? CupertinoColors.black : CupertinoColors.white;
-    final inactiveText = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
+    final textColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
+    final cardBg = isDark ? const Color(0xFF1C1C1E) : CupertinoColors.white;
+    final selectedBorderColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
+    final unselectedBorderColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
 
     return GestureDetector(
       onTap: onTap,
@@ -473,17 +594,19 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? activeBg : cardBg,
+          color: cardBg,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected ? activeBg : borderColor,
-            width: 1.5,
+            color: isSelected ? selectedBorderColor : unselectedBorderColor,
+            width: isSelected ? 1.5 : 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-              blurRadius: 14,
-              offset: const Offset(0, 3),
+              color: CupertinoColors.black.withValues(
+                alpha: isDark ? (isSelected ? 0.35 : 0.2) : (isSelected ? 0.06 : 0.03),
+              ),
+              blurRadius: isSelected ? 8 : 5,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -493,8 +616,8 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? activeText : inactiveText.withValues(alpha: 0.85),
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected ? textColor : textColor.withValues(alpha: 0.55),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 fontSize: 12.5,
                 letterSpacing: 0.4,
               ),
@@ -502,19 +625,19 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
             if (count > 0) ...[
               const SizedBox(width: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? (isDark ? const Color(0x22000000) : const Color(0x25FFFFFF))
-                      : (isDark ? const Color(0x33FFFFFF) : const Color(0x18000000)),
+                      ? (isDark ? const Color(0x33FFFFFF) : const Color(0x14000000))
+                      : (isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000)),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   '$count',
                   style: TextStyle(
                     fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: isSelected ? activeText : inactiveText.withValues(alpha: 0.75),
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? textColor : textColor.withValues(alpha: 0.5),
                   ),
                 ),
               ),
@@ -532,13 +655,10 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    final cardBg = isDark
-        ? const Color(0xCC1C1C1E)
-        : CupertinoColors.white.withValues(alpha: 0.95);
-    final borderColor = isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white;
-    final activeBg = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
-    final activeText = isDark ? CupertinoColors.black : CupertinoColors.white;
-    final inactiveText = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
+    final textColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
+    final cardBg = isDark ? const Color(0xFF1C1C1E) : CupertinoColors.white;
+    final selectedBorderColor = isDark ? CupertinoColors.white : const Color(0xFF1A1A1A);
+    final unselectedBorderColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
 
     return GestureDetector(
       onTap: onTap,
@@ -546,17 +666,19 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6.5),
         decoration: BoxDecoration(
-          color: isSelected ? activeBg : cardBg,
+          color: cardBg,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? activeBg : borderColor,
-            width: 1.2,
+            color: isSelected ? selectedBorderColor : unselectedBorderColor,
+            width: isSelected ? 1.4 : 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: CupertinoColors.black.withValues(alpha: isDark ? 0.25 : 0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+              color: CupertinoColors.black.withValues(
+                alpha: isDark ? (isSelected ? 0.3 : 0.15) : (isSelected ? 0.05 : 0.025),
+              ),
+              blurRadius: isSelected ? 6 : 4,
+              offset: const Offset(0, 1.5),
             ),
           ],
         ),
@@ -566,8 +688,8 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? activeText : inactiveText.withValues(alpha: 0.85),
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected ? textColor : textColor.withValues(alpha: 0.55),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 fontSize: 11.5,
               ),
             ),
@@ -577,8 +699,8 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
                 '$count',
                 style: TextStyle(
                   fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: isSelected ? activeText.withValues(alpha: 0.85) : inactiveText.withValues(alpha: 0.6),
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? textColor : textColor.withValues(alpha: 0.5),
                 ),
               ),
             ],
