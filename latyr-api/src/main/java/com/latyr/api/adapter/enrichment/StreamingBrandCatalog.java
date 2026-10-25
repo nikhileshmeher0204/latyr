@@ -139,7 +139,7 @@ public class StreamingBrandCatalog {
         if (providerId == 192 || name.contains("youtube")) {
             return new BrandMetadata(
                 "#FF0000",
-                "#FFFFFF",
+                "#0F0F0F",
                 "assets/icons/streaming/youtube.svg",
                 storageProvider != null ? storageProvider.resolveAssetUrl("youtube.svg") : null,
                 "https://www.youtube.com/results?search_query=%s"

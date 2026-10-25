@@ -18,6 +18,7 @@ class WatchProviderItem {
   final String? type; // 'stream', 'rent', 'buy', 'free'
   final String? logoUrl;
   final String? svgUrl;
+  final String? rawSvg;
   final String? watchUrl;
   final Color brandColor;
   final Color tileColor;
@@ -29,6 +30,7 @@ class WatchProviderItem {
     this.type = 'stream',
     this.logoUrl,
     this.svgUrl,
+    this.rawSvg,
     this.watchUrl,
     required this.brandColor,
     required this.tileColor,
@@ -55,6 +57,7 @@ class WatchProviderItem {
       type: providerMap['type']?.toString() ?? 'stream',
       logoUrl: token.logoUrl,
       svgUrl: token.svgUrl,
+      rawSvg: token.rawSvg,
       watchUrl: token.watchUrl,
       brandColor: token.brandColor,
       tileColor: token.tileColor,
@@ -88,6 +91,7 @@ class WatchProviderItem {
       type: type ?? 'stream',
       logoUrl: token.logoUrl,
       svgUrl: token.svgUrl,
+      rawSvg: token.rawSvg,
       watchUrl: token.watchUrl,
       brandColor: token.brandColor,
       tileColor: token.tileColor,
@@ -375,22 +379,65 @@ class _WatchProviderLogoButtonState extends State<_WatchProviderLogoButton> {
 
   Widget _buildLogoContent(double size) {
     final item = widget.item;
+    final padding = const EdgeInsets.symmetric(horizontal: 5.5, vertical: 7.5);
+    final colorFilter = item.iconColor != null
+        ? ColorFilter.mode(item.iconColor!, BlendMode.srcIn)
+        : null;
+
+    if (item.rawSvg != null && item.rawSvg!.isNotEmpty) {
+      return Center(
+        child: Padding(
+          padding: padding,
+          child: SvgPicture.string(
+            item.rawSvg!,
+            fit: BoxFit.contain,
+            colorFilter: colorFilter,
+            placeholderBuilder: (_) => _buildFallbackInitial(size),
+            errorBuilder: (_, _, _) => _buildNetworkOrSecondary(size),
+          ),
+        ),
+      );
+    }
+
+    final filename = item.svgUrl?.split('/').last;
+    final bundledAsset = filename != null ? 'assets/icons/streaming/$filename' : null;
+
+    if (bundledAsset != null) {
+      return Center(
+        child: Padding(
+          padding: padding,
+          child: SvgPicture.asset(
+            bundledAsset,
+            fit: BoxFit.contain,
+            colorFilter: colorFilter,
+            placeholderBuilder: (_) => _buildFallbackInitial(size),
+            errorBuilder: (_, _, _) => _buildNetworkOrSecondary(size),
+          ),
+        ),
+      );
+    }
+
+    return _buildNetworkOrSecondary(size);
+  }
+
+  Widget _buildNetworkOrSecondary(double size) {
+    final item = widget.item;
+    final padding = const EdgeInsets.symmetric(horizontal: 5.5, vertical: 7.5);
+    final colorFilter = item.iconColor != null
+        ? ColorFilter.mode(item.iconColor!, BlendMode.srcIn)
+        : null;
 
     if (item.svgUrl != null && item.svgUrl!.startsWith('http')) {
       debugPrint('[WhereToWatchCard] Loading CDN SVG: ${item.svgUrl}');
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(8.5),
+          padding: padding,
           child: SvgPicture.network(
             item.svgUrl!,
             fit: BoxFit.contain,
-            colorFilter: item.iconColor != null
-                ? ColorFilter.mode(item.iconColor!, BlendMode.srcIn)
-                : null,
+            colorFilter: colorFilter,
             placeholderBuilder: (_) => _buildFallbackInitial(size),
             errorBuilder: (context, error, stackTrace) {
-              // Resilient fallback: If uat-assets.latyr.app DNS is not yet resolved,
-              // fall back to Firebase Hosting edge domain or TMDB logo
               if (item.svgUrl!.contains('uat-assets.latyr.app')) {
                 final edgeUrl = item.svgUrl!.replaceFirst(
                   'uat-assets.latyr.app',
@@ -399,9 +446,7 @@ class _WatchProviderLogoButtonState extends State<_WatchProviderLogoButton> {
                 return SvgPicture.network(
                   edgeUrl,
                   fit: BoxFit.contain,
-                  colorFilter: item.iconColor != null
-                      ? ColorFilter.mode(item.iconColor!, BlendMode.srcIn)
-                      : null,
+                  colorFilter: colorFilter,
                   placeholderBuilder: (_) => _buildFallbackInitial(size),
                   errorBuilder: (_, _, _) => _buildSecondaryFallback(size),
                 );

@@ -53,7 +53,55 @@ class StreamingBrand {
     }
 
     Widget resolvedIcon = fallbackIcon;
-    if (token.svgUrl != null && token.svgUrl!.startsWith('http')) {
+    final filename = token.svgUrl?.split('/').last;
+    final bundledAsset = filename != null ? 'assets/icons/streaming/$filename' : null;
+    final colorFilter = token.iconColor != null
+        ? ColorFilter.mode(token.iconColor!, BlendMode.srcIn)
+        : null;
+
+    if (token.rawSvg != null && token.rawSvg!.isNotEmpty) {
+      resolvedIcon = Container(
+        width: 14,
+        height: 14,
+        decoration: BoxDecoration(
+          color: token.tileColor,
+          borderRadius: BorderRadius.circular(2.5),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 1.5, vertical: 2.2),
+            child: SvgPicture.string(
+              token.rawSvg!,
+              fit: BoxFit.contain,
+              colorFilter: colorFilter,
+              errorBuilder: (_, _, _) => fallbackIcon,
+            ),
+          ),
+        ),
+      );
+    } else if (bundledAsset != null) {
+      resolvedIcon = Container(
+        width: 14,
+        height: 14,
+        decoration: BoxDecoration(
+          color: token.tileColor,
+          borderRadius: BorderRadius.circular(2.5),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 1.5, vertical: 2.2),
+            child: SvgPicture.asset(
+              bundledAsset,
+              fit: BoxFit.contain,
+              colorFilter: colorFilter,
+              errorBuilder: (_, _, _) => fallbackIcon,
+            ),
+          ),
+        ),
+      );
+    } else if (token.svgUrl != null && token.svgUrl!.startsWith('http')) {
       debugPrint('[StreamingBranding] Loading CDN SVG: ${token.svgUrl}');
       resolvedIcon = Container(
         width: 14,
@@ -65,13 +113,11 @@ class StreamingBrand {
         clipBehavior: Clip.antiAlias,
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(2.2),
+            padding: const EdgeInsets.symmetric(horizontal: 1.5, vertical: 2.2),
             child: SvgPicture.network(
               token.svgUrl!,
               fit: BoxFit.contain,
-              colorFilter: token.iconColor != null
-                  ? ColorFilter.mode(token.iconColor!, BlendMode.srcIn)
-                  : null,
+              colorFilter: colorFilter,
               placeholderBuilder: (_) => Container(
                 color: token.tileColor,
               ),
@@ -84,9 +130,7 @@ class StreamingBrand {
                   return SvgPicture.network(
                     edgeUrl,
                     fit: BoxFit.contain,
-                    colorFilter: token.iconColor != null
-                        ? ColorFilter.mode(token.iconColor!, BlendMode.srcIn)
-                        : null,
+                    colorFilter: colorFilter,
                     placeholderBuilder: (_) => Container(
                       color: token.tileColor,
                     ),

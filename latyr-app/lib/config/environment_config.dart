@@ -37,6 +37,6 @@ class EnvironmentConfig {
   /// Populated via `--dart-define-from-file=.env.<env>` (e.g. .env.local, .env.uat, .env.prod).
   static const String cdnBaseUrl = String.fromEnvironment(
     'CDN_BASE_URL',
-    defaultValue: 'https://uat-assets.latyr.app/assets/icons/streaming/',
+    defaultValue: 'https://latyr-a5dfa.web.app/assets/icons/streaming/',
   );
 }

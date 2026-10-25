@@ -101,6 +101,7 @@ flutter:
   assets:
     - assets/icons/3d/
     - assets/icons/
+    - assets/icons/streaming/
 
   # Fonts
   fonts:
