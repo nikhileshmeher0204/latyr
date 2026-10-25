@@ -366,6 +366,7 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
                   AnimatedSize(
                     duration: const Duration(milliseconds: 250),
                     curve: Curves.easeOutCubic,
+                    clipBehavior: Clip.none,
                     child: _selectedCategory == 'ALL' || activeTaxonomyCategory == null
                         ? const SizedBox.shrink()
                         : _buildSubCategoryBar(
@@ -478,8 +479,9 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
   }) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      clipBehavior: Clip.none,
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: LSpacing.screenH, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: LSpacing.screenH, vertical: 8),
       child: Row(
         children: [
           // "ALL" Filter Pill
@@ -528,11 +530,12 @@ class _AllCapturesScreenState extends ConsumerState<AllCapturesScreen> {
     required bool isDark,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 6),
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: LSpacing.screenH),
+        padding: const EdgeInsets.symmetric(horizontal: LSpacing.screenH, vertical: 4),
         child: Row(
           children: [
             // "All <Category>" subcategory reset pill
