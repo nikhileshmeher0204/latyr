@@ -139,72 +139,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildTopBar(BuildContext context, bool isDark) {
     final btnBg = isDark ? const Color(0xFF1C1C1E) : CupertinoColors.white;
     final textColor = isDark ? CupertinoColors.white : CupertinoColors.black;
-    final iconColor = isDark
-        ? CupertinoColors.systemGrey
-        : CupertinoColors.systemGrey;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: btnBg,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Icon(CupertinoIcons.book, size: 16, color: iconColor),
-              const SizedBox(width: 6),
-              Text(
-                'All Captures',
-                style: LTypography.roundedPill.copyWith(
-                  color: textColor,
-                ),
-              ),
-            ],
+        Text(
+          'Latyr',
+          style: TextStyle(
+            fontFamily: 'Georgia',
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: textColor,
+            letterSpacing: -0.4,
           ),
         ),
-        Row(
-          children: [
-            _buildCircleButton(
-              CupertinoIcons.suit_heart_fill,
-              CupertinoColors.systemPink,
+        CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => showCupertinoModalPopup<void>(
+            context: context,
+            builder: (sheetContext) => CupertinoActionSheet(
+              actions: [
+                CupertinoActionSheetAction(
+                  isDestructiveAction: true,
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    ref.read(authControllerProvider.notifier).signOut();
+                  },
+                  child: const Text('Sign out'),
+                ),
+              ],
+              cancelButton: CupertinoActionSheetAction(
+                onPressed: () => Navigator.of(sheetContext).pop(),
+                child: const Text('Cancel'),
+              ),
+            ),
+          ),
+          child: Semantics(
+            label: 'Account settings',
+            child: _buildCircleButton(
+              CupertinoIcons.settings,
+              textColor,
               btnBg,
               isDark,
             ),
-            const SizedBox(width: 8),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => showCupertinoModalPopup<void>(
-                context: context,
-                builder: (sheetContext) => CupertinoActionSheet(
-                  actions: [CupertinoActionSheetAction(
-                    isDestructiveAction: true,
-                    onPressed: () {
-                      Navigator.of(sheetContext).pop();
-                      ref.read(authControllerProvider.notifier).signOut();
-                    },
-                    child: const Text('Sign out'),
-                  )],
-                  cancelButton: CupertinoActionSheetAction(
-                    onPressed: () => Navigator.of(sheetContext).pop(),
-                    child: const Text('Cancel'),
-                  ),
-                ),
-              ),
-              child: Semantics(label: 'Account settings', child: _buildCircleButton(
-                CupertinoIcons.settings, textColor, btnBg, isDark,
-              )),
-            ),
-          ],
+          ),
         ),
       ],
     );

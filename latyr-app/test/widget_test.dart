@@ -62,7 +62,7 @@ void main() {
     );
 
     // Verify Home top bar
-    expect(find.text('All Captures'), findsOneWidget);
+    expect(find.text('Latyr'), findsOneWidget);
 
     // Verify Floating Navigation Bar tabs
     expect(find.text('Home'), findsOneWidget);

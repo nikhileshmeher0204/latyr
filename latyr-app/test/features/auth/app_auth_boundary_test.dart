@@ -60,7 +60,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Continue with Google'), findsOneWidget);
     expect(find.text('Continue with Apple'), findsOneWidget);
-    expect(find.text('All Captures'), findsNothing);
+    expect(find.text('Captures Today'), findsNothing);
     expect(find.text('Sign in to use Latyr, then share again. Nothing was queued.'), findsOneWidget);
     expect(dataReads, 0);
     await tester.tap(find.byIcon(CupertinoIcons.clear));
@@ -90,7 +90,7 @@ void main() {
       weatherProvider.overrideWith((ref) async => WeatherContext(city: 'Test', temperature: 25, condition: 'Clear')),
     ], child: const LatyrAppInitializer()));
     await tester.pumpAndSettle();
-    expect(find.text('All Captures'), findsOneWidget);
+    expect(find.text('Captures Today'), findsOneWidget);
     final navigator = tester.state<NavigatorState>(find.byType(Navigator).first);
     unawaited(navigator.push(CupertinoPageRoute<void>(builder: (_) => const CupertinoPageScaffold(
       child: Center(child: Text('Private detail')),
@@ -100,11 +100,11 @@ void main() {
     gateway.setSession(null);
     await tester.pumpAndSettle();
     expect(find.text('Private detail'), findsNothing);
-    expect(find.text('All Captures'), findsNothing);
+    expect(find.text('Captures Today'), findsNothing);
     expect(find.text('Continue with Google'), findsOneWidget);
     gateway.setSession(const AuthSession(uid: 'second', provider: 'apple.com'));
     await tester.pumpAndSettle();
-    expect(find.text('All Captures'), findsOneWidget);
+    expect(find.text('Captures Today'), findsOneWidget);
     expect(find.text('Private detail'), findsNothing);
     expect(identical(tester.state<NavigatorState>(find.byType(Navigator).first), navigator), isFalse);
     await tester.pumpWidget(const SizedBox.shrink());

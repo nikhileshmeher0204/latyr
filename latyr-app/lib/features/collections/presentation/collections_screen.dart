@@ -84,7 +84,7 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
         titleLeading: const Icon(CupertinoIcons.folder_fill, size: 16),
         isDark: isDark,
         scaffoldBgColor: scaffoldBg,
-        isPersistent: false,
+        isPersistent: true,
         showBackButton: false,
         actions: [
           CupertinoButton(
@@ -95,11 +95,24 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
               _showCreateCollectionDialog(context);
             },
             child: Container(
-              width: 40,
-              height: 40,
+              width: LatyrAppBar.kActionButtonSize,
+              height: LatyrAppBar.kActionButtonSize,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0x33FFFFFF) : const Color(0x0C000000),
+                color: isDark
+                    ? const Color(0xCC1C1C1E)
+                    : CupertinoColors.white.withValues(alpha: 0.95),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: CupertinoColors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Icon(
                 CupertinoIcons.add,
