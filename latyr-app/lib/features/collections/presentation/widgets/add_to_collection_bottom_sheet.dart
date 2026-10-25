@@ -238,9 +238,7 @@ class _AddToCollectionBottomSheetState
         : const Color(0xFF8E8E93);
     final borderColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEBEBEB);
 
-    const latyrGreen = Color(0xFF28543A);
-    const mintAccent = Color(0xFF78E4A5);
-    final brandPrimary = isDark ? mintAccent : latyrGreen;
+    const sheetAccentColor = CupertinoColors.activeBlue;
 
     final collectionsAsync = ref.watch(userCollectionsProvider);
     final entityId = widget.entity.id;
@@ -285,7 +283,7 @@ class _AddToCollectionBottomSheetState
               ),
             ),
 
-            // Header Row: Title & Circular Action Button (Tick icon in blue, identical to AppBar action buttons)
+            // Header Row: Title & Circular Action Button (Tick icon in blue when >=1 selected, neutral when empty)
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 4, 16, 12),
               child: Row(
@@ -305,9 +303,11 @@ class _AddToCollectionBottomSheetState
                   LatyrAppBar.actionButton(
                     isDark: isDark,
                     onPressed: () => _saveAndDismiss(selectedIds, effectiveInitialIds),
-                    child: const Icon(
+                    child: Icon(
                       CupertinoIcons.checkmark,
-                      color: CupertinoColors.activeBlue,
+                      color: selectedIds.isNotEmpty
+                          ? sheetAccentColor
+                          : (isDark ? const Color(0xFF636366) : const Color(0xFFAEB0B5)),
                       size: 20,
                     ),
                   ),
@@ -566,17 +566,17 @@ class _AddToCollectionBottomSheetState
                                       height: 24,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: isMember ? brandPrimary : CupertinoColors.transparent,
+                                        color: isMember ? sheetAccentColor : CupertinoColors.transparent,
                                         border: Border.all(
                                           color: isMember
-                                              ? brandPrimary
+                                              ? sheetAccentColor
                                               : (isDark ? const Color(0xFF48484A) : const Color(0xFFD1D1D6)),
                                           width: 1.5,
                                         ),
                                         boxShadow: isMember
                                             ? [
                                                 BoxShadow(
-                                                  color: brandPrimary.withValues(alpha: 0.35),
+                                                  color: sheetAccentColor.withValues(alpha: 0.35),
                                                   blurRadius: 6,
                                                   offset: const Offset(0, 1.5),
                                                 ),
@@ -584,10 +584,10 @@ class _AddToCollectionBottomSheetState
                                             : null,
                                       ),
                                       child: isMember
-                                          ? Icon(
+                                          ? const Icon(
                                               CupertinoIcons.checkmark,
                                               size: 13,
-                                              color: isDark ? const Color(0xFF1A1A1A) : CupertinoColors.white,
+                                              color: CupertinoColors.white,
                                             )
                                           : null,
                                     ),
@@ -651,15 +651,15 @@ class _AddToCollectionBottomSheetState
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
-                                color: brandPrimary,
+                                color: sheetAccentColor,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Text(
+                              child: const Text(
                                 'Add',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  color: isDark ? const Color(0xFF1A1A1A) : CupertinoColors.white,
+                                  color: CupertinoColors.white,
                                 ),
                               ),
                             ),
@@ -698,13 +698,13 @@ class _AddToCollectionBottomSheetState
                             Icon(
                               CupertinoIcons.plus_circle_fill,
                               size: 18,
-                              color: brandPrimary,
+                              color: sheetAccentColor,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               'New Collection',
                               style: LTypography.body.rounded.copyWith(
-                                color: brandPrimary,
+                                color: sheetAccentColor,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14.5,
                               ),
